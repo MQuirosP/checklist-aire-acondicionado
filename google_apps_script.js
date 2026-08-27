@@ -44,6 +44,9 @@ function doPost(e) {
       throw new Error("No se encontró la Hoja de Cálculo. Configura el SPREADSHEET_ID en el script.");
     }
     var sheet = ss.getActiveSheet();
+    
+    // Verificar e inicializar los encabezados si la hoja está vacía
+    if (sheet.getLastRow() === 0) {
       var headers = [
         "Fecha / Hora Registro",
         "Fecha Inspección",
