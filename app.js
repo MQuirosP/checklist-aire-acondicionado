@@ -292,33 +292,25 @@ function initFormSubmission() {
     });
   }
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
+  form.addEventListener('submit', (e) => {
     // Validar URL de Google Script
     if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes('PEGA_AQUI_TU_URL')) {
+      e.preventDefault();
       alert('⚠️ ATENCIÓN: Debes configurar la URL de tu Google Apps Script en el archivo app.js (constante GOOGLE_SCRIPT_URL). Consulta el README.md para ver las instrucciones paso a paso.');
       return;
     }
 
-    // Recopilar datos del formulario
-    const formData = new FormData(form);
-    const payload = {};
-
-    formData.forEach((value, key) => {
-      payload[key] = value;
-    });
-
-    // Obtener firmas en DataURL Base64 de los canvas
+    // Inyectar o actualizar firmas en campos ocultos del formulario antes del submit
     const canvasTecnico = document.getElementById('canvas-tecnico');
     const canvasCliente = document.getElementById('canvas-cliente');
 
-    if (canvasTecnico && isCanvasBlank(canvasTecnico) === false) {
-      payload.firma_tecnico = canvasTecnico.toDataURL('image/png');
-    }
-    if (canvasCliente && isCanvasBlank(canvasCliente) === false) {
-      payload.firma_cliente = canvasCliente.toDataURL('image/png');
-    }
+    setHiddenInput(form, 'firma_tecnico', (canvasTecnico && !isCanvasBlank(canvasTecnico)) ? canvasTecnico.toDataURL('image/png') : '');
+    setHiddenInput(form, 'firma_cliente', (canvasCliente && !isCanvasBlank(canvasCliente)) ? canvasCliente.toDataURL('image/png') : '');
+
+    // Configurar el formulario para enviar al iframe oculto (Garantiza 0 bloqueos de CORS)
+    form.action = GOOGLE_SCRIPT_URL;
+    form.method = 'POST';
+    form.target = 'hidden_iframe';
 
     // Mostrar modal en estado de Carga
     modal.classList.remove('hidden');
@@ -326,33 +318,35 @@ function initFormSubmission() {
     modalSuccess.classList.add('hidden');
     modalError.classList.add('hidden');
 
-    try {
-      // Enviar con mode: 'no-cors' para evitar restricciones de CORS del navegador con Google Apps Script
-      await fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: {
-          'Content-Type': 'text/plain;charset=utf-8'
-        },
-        body: JSON.stringify(payload)
-      });
+    let submitted = false;
+    const iframe = document.getElementById('hidden_iframe');
 
-      // Con no-cors, la promesa resuelve exitosamente cuando el servidor recibe el POST
+    const handleSuccess = () => {
+      if (submitted) return;
+      submitted = true;
       modalLoading.classList.add('hidden');
       modalSuccess.classList.remove('hidden');
-
-      // Limpiar borrador tras envío exitoso
       localStorage.removeItem(STORAGE_KEY);
+    };
 
-    } catch (error) {
-      console.error('Error enviando formulario:', error);
-      modalLoading.classList.add('hidden');
-      modalError.classList.remove('hidden');
-      if (errorMessageText) {
-        errorMessageText.textContent = `Detalle del error: ${error.message || 'Verifica tu conexión y permisos del script.'}`;
-      }
+    if (iframe) {
+      iframe.onload = handleSuccess;
     }
+
+    // Timer de seguridad para mostrar éxito tras el procesamiento
+    setTimeout(handleSuccess, 3000);
   });
+}
+
+function setHiddenInput(form, name, value) {
+  let input = form.querySelector(`input[name="${name}"]`);
+  if (!input) {
+    input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    form.appendChild(input);
+  }
+  input.value = value;
 }
 
 /**

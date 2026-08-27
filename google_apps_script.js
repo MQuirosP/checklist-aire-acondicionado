@@ -18,8 +18,16 @@ function doPost(e) {
   lock.tryLock(10000);
 
   try {
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    var data = JSON.parse(e.postData.contents);
+    var data = {};
+    if (e && e.postData && e.postData.contents) {
+      try {
+        data = JSON.parse(e.postData.contents);
+      } catch (err) {
+        data = e.parameter || {};
+      }
+    } else if (e && e.parameter) {
+      data = e.parameter;
+    }
     
     // Verificar e inicializar los encabezados si la hoja está vacía
     if (sheet.getLastRow() === 0) {
