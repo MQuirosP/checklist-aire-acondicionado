@@ -13,16 +13,6 @@
  * 9. Pega esa URL en el archivo `app.js` en la constante `GOOGLE_SCRIPT_URL`.
  */
 
-// ID de tu Hoja de Cálculo vinculada
-var SPREADSHEET_ID = "1MauAQkSqQRCSvdnc_PjuAcVM8yphmgfKBkUmW8TkzcI";
-
-function getSpreadsheet() {
-  if (SPREADSHEET_ID && SPREADSHEET_ID.trim() !== "") {
-    return SpreadsheetApp.openById(SPREADSHEET_ID.trim());
-  }
-  return SpreadsheetApp.getActiveSpreadsheet();
-}
-
 function doPost(e) {
   var lock = LockService.getScriptLock();
   lock.tryLock(10000);
@@ -39,11 +29,7 @@ function doPost(e) {
       data = e.parameter;
     }
     
-    var ss = getSpreadsheet();
-    if (!ss) {
-      throw new Error("No se encontró la Hoja de Cálculo. Configura el SPREADSHEET_ID en el script.");
-    }
-    var sheet = ss.getActiveSheet();
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
     
     // Verificar e inicializar los encabezados si la hoja está vacía
     if (sheet.getLastRow() === 0) {
@@ -241,9 +227,7 @@ function doPost(e) {
 
 function doGet(e) {
   try {
-    var ss = getSpreadsheet();
-    if (!ss) return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
-    var sheet = ss.getActiveSheet();
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
     var rows = sheet.getDataRange().getValues();
     if (rows.length < 2) {
       return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
