@@ -532,7 +532,7 @@
             <thead class="bg-slate-100 text-slate-700 font-semibold text-xs border-b border-slate-200">
               <tr>
                 <th class="py-2.5 px-3">Parámetro de Medición</th>
-                <th class="py-2.5 px-3 w-48">Valor Medido</th>
+                <th class="py-2.5 px-3 w-56">Valor Medido</th>
                 <th class="py-2.5 px-3">Rango de Referencia / Estado</th>
               </tr>
             </thead>
@@ -541,9 +541,9 @@
               <tr>
                 <td class="py-3 px-3 font-medium">Voltaje en vacío / bajo carga (V)</td>
                 <td class="py-3 px-3">
-                  <div class="flex items-center gap-1">
-                    <input type="text" name="med_voltaje" placeholder="220" class="w-full px-2.5 py-1 border border-slate-300 rounded">
-                    <span class="text-slate-500">V AC</span>
+                  <div class="flex items-center gap-1.5">
+                    <input type="text" name="med_voltaje" placeholder="220" class="w-28 px-2.5 py-1 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500">
+                    <span class="text-slate-500 whitespace-nowrap font-medium">V AC</span>
                   </div>
                 </td>
                 <td class="py-3 px-3 text-slate-500">Nominal ±10% (ej. 208-230V / 115V)</td>
@@ -552,9 +552,9 @@
               <tr>
                 <td class="py-3 px-3 font-medium">Corriente de trabajo del compresor (A)</td>
                 <td class="py-3 px-3">
-                  <div class="flex items-center gap-1">
-                    <input type="text" name="med_corriente_comp" placeholder="8.5" class="w-full px-2.5 py-1 border border-slate-300 rounded">
-                    <span class="text-slate-500">A</span>
+                  <div class="flex items-center gap-1.5">
+                    <input type="text" name="med_corriente_comp" placeholder="8.5" class="w-28 px-2.5 py-1 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500">
+                    <span class="text-slate-500 whitespace-nowrap font-medium">A</span>
                   </div>
                 </td>
                 <td class="py-3 px-3 text-slate-500">RLA Nominal según placa de datos</td>
@@ -563,9 +563,9 @@
               <tr>
                 <td class="py-3 px-3 font-medium">Corriente del motor ventilador exterior (A)</td>
                 <td class="py-3 px-3">
-                  <div class="flex items-center gap-1">
-                    <input type="text" name="med_corriente_vent" placeholder="0.8" class="w-full px-2.5 py-1 border border-slate-300 rounded">
-                    <span class="text-slate-500">A</span>
+                  <div class="flex items-center gap-1.5">
+                    <input type="text" name="med_corriente_vent" placeholder="0.8" class="w-28 px-2.5 py-1 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500">
+                    <span class="text-slate-500 whitespace-nowrap font-medium">A</span>
                   </div>
                 </td>
                 <td class="py-3 px-3 text-slate-500">FLA Nominal según placa de datos</td>
@@ -574,9 +574,9 @@
               <tr>
                 <td class="py-3 px-3 font-medium">Presión de baja (Succión) (PSI)</td>
                 <td class="py-3 px-3">
-                  <div class="flex items-center gap-1">
-                    <input type="text" name="med_presion_baja" placeholder="120" class="w-full px-2.5 py-1 border border-slate-300 rounded">
-                    <span class="text-slate-500">PSI</span>
+                  <div class="flex items-center gap-1.5">
+                    <input type="text" name="med_presion_baja" placeholder="120" class="w-28 px-2.5 py-1 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500">
+                    <span class="text-slate-500 whitespace-nowrap font-medium">PSI</span>
                   </div>
                 </td>
                 <td class="py-3 px-3 text-slate-500">R-410A: ~110-130 PSI / R-22: ~60-70 PSI</td>
@@ -585,9 +585,9 @@
               <tr>
                 <td class="py-3 px-3 font-medium">Presión de alta (Descarga) (PSI)</td>
                 <td class="py-3 px-3">
-                  <div class="flex items-center gap-1">
-                    <input type="text" name="med_presion_alta" placeholder="320" class="w-full px-2.5 py-1 border border-slate-300 rounded">
-                    <span class="text-slate-500">PSI</span>
+                  <div class="flex items-center gap-1.5">
+                    <input type="text" name="med_presion_alta" placeholder="320" class="w-28 px-2.5 py-1 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500">
+                    <span class="text-slate-500 whitespace-nowrap font-medium">PSI</span>
                   </div>
                 </td>
                 <td class="py-3 px-3 text-slate-500">Según temperatura ambiente y refrigerante</td>
@@ -596,9 +596,9 @@
               <tr>
                 <td class="py-3 px-3 font-medium">Temperatura de inyección (Evaporador)</td>
                 <td class="py-3 px-3">
-                  <div class="flex items-center gap-1">
-                    <input type="number" step="0.1" id="med_temp_inyeccion" name="med_temp_inyeccion" placeholder="12" class="w-full px-2.5 py-1 border border-slate-300 rounded">
-                    <span class="text-slate-500">°C</span>
+                  <div class="flex items-center gap-1.5">
+                    <input type="number" step="0.1" id="med_temp_inyeccion" name="med_temp_inyeccion" placeholder="12" class="w-28 px-2.5 py-1 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500">
+                    <span class="text-slate-500 whitespace-nowrap font-medium">°C</span>
                   </div>
                 </td>
                 <td class="py-3 px-3 text-slate-500">Salida de rejilla interior</td>
@@ -612,9 +612,9 @@
                   </div>
                 </td>
                 <td class="py-3 px-3">
-                  <div class="flex items-center gap-1">
-                    <input type="number" step="0.1" id="med_temp_retorno" name="med_temp_retorno" placeholder="22" class="w-full px-2.5 py-1 border border-slate-300 rounded">
-                    <span class="text-slate-500">°C</span>
+                  <div class="flex items-center gap-1.5">
+                    <input type="number" step="0.1" id="med_temp_retorno" name="med_temp_retorno" placeholder="22" class="w-28 px-2.5 py-1 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500">
+                    <span class="text-slate-500 whitespace-nowrap font-medium">°C</span>
                   </div>
                   <!-- Hidden field to store calculated Delta T value -->
                   <input type="hidden" id="med_delta_t" name="med_delta_t" value="">
@@ -627,7 +627,7 @@
               <tr>
                 <td class="py-3 px-3 font-medium">Superheat (Sobrecalentamiento) / Subcooling</td>
                 <td class="py-3 px-3">
-                  <input type="text" name="med_superheat" placeholder="Ej. SH: 6°C / SC: 5°C" class="w-full px-2.5 py-1 border border-slate-300 rounded">
+                  <input type="text" name="med_superheat" placeholder="Ej. SH: 6°C / SC: 5°C" class="w-48 px-2.5 py-1 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500">
                 </td>
                 <td class="py-3 px-3 text-slate-500">Verificación de carga óptima de refrigerante</td>
               </tr>
@@ -635,7 +635,7 @@
               <tr>
                 <td class="py-3 px-3 font-medium">Prueba de control remoto y modos de operación</td>
                 <td class="py-3 px-3">
-                  <select name="med_control_remoto" class="w-full max-w-[160px] px-2.5 py-1.5 border border-slate-300 rounded text-xs bg-white focus:ring-2 focus:ring-blue-500">
+                  <select name="med_control_remoto" class="w-48 px-2.5 py-1.5 border border-slate-300 rounded text-xs bg-white focus:ring-2 focus:ring-blue-500">
                     <option value="" disabled selected>Seleccionar...</option>
                     <option value="Correcto">✓ Correcto</option>
                     <option value="Reemplazar Baterías">⚠️ Reemplazar Baterías</option>
@@ -951,6 +951,6 @@
 
   <!-- Iframe oculto para procesamiento de envíos sin bloqueos de CORS -->
   <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-  <script src="app.js?v=18.0"></script>
+  <script src="app.js?v=19.0"></script>
 </body>
 </html>
