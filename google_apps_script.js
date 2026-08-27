@@ -154,6 +154,13 @@ function getSheetJson(sheet) {
   var data = [];
   for (var i = 1; i < rows.length; i++) {
     var row = rows[i];
+    
+    // Omitir filas en blanco o cuyo contenido haya sido borrado en la hoja
+    var otVal = (row[2] || "").toString().trim();
+    var clientVal = (row[3] || "").toString().trim();
+    var techVal = (row[4] || "").toString().trim();
+    if (!otVal && !clientVal && !techVal) continue;
+
     var obj = {};
     for (var j = 0; j < headers.length; j++) {
       obj[headers[j]] = row[j];

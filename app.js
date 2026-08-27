@@ -588,12 +588,16 @@ function renderHistoryTable(query) {
   const q = (query || '').toLowerCase().trim();
 
   const filtered = historyDataCache.filter(item => {
+    const ot = (item['N° Orden / OT'] || '').toString().trim();
+    const cliente = (item['Cliente / Ubicación'] || '').toString().trim();
+
+    // Descartar filas vacías o cuyas celdas fueron borradas en Google Sheets
+    if (!ot && !cliente) return false;
+
     if (!q) return true;
-    const ot = (item['N° Orden / OT'] || '').toString().toLowerCase();
-    const cliente = (item['Cliente / Ubicación'] || '').toString().toLowerCase();
     const tecnico = (item['Técnico Responsable'] || '').toString().toLowerCase();
     const fecha = (item['Fecha Inspección'] || '').toString().toLowerCase();
-    return ot.includes(q) || cliente.includes(q) || tecnico.includes(q) || fecha.includes(q);
+    return ot.toLowerCase().includes(q) || cliente.toLowerCase().includes(q) || tecnico.includes(q) || fecha.includes(q);
   });
 
   if (filtered.length === 0) {
