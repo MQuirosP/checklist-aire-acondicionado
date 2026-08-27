@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initHistoryModal();
   initOTValidation();
   initRecordDetailModal();
+  initClientsAndTechniciansManagement();
 });
 
 /**
@@ -765,4 +766,168 @@ function loadRecordIntoForm(record) {
   form.scrollIntoView({ behavior: 'smooth' });
 
   alert(`✏️ Se cargaron los datos completos de la Orden "${record['N° Orden / OT']}" en el formulario para su revisión/edición.`);
+}
+
+/**
+ * 9. Gestión de Clientes y Técnicos
+ */
+let clientsCache = [];
+let techniciansCache = [];
+
+function initClientsAndTechniciansManagement() {
+  const btnViewClients = document.getElementById('btn-view-clients');
+  const modalClients = document.getElementById('modal-clients');
+  const btnCloseClients = document.getElementById('btn-close-clients');
+  const formAddClient = document.getElementById('form-add-client');
+
+  const btnViewTechnicians = document.getElementById('btn-view-technicians');
+  const modalTechnicians = document.getElementById('modal-technicians');
+  const btnCloseTechnicians = document.getElementById('btn-close-technicians');
+  const formAddTechnician = document.getElementById('form-add-technician');
+
+  if (btnViewClients && modalClients) {
+    btnViewClients.addEventListener('click', () => {
+      modalClients.classList.remove('hidden');
+      fetchClients();
+    });
+  }
+
+  if (btnCloseClients) {
+    btnCloseClients.addEventListener('click', () => modalClients.classList.add('hidden'));
+  }
+
+  if (formAddClient) {
+    formAddClient.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('new-client-name').value.trim();
+      const location = document.getElementById('new-client-location').value.trim();
+      const phone = document.getElementById('new-client-phone').value.trim();
+      const email = document.getElementById('new-client-email').value.trim();
+
+      if (!name || !location) return;
+
+      const payload = { action: 'add_cliente', nombre: name, ubicacion: location, telefono: phone, correo: email };
+      await saveClientOrTechnician(payload);
+      formAddClient.reset();
+      fetchClients();
+    });
+  }
+
+  if (btnViewTechnicians && modalTechnicians) {
+    btnViewTechnicians.addEventListener('click', () => {
+      modalTechnicians.classList.remove('hidden');
+      fetchTechnicians();
+    });
+  }
+
+  if (btnCloseTechnicians) {
+    btnCloseTechnicians.addEventListener('click', () => modalTechnicians.classList.add('hidden'));
+  }
+
+  if (formAddTechnician) {
+    formAddTechnician.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('new-tech-name').value.trim();
+      const cedula = document.getElementById('new-tech-cedula').value.trim();
+      const phone = document.getElementById('new-tech-phone').value.trim();
+
+      if (!name || !cedula) return;
+
+      const payload = { action: 'add_tecnico', nombre: name, cedula: cedula, telefono: phone };
+      await saveClientOrTechnician(payload);
+      formAddTechnician.reset();
+      fetchTechnicians();
+    });
+  }
+
+  // Pre-cargar listas para autocompletado en el formulario
+  fetchClients(true);
+  fetchTechnicians(true);
+}
+
+async function saveClientOrTechnician(payload) {
+  try {
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+  } catch (err) {
+    console.error('Error al guardar registro:', err);
+  }
+}
+
+async function fetchClients(silent = false) {
+  try {
+    const fetchUrl = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + 'action=clientes&_t=' + Date.now();
+    const res = await fetch(fetchUrl, { cache: 'no-store' });
+    const data = await res.json();
+    clientsCache = Array.isArray(data) ? data : [];
+    updateClientsUI(silent);
+  } catch (err) {
+    console.error('Error cargando clientes:', err);
+  }
+}
+
+async function fetchTechnicians(silent = false) {
+  try {
+    const fetchUrl = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + 'action=tecnicos&_t=' + Date.now();
+    const res = await fetch(fetchUrl, { cache: 'no-store' });
+    const data = await res.json();
+    techniciansCache = Array.isArray(data) ? data : [];
+    updateTechniciansUI(silent);
+  } catch (err) {
+    console.error('Error cargando técnicos:', err);
+  }
+}
+
+function updateClientsUI(silent) {
+  const datalist = document.getElementById('datalist-clientes');
+  const tbody = document.getElementById('clients-table-body');
+
+  if (datalist) {
+    datalist.innerHTML = clientsCache.map(c => {
+      const val = `${c['Nombre / Empresa'] || ''} ${c['Ubicación / Dirección'] ? '- ' + c['Ubicación / Dirección'] : ''}`.trim();
+      return `<option value="${val}">`;
+    }).join('');
+  }
+
+  if (!silent && tbody) {
+    if (clientsCache.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">No hay clientes registrados aún.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = clientsCache.map(c => `
+      <tr class="hover:bg-slate-50 border-b border-slate-100">
+        <td class="py-2 px-3 font-bold text-blue-600">${c['ID'] || '--'}</td>
+        <td class="py-2 px-3 font-semibold text-slate-800">${c['Nombre / Empresa'] || '--'}</td>
+        <td class="py-2 px-3 text-slate-600">${c['Ubicación / Dirección'] || '--'}</td>
+        <td class="py-2 px-3 text-slate-600">${c['Teléfono'] || '--'}</td>
+      </tr>
+    `).join('');
+  }
+}
+
+function updateTechniciansUI(silent) {
+  const datalist = document.getElementById('datalist-tecnicos');
+  const tbody = document.getElementById('technicians-table-body');
+
+  if (datalist) {
+    datalist.innerHTML = techniciansCache.map(t => `<option value="${t['Nombre del Técnico'] || ''}">`).join('');
+  }
+
+  if (!silent && tbody) {
+    if (techniciansCache.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">No hay técnicos registrados aún.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = techniciansCache.map(t => `
+      <tr class="hover:bg-slate-50 border-b border-slate-100">
+        <td class="py-2 px-3 font-bold text-blue-600">${t['ID'] || '--'}</td>
+        <td class="py-2 px-3 font-semibold text-slate-800">${t['Nombre del Técnico'] || '--'}</td>
+        <td class="py-2 px-3 text-slate-600">${t['Cédula / ID'] || '--'}</td>
+        <td class="py-2 px-3 text-slate-600">${t['Teléfono'] || '--'}</td>
+      </tr>
+    `).join('');
+  }
 }
