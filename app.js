@@ -1053,7 +1053,7 @@ function updateClientsUI(silent = false) {
 
   if (select) {
     const currentVal = select.value;
-    select.innerHTML = `<option value="" disabled ${!currentVal ? 'selected' : ''}>-- Seleccione Cliente / Ubicación --</option>` +
+    select.innerHTML = `<option value="" disabled ${!currentVal ? 'selected' : ''}>Seleccionar...</option>` +
       list.map(c => {
         const val = c.ubicacion && c.ubicacion !== 'Extraído de Historial' ? `${c.nombre} - ${c.ubicacion}` : c.nombre;
         return `<option value="${val}" ${currentVal === val ? 'selected' : ''}>${val}</option>`;
@@ -1084,7 +1084,7 @@ function updateTechniciansUI(silent = false) {
 
   if (select) {
     const currentVal = select.value;
-    select.innerHTML = `<option value="" disabled ${!currentVal ? 'selected' : ''}>-- Seleccione Técnico Responsable --</option>` +
+    select.innerHTML = `<option value="" disabled ${!currentVal ? 'selected' : ''}>Seleccionar...</option>` +
       list.map(t => {
         return `<option value="${t.nombre}" ${currentVal === t.nombre ? 'selected' : ''}>${t.nombre}</option>`;
       }).join('') +
