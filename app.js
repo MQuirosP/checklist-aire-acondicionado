@@ -270,6 +270,25 @@ function loadDraft() {
   }
 }
 
+function resetFormComplete() {
+  const form = document.getElementById('checklist-form');
+  if (form) form.reset();
+  localStorage.removeItem(STORAGE_KEY);
+
+  // Limpiar lienzos de firmas
+  ['canvas-tecnico', 'canvas-cliente'].forEach(id => {
+    const canvas = document.getElementById(id);
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  });
+
+  // Re-inicializar fecha actual y generar nueva OT única
+  initDate();
+  if (typeof generateUniqueOT === 'function') generateUniqueOT();
+}
+
 /**
  * 6. Envío del Formulario a Google Sheets
  */
@@ -281,21 +300,19 @@ function initFormSubmission() {
   const modalError = document.getElementById('modal-error');
   const errorMessageText = document.getElementById('error-message-text');
 
-  const btnCloseSuccess = document.getElementById('btn-close-success');
-  const btnSuccessViewHistory = document.getElementById('btn-success-view-history');
-  const btnCloseError = document.getElementById('btn-close-error');
+  const btnReset = document.getElementById('btn-reset');
+  if (btnReset) {
+    btnReset.addEventListener('click', () => {
+      if (confirm('🧹 ¿Estás seguro de que deseas limpiar todo el formulario y las firmas?')) {
+        resetFormComplete();
+      }
+    });
+  }
 
   if (btnCloseSuccess) {
     btnCloseSuccess.addEventListener('click', () => {
       modal.classList.add('hidden');
-      form.reset();
-      localStorage.removeItem(STORAGE_KEY);
-      ['canvas-tecnico', 'canvas-cliente'].forEach(id => {
-        const canvas = document.getElementById(id);
-        if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-      });
-      initDate();
-      generateUniqueOT();
+      resetFormComplete();
     });
   }
 
@@ -376,8 +393,8 @@ function initFormSubmission() {
       if (summaryOt) summaryOt.textContent = otInput ? (otInput.value || '--') : '--';
       if (summaryCliente) summaryCliente.textContent = clienteInput ? (clienteInput.value || '--') : '--';
 
-      // Limpiar borrador tras envío exitoso
-      localStorage.removeItem(STORAGE_KEY);
+      // Limpiar formulario y borrador tras envío exitoso
+      resetFormComplete();
 
       // Refrescar datos de historial en segundo plano
       fetchHistoryData(true);
