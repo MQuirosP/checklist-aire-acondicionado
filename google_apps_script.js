@@ -13,9 +13,8 @@
  * 9. Pega esa URL en el archivo `app.js` en la constante `GOOGLE_SCRIPT_URL`.
  */
 
-// Si usaste script.google.com (Opción 2), pega el ID de tu Hoja de Cálculo entre las comillas.
-// Ejemplo: var SPREADSHEET_ID = "1ABC123xyz456...";
-var SPREADSHEET_ID = "";
+// ID de tu Hoja de Cálculo vinculada
+var SPREADSHEET_ID = "1MauAQkSqQRCSvdnc_PjuAcVM8yphmgfKBkUmW8TkzcI";
 
 function getSpreadsheet() {
   if (SPREADSHEET_ID && SPREADSHEET_ID.trim() !== "") {
