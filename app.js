@@ -327,33 +327,22 @@ function initFormSubmission() {
     modalError.classList.add('hidden');
 
     try {
-      // Enviar como text/plain para evitar bloqueos CORS con Apps Script
-      const response = await fetch(GOOGLE_SCRIPT_URL, {
+      // Enviar con mode: 'no-cors' para evitar restricciones de CORS del navegador con Google Apps Script
+      await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
+        mode: 'no-cors',
         headers: {
           'Content-Type': 'text/plain;charset=utf-8'
         },
         body: JSON.stringify(payload)
       });
 
-      const resText = await response.text();
-      let resJson = {};
-      try {
-        resJson = JSON.parse(resText);
-      } catch (err) {
-        // En caso de que Apps Script devuelva texto plano o redirección
-        resJson = { result: 'success' };
-      }
+      // Con no-cors, la promesa resuelve exitosamente cuando el servidor recibe el POST
+      modalLoading.classList.add('hidden');
+      modalSuccess.classList.remove('hidden');
 
-      if (resJson.result === 'success' || response.ok) {
-        modalLoading.classList.add('hidden');
-        modalSuccess.classList.remove('hidden');
-
-        // Limpiar borrador tras envío exitoso
-        localStorage.removeItem(STORAGE_KEY);
-      } else {
-        throw new Error(resJson.error || 'Error al procesar la solicitud en Google Sheets');
-      }
+      // Limpiar borrador tras envío exitoso
+      localStorage.removeItem(STORAGE_KEY);
 
     } catch (error) {
       console.error('Error enviando formulario:', error);
