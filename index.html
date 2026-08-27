@@ -103,6 +103,7 @@
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1" for="tipoUnidad">Tipo de Unidad:</label>
             <select id="tipoUnidad" name="tipoUnidad" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+              <option value="" disabled selected>Seleccione el tipo...</option>
               <option value="Mini Split">Mini Split</option>
               <option value="Multi Split">Multi Split</option>
               <option value="Paquete">Paquete</option>
@@ -125,6 +126,7 @@
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1" for="refrigerante">Refrigerante:</label>
             <select id="refrigerante" name="refrigerante" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+              <option value="" disabled selected>Seleccione refrigerante...</option>
               <option value="R-410A">R-410A</option>
               <option value="R-32">R-32</option>
               <option value="R-22">R-22</option>
@@ -939,6 +941,6 @@
 
   <!-- Iframe oculto para procesamiento de envíos sin bloqueos de CORS -->
   <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-  <script src="app.js?v=12.0"></script>
+  <script src="app.js?v=13.0"></script>
 </body>
 </html>

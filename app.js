@@ -275,6 +275,30 @@ function resetFormComplete() {
   if (form) form.reset();
   localStorage.removeItem(STORAGE_KEY);
 
+  // Desmarcar explicitamente radios de inspeccion
+  document.querySelectorAll('input[type="radio"]').forEach(radio => {
+    radio.checked = false;
+  });
+
+  // Limpiar badges de Delta T y validacion de OT
+  const deltaBadge = document.getElementById('delta-t-badge');
+  if (deltaBadge) {
+    deltaBadge.textContent = '-- °C';
+    deltaBadge.className = 'text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-500';
+  }
+
+  isOtDuplicate = false;
+  const otBadge = document.getElementById('ot-validation-badge');
+  if (otBadge) {
+    otBadge.className = 'block text-[11px] font-medium mt-1 hidden';
+    otBadge.textContent = '';
+  }
+
+  const otInput = document.getElementById('ot');
+  if (otInput) {
+    otInput.classList.remove('border-rose-500', 'border-emerald-500');
+  }
+
   // Limpiar lienzos de firmas
   ['canvas-tecnico', 'canvas-cliente'].forEach(id => {
     const canvas = document.getElementById(id);
