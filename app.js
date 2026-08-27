@@ -466,6 +466,9 @@ async function fetchHistoryData(silent = false) {
 
     historyDataCache = Array.isArray(data) ? data : [];
 
+    if (typeof updateClientsUI === 'function') updateClientsUI(true);
+    if (typeof updateTechniciansUI === 'function') updateTechniciansUI(true);
+
     if (historyDataCache.length > 0) {
       if (!silent && loading) {
         loading.classList.add('hidden');
@@ -769,10 +772,58 @@ function loadRecordIntoForm(record) {
 }
 
 /**
- * 9. Gestión de Clientes y Técnicos
+ * 9. Gestión de Clientes y Técnicos (Almacenamiento Local + Extracción Automática)
  */
-let clientsCache = [];
-let techniciansCache = [];
+const CLIENTS_STORAGE_KEY = 'app_clientes_custom_v1';
+const TECHS_STORAGE_KEY = 'app_tecnicos_custom_v1';
+
+function getCustomClients() {
+  try {
+    return JSON.parse(localStorage.getItem(CLIENTS_STORAGE_KEY)) || [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function getCustomTechnicians() {
+  try {
+    return JSON.parse(localStorage.getItem(TECHS_STORAGE_KEY)) || [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function getAllClients() {
+  const custom = getCustomClients();
+  const list = [...custom];
+
+  // Extraer clientes únicos de los mantenimientos guardados en el historial
+  if (Array.isArray(historyDataCache)) {
+    historyDataCache.forEach(item => {
+      const raw = (item['Cliente / Ubicación'] || '').toString().trim();
+      if (raw && !list.some(c => (c.nombre || '').toLowerCase() === raw.toLowerCase() || (`${c.nombre} - ${c.ubicacion}`).toLowerCase() === raw.toLowerCase())) {
+        list.push({ id: 'AUTO-' + (list.length + 1), nombre: raw, ubicacion: 'Extraído de Historial', telefono: '--', auto: true });
+      }
+    });
+  }
+  return list;
+}
+
+function getAllTechnicians() {
+  const custom = getCustomTechnicians();
+  const list = [...custom];
+
+  // Extraer técnicos únicos de los mantenimientos guardados en el historial
+  if (Array.isArray(historyDataCache)) {
+    historyDataCache.forEach(item => {
+      const raw = (item['Técnico Responsable'] || '').toString().trim();
+      if (raw && !list.some(t => (t.nombre || '').toLowerCase() === raw.toLowerCase())) {
+        list.push({ id: 'AUTO-' + (list.length + 1), nombre: raw, cedula: 'Extraído de Historial', telefono: '--', auto: true });
+      }
+    });
+  }
+  return list;
+}
 
 function initClientsAndTechniciansManagement() {
   const btnViewClients = document.getElementById('btn-view-clients');
@@ -788,7 +839,7 @@ function initClientsAndTechniciansManagement() {
   if (btnViewClients && modalClients) {
     btnViewClients.addEventListener('click', () => {
       modalClients.classList.remove('hidden');
-      fetchClients();
+      updateClientsUI(false);
     });
   }
 
@@ -797,7 +848,7 @@ function initClientsAndTechniciansManagement() {
   }
 
   if (formAddClient) {
-    formAddClient.addEventListener('submit', async (e) => {
+    formAddClient.addEventListener('submit', (e) => {
       e.preventDefault();
       const name = document.getElementById('new-client-name').value.trim();
       const location = document.getElementById('new-client-location').value.trim();
@@ -806,17 +857,26 @@ function initClientsAndTechniciansManagement() {
 
       if (!name || !location) return;
 
-      const payload = { action: 'add_cliente', nombre: name, ubicacion: location, telefono: phone, correo: email };
-      await saveClientOrTechnician(payload);
+      const custom = getCustomClients();
+      const newClient = {
+        id: 'CLI-' + (custom.length + 1).toString().padStart(2, '0'),
+        nombre: name,
+        ubicacion: location,
+        telefono: phone || '--',
+        correo: email || '--'
+      };
+
+      custom.push(newClient);
+      localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(custom));
       formAddClient.reset();
-      fetchClients();
+      updateClientsUI(false);
     });
   }
 
   if (btnViewTechnicians && modalTechnicians) {
     btnViewTechnicians.addEventListener('click', () => {
       modalTechnicians.classList.remove('hidden');
-      fetchTechnicians();
+      updateTechniciansUI(false);
     });
   }
 
@@ -825,7 +885,7 @@ function initClientsAndTechniciansManagement() {
   }
 
   if (formAddTechnician) {
-    formAddTechnician.addEventListener('submit', async (e) => {
+    formAddTechnician.addEventListener('submit', (e) => {
       e.preventDefault();
       const name = document.getElementById('new-tech-name').value.trim();
       const cedula = document.getElementById('new-tech-cedula').value.trim();
@@ -833,100 +893,73 @@ function initClientsAndTechniciansManagement() {
 
       if (!name || !cedula) return;
 
-      const payload = { action: 'add_tecnico', nombre: name, cedula: cedula, telefono: phone };
-      await saveClientOrTechnician(payload);
+      const custom = getCustomTechnicians();
+      const newTech = {
+        id: 'TEC-' + (custom.length + 1).toString().padStart(2, '0'),
+        nombre: name,
+        cedula: cedula,
+        telefono: phone || '--'
+      };
+
+      custom.push(newTech);
+      localStorage.setItem(TECHS_STORAGE_KEY, JSON.stringify(custom));
       formAddTechnician.reset();
-      fetchTechnicians();
+      updateTechniciansUI(false);
     });
   }
 
-  // Pre-cargar listas para autocompletado en el formulario
-  fetchClients(true);
-  fetchTechnicians(true);
+  updateClientsUI(true);
+  updateTechniciansUI(true);
 }
 
-async function saveClientOrTechnician(payload) {
-  try {
-    await fetch(GOOGLE_SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
-    });
-  } catch (err) {
-    console.error('Error al guardar registro:', err);
-  }
-}
-
-async function fetchClients(silent = false) {
-  try {
-    const fetchUrl = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + 'action=clientes&_t=' + Date.now();
-    const res = await fetch(fetchUrl, { cache: 'no-store' });
-    const data = await res.json();
-    clientsCache = Array.isArray(data) ? data : [];
-    updateClientsUI(silent);
-  } catch (err) {
-    console.error('Error cargando clientes:', err);
-  }
-}
-
-async function fetchTechnicians(silent = false) {
-  try {
-    const fetchUrl = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + 'action=tecnicos&_t=' + Date.now();
-    const res = await fetch(fetchUrl, { cache: 'no-store' });
-    const data = await res.json();
-    techniciansCache = Array.isArray(data) ? data : [];
-    updateTechniciansUI(silent);
-  } catch (err) {
-    console.error('Error cargando técnicos:', err);
-  }
-}
-
-function updateClientsUI(silent) {
+function updateClientsUI(silent = false) {
+  const list = getAllClients();
   const datalist = document.getElementById('datalist-clientes');
   const tbody = document.getElementById('clients-table-body');
 
   if (datalist) {
-    datalist.innerHTML = clientsCache.map(c => {
-      const val = `${c['Nombre / Empresa'] || ''} ${c['Ubicación / Dirección'] ? '- ' + c['Ubicación / Dirección'] : ''}`.trim();
+    datalist.innerHTML = list.map(c => {
+      const val = c.ubicacion && c.ubicacion !== 'Extraído de Historial' ? `${c.nombre} - ${c.ubicacion}` : c.nombre;
       return `<option value="${val}">`;
     }).join('');
   }
 
   if (!silent && tbody) {
-    if (clientsCache.length === 0) {
+    if (list.length === 0) {
       tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">No hay clientes registrados aún.</td></tr>`;
       return;
     }
-    tbody.innerHTML = clientsCache.map(c => `
+    tbody.innerHTML = list.map(c => `
       <tr class="hover:bg-slate-50 border-b border-slate-100">
-        <td class="py-2 px-3 font-bold text-blue-600">${c['ID'] || '--'}</td>
-        <td class="py-2 px-3 font-semibold text-slate-800">${c['Nombre / Empresa'] || '--'}</td>
-        <td class="py-2 px-3 text-slate-600">${c['Ubicación / Dirección'] || '--'}</td>
-        <td class="py-2 px-3 text-slate-600">${c['Teléfono'] || '--'}</td>
+        <td class="py-2 px-3 font-bold ${c.auto ? 'text-slate-400' : 'text-blue-600'}">${c.id}</td>
+        <td class="py-2 px-3 font-semibold text-slate-800">${c.nombre}</td>
+        <td class="py-2 px-3 text-slate-600">${c.ubicacion}</td>
+        <td class="py-2 px-3 text-slate-600">${c.telefono}</td>
       </tr>
     `).join('');
   }
 }
 
-function updateTechniciansUI(silent) {
+function updateTechniciansUI(silent = false) {
+  const list = getAllTechnicians();
   const datalist = document.getElementById('datalist-tecnicos');
   const tbody = document.getElementById('technicians-table-body');
 
   if (datalist) {
-    datalist.innerHTML = techniciansCache.map(t => `<option value="${t['Nombre del Técnico'] || ''}">`).join('');
+    datalist.innerHTML = list.map(t => `<option value="${t.nombre}">`).join('');
   }
 
   if (!silent && tbody) {
-    if (techniciansCache.length === 0) {
+    if (list.length === 0) {
       tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">No hay técnicos registrados aún.</td></tr>`;
       return;
     }
-    tbody.innerHTML = techniciansCache.map(t => `
+    tbody.innerHTML = list.map(t => `
       <tr class="hover:bg-slate-50 border-b border-slate-100">
-        <td class="py-2 px-3 font-bold text-blue-600">${t['ID'] || '--'}</td>
-        <td class="py-2 px-3 font-semibold text-slate-800">${t['Nombre del Técnico'] || '--'}</td>
-        <td class="py-2 px-3 text-slate-600">${t['Cédula / ID'] || '--'}</td>
-        <td class="py-2 px-3 text-slate-600">${t['Teléfono'] || '--'}</td>
+        <td class="py-2 px-3 font-bold ${t.auto ? 'text-slate-400' : 'text-blue-600'}">${t.id}</td>
+        <td class="py-2 px-3 font-semibold text-slate-800">${t.nombre}</td>
+        <td class="py-2 px-3 text-slate-600">${t.cedula}</td>
+        <td class="py-2 px-3 text-slate-600">${t.telefono}</td>
       </tr>
     `).join('');
   }
