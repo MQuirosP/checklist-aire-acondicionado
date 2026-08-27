@@ -4,7 +4,7 @@
  */
 
 // URL configurada de la Aplicación Web de Google Apps Script vinculada a la Hoja
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwN2OV_baWfKCGQe1S3VtM-b0XbNODetzZqCggZ4PfKR9YPVGYZcsjeSbNxaZ-T-75i/exec';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0FPAiw8vWelX2AhwoBM0tMdgbFpwcwd0AKXO7Z5b8JzA5_-Pk3VIk66Z1LrBNsDIO/exec';
 
 document.addEventListener('DOMContentLoaded', () => {
   initDate();
