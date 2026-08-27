@@ -125,6 +125,23 @@ function doPost(e) {
 
     var timestamp = new Date();
 
+    // Verificación de unicidad por N° Orden / OT
+    if (data.ot && data.ot.toString().trim() !== "") {
+      var otClean = data.ot.toString().trim().toLowerCase();
+      var rows = sheet.getDataRange().getValues();
+      for (var i = 1; i < rows.length; i++) {
+        var existingOt = (rows[i][2] || "").toString().trim().toLowerCase();
+        if (existingOt === otClean) {
+          return ContentService
+            .createTextOutput(JSON.stringify({ 
+              "result": "error", 
+              "error": "La Orden de Trabajo / OT '" + data.ot + "' ya fue registrada previamente." 
+            }))
+            .setMimeType(ContentService.MimeType.JSON);
+        }
+      }
+    }
+
     var row = [
       timestamp,
       data.fecha || "",

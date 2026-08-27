@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initDraftStorage();
   initFormSubmission();
   initHistoryModal();
+  initOTValidation();
 });
 
 /**
@@ -279,11 +280,36 @@ function initFormSubmission() {
   const errorMessageText = document.getElementById('error-message-text');
 
   const btnCloseSuccess = document.getElementById('btn-close-success');
+  const btnSuccessViewHistory = document.getElementById('btn-success-view-history');
   const btnCloseError = document.getElementById('btn-close-error');
 
   if (btnCloseSuccess) {
     btnCloseSuccess.addEventListener('click', () => {
       modal.classList.add('hidden');
+      form.reset();
+      localStorage.removeItem(STORAGE_KEY);
+      ['canvas-tecnico', 'canvas-cliente'].forEach(id => {
+        const canvas = document.getElementById(id);
+        if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+      });
+      initDate();
+      generateUniqueOT();
+    });
+  }
+
+  if (btnSuccessViewHistory) {
+    btnSuccessViewHistory.addEventListener('click', () => {
+      modal.classList.add('hidden');
+      const otInput = document.getElementById('ot');
+      const modalHistory = document.getElementById('modal-history');
+      if (modalHistory) {
+        modalHistory.classList.remove('hidden');
+        const searchInput = document.getElementById('history-search');
+        if (searchInput && otInput) {
+          searchInput.value = otInput.value;
+          renderHistoryTable(otInput.value);
+        }
+      }
     });
   }
 
@@ -294,6 +320,17 @@ function initFormSubmission() {
   }
 
   form.addEventListener('submit', (e) => {
+    const otInput = document.getElementById('ot');
+    const clienteInput = document.getElementById('cliente');
+
+    // Validar Unicidad de OT antes de enviar
+    if (isOtDuplicate) {
+      e.preventDefault();
+      alert(`⚠️ ERROR DE UNICIDAD: La Orden de Trabajo / OT "${otInput.value}" ya existe en el sistema. Por favor genera o ingresa un número de OT único.`);
+      otInput.focus();
+      return;
+    }
+
     // Validar URL de Google Script
     if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes('PEGA_AQUI_TU_URL')) {
       e.preventDefault();
@@ -327,7 +364,18 @@ function initFormSubmission() {
       submitted = true;
       modalLoading.classList.add('hidden');
       modalSuccess.classList.remove('hidden');
+
+      // Actualizar resumen en el modal
+      const summaryOt = document.getElementById('summary-ot');
+      const summaryCliente = document.getElementById('summary-cliente');
+      if (summaryOt) summaryOt.textContent = otInput ? (otInput.value || '--') : '--';
+      if (summaryCliente) summaryCliente.textContent = clienteInput ? (clienteInput.value || '--') : '--';
+
+      // Limpiar borrador tras envío exitoso
       localStorage.removeItem(STORAGE_KEY);
+
+      // Refrescar datos de historial en segundo plano
+      fetchHistoryData(true);
     };
 
     if (iframe) {
@@ -397,16 +445,16 @@ function initHistoryModal() {
   }
 }
 
-async function fetchHistoryData() {
+async function fetchHistoryData(silent = false) {
   const loading = document.getElementById('history-loading');
   const empty = document.getElementById('history-empty');
   const container = document.getElementById('history-table-container');
 
-  if (!loading) return;
-
-  loading.classList.remove('hidden');
-  empty.classList.add('hidden');
-  container.classList.add('hidden');
+  if (!silent && loading) {
+    loading.classList.remove('hidden');
+    empty.classList.add('hidden');
+    container.classList.add('hidden');
+  }
 
   try {
     const res = await fetch(GOOGLE_SCRIPT_URL);
@@ -414,17 +462,102 @@ async function fetchHistoryData() {
 
     if (Array.isArray(data) && data.length > 0) {
       historyDataCache = data;
-      loading.classList.add('hidden');
-      container.classList.remove('hidden');
-      renderHistoryTable('');
+      if (!silent && loading) {
+        loading.classList.add('hidden');
+        container.classList.remove('hidden');
+        renderHistoryTable('');
+      }
+      checkOTUniqueness();
     } else {
-      loading.classList.add('hidden');
-      empty.classList.remove('hidden');
+      if (!silent && loading) {
+        loading.classList.add('hidden');
+        empty.classList.remove('hidden');
+      }
     }
   } catch (err) {
     console.error('Error al cargar historial:', err);
-    loading.classList.add('hidden');
-    empty.classList.remove('hidden');
+    if (!silent && loading) {
+      loading.classList.add('hidden');
+      empty.classList.remove('hidden');
+    }
+  }
+}
+
+/**
+ * 8. Generador y Validador de Unicidad de OT
+ */
+let isOtDuplicate = false;
+
+function initOTValidation() {
+  const otInput = document.getElementById('ot');
+  const btnAutoOt = document.getElementById('btn-auto-ot');
+
+  if (btnAutoOt) {
+    btnAutoOt.addEventListener('click', generateUniqueOT);
+  }
+
+  if (otInput) {
+    otInput.addEventListener('input', checkOTUniqueness);
+    otInput.addEventListener('change', checkOTUniqueness);
+  }
+
+  fetchHistoryData(true);
+}
+
+function generateUniqueOT() {
+  const otInput = document.getElementById('ot');
+  if (!otInput) return;
+
+  const currentYear = new Date().getFullYear();
+  let maxNumber = 0;
+
+  if (Array.isArray(historyDataCache)) {
+    historyDataCache.forEach(item => {
+      const otVal = (item['N° Orden / OT'] || '').toString();
+      const match = otVal.match(/OT-\d{4}-(\d+)/i) || otVal.match(/(\d+)/);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num > maxNumber) maxNumber = num;
+      }
+    });
+  }
+
+  const nextNumber = (maxNumber + 1).toString().padStart(4, '0');
+  otInput.value = `OT-${currentYear}-${nextNumber}`;
+  checkOTUniqueness();
+  triggerDraftSave();
+}
+
+function checkOTUniqueness() {
+  const otInput = document.getElementById('ot');
+  const badge = document.getElementById('ot-validation-badge');
+  if (!otInput || !badge) return;
+
+  const val = otInput.value.trim().toLowerCase();
+  if (!val) {
+    badge.className = 'block text-[11px] font-medium mt-1 hidden';
+    isOtDuplicate = false;
+    otInput.classList.remove('border-rose-500', 'border-emerald-500');
+    return;
+  }
+
+  const found = historyDataCache.some(item => {
+    const ot = (item['N° Orden / OT'] || '').toString().trim().toLowerCase();
+    return ot === val;
+  });
+
+  if (found) {
+    isOtDuplicate = true;
+    badge.className = 'block text-[11px] font-medium mt-1 text-rose-600 font-semibold';
+    badge.textContent = '⚠️ Esta OT ya fue registrada previamente';
+    otInput.classList.add('border-rose-500');
+    otInput.classList.remove('border-emerald-500');
+  } else {
+    isOtDuplicate = false;
+    badge.className = 'block text-[11px] font-medium mt-1 text-emerald-600 font-semibold';
+    badge.textContent = '✓ N° de Orden / OT disponible';
+    otInput.classList.add('border-emerald-500');
+    otInput.classList.remove('border-rose-500');
   }
 }
 
