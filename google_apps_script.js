@@ -224,5 +224,28 @@ function doPost(e) {
 }
 
 function doGet(e) {
-  return ContentService.createTextOutput("Endpoint activo de Checklist Mantenimiento Aire Acondicionado.");
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var rows = sheet.getDataRange().getValues();
+    if (rows.length < 2) {
+      return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
+    }
+    var headers = rows[0];
+    var data = [];
+    for (var i = 1; i < rows.length; i++) {
+      var row = rows[i];
+      var obj = {};
+      for (var j = 0; j < headers.length; j++) {
+        obj[headers[j]] = row[j];
+      }
+      data.push(obj);
+    }
+    return ContentService
+      .createTextOutput(JSON.stringify(data))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ error: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
 }

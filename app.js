@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSignaturePads();
   initDraftStorage();
   initFormSubmission();
+  initHistoryModal();
 });
 
 /**
@@ -358,4 +359,112 @@ function isCanvasBlank(canvas) {
     context.getImageData(0, 0, canvas.width, canvas.height).data.buffer
   );
   return !pixelBuffer.some(color => color !== 0);
+}
+
+/**
+ * 7. Modal de Historial de Registros
+ */
+let historyDataCache = [];
+
+function initHistoryModal() {
+  const btnViewHistory = document.getElementById('btn-view-history');
+  const modalHistory = document.getElementById('modal-history');
+  const btnCloseHistory = document.getElementById('btn-close-history');
+  const btnRefreshHistory = document.getElementById('btn-refresh-history');
+  const searchInput = document.getElementById('history-search');
+
+  if (!btnViewHistory || !modalHistory) return;
+
+  btnViewHistory.addEventListener('click', () => {
+    modalHistory.classList.remove('hidden');
+    fetchHistoryData();
+  });
+
+  if (btnCloseHistory) {
+    btnCloseHistory.addEventListener('click', () => {
+      modalHistory.classList.add('hidden');
+    });
+  }
+
+  if (btnRefreshHistory) {
+    btnRefreshHistory.addEventListener('click', fetchHistoryData);
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      renderHistoryTable(e.target.value);
+    });
+  }
+}
+
+async function fetchHistoryData() {
+  const loading = document.getElementById('history-loading');
+  const empty = document.getElementById('history-empty');
+  const container = document.getElementById('history-table-container');
+
+  if (!loading) return;
+
+  loading.classList.remove('hidden');
+  empty.classList.add('hidden');
+  container.classList.add('hidden');
+
+  try {
+    const res = await fetch(GOOGLE_SCRIPT_URL);
+    const data = await res.json();
+
+    if (Array.isArray(data) && data.length > 0) {
+      historyDataCache = data;
+      loading.classList.add('hidden');
+      container.classList.remove('hidden');
+      renderHistoryTable('');
+    } else {
+      loading.classList.add('hidden');
+      empty.classList.remove('hidden');
+    }
+  } catch (err) {
+    console.error('Error al cargar historial:', err);
+    loading.classList.add('hidden');
+    empty.classList.remove('hidden');
+  }
+}
+
+function renderHistoryTable(query) {
+  const tbody = document.getElementById('history-table-body');
+  if (!tbody) return;
+
+  tbody.innerHTML = '';
+  const q = (query || '').toLowerCase().trim();
+
+  const filtered = historyDataCache.filter(item => {
+    if (!q) return true;
+    const ot = (item['N° Orden / OT'] || '').toString().toLowerCase();
+    const cliente = (item['Cliente / Ubicación'] || '').toString().toLowerCase();
+    const tecnico = (item['Técnico Responsable'] || '').toString().toLowerCase();
+    const fecha = (item['Fecha Inspección'] || '').toString().toLowerCase();
+    return ot.includes(q) || cliente.includes(q) || tecnico.includes(q) || fecha.includes(q);
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400">No hay coincidencias con la búsqueda "${query}".</td></tr>`;
+    return;
+  }
+
+  filtered.forEach(item => {
+    const tr = document.createElement('tr');
+    tr.className = 'hover:bg-slate-50 transition border-b border-slate-100';
+
+    const fechaRaw = item['Fecha Inspección'] || item['Fecha / Hora Registro'] || '--';
+    const fechaFormatted = typeof fechaRaw === 'string' && fechaRaw.includes('T') ? fechaRaw.split('T')[0] : fechaRaw;
+
+    tr.innerHTML = `
+      <td class="py-2.5 px-3 font-medium text-slate-700 whitespace-nowrap">${fechaFormatted}</td>
+      <td class="py-2.5 px-3 font-bold text-blue-600 whitespace-nowrap">${item['N° Orden / OT'] || '--'}</td>
+      <td class="py-2.5 px-3 text-slate-800">${item['Cliente / Ubicación'] || '--'}</td>
+      <td class="py-2.5 px-3 text-slate-600">${item['Técnico Responsable'] || '--'}</td>
+      <td class="py-2.5 px-3 text-slate-600">${item['Tipo de Unidad'] || ''} ${item['Marca / Modelo'] || ''}</td>
+      <td class="py-2.5 px-3 text-slate-600">${item['Refrigerante'] || '--'}</td>
+      <td class="py-2.5 px-3 font-semibold text-emerald-600 whitespace-nowrap">${item['Med: Delta T (°C)'] ? item['Med: Delta T (°C)'] + ' °C' : '--'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
 }
