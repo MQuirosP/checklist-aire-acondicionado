@@ -458,11 +458,14 @@ async function fetchHistoryData(silent = false) {
   }
 
   try {
-    const res = await fetch(GOOGLE_SCRIPT_URL);
+    // Parametro de fecha unico para ignorar cualquier cache del navegador/servidor
+    const fetchUrl = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + '_t=' + Date.now();
+    const res = await fetch(fetchUrl, { cache: 'no-store' });
     const data = await res.json();
 
-    if (Array.isArray(data) && data.length > 0) {
-      historyDataCache = data;
+    historyDataCache = Array.isArray(data) ? data : [];
+
+    if (historyDataCache.length > 0) {
       if (!silent && loading) {
         loading.classList.add('hidden');
         container.classList.remove('hidden');
@@ -474,9 +477,11 @@ async function fetchHistoryData(silent = false) {
         loading.classList.add('hidden');
         empty.classList.remove('hidden');
       }
+      checkOTUniqueness();
     }
   } catch (err) {
     console.error('Error al cargar historial:', err);
+    historyDataCache = [];
     if (!silent && loading) {
       loading.classList.add('hidden');
       empty.classList.remove('hidden');
