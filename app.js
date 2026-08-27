@@ -767,6 +767,19 @@ function loadRecordIntoForm(record) {
   const form = document.getElementById('checklist-form');
   if (!form || !record) return;
 
+  const setSelectVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (!el || !val) return;
+    let opt = Array.from(el.options).find(o => o.value === val);
+    if (!opt) {
+      opt = document.createElement('option');
+      opt.value = val;
+      opt.textContent = val;
+      el.insertBefore(opt, el.lastElementChild);
+    }
+    el.value = val;
+  };
+
   const setVal = (id, val) => {
     const el = document.getElementById(id) || form.elements[id];
     if (el) el.value = val || '';
@@ -780,12 +793,12 @@ function loadRecordIntoForm(record) {
 
   setVal('fecha', record['Fecha Inspección']);
   setVal('ot', record['N° Orden / OT']);
-  setVal('cliente', record['Cliente / Ubicación']);
-  setVal('tecnico', record['Técnico Responsable']);
-  setVal('tipoUnidad', record['Tipo de Unidad']);
+  setSelectVal('cliente', record['Cliente / Ubicación']);
+  setSelectVal('tecnico', record['Técnico Responsable']);
+  setSelectVal('tipoUnidad', record['Tipo de Unidad']);
   setVal('marcaModelo', record['Marca / Modelo']);
   setVal('idTag', record['ID / Tag Equipo']);
-  setVal('refrigerante', record['Refrigerante']);
+  setSelectVal('refrigerante', record['Refrigerante']);
 
   // Sección 1: Evaporadora
   setRadio('evap_gabinete', record['Evap: Gabinete Externo']);
@@ -1009,20 +1022,43 @@ function initClientsAndTechniciansManagement() {
     });
   }
 
+  const clienteSelect = document.getElementById('cliente');
+  if (clienteSelect) {
+    clienteSelect.addEventListener('change', (e) => {
+      if (e.target.value === '__NEW_CLIENT__') {
+        e.target.value = '';
+        if (modalClients) modalClients.classList.remove('hidden');
+      }
+    });
+  }
+
+  const tecnicoSelect = document.getElementById('tecnico');
+  if (tecnicoSelect) {
+    tecnicoSelect.addEventListener('change', (e) => {
+      if (e.target.value === '__NEW_TECH__') {
+        e.target.value = '';
+        if (modalTechnicians) modalTechnicians.classList.remove('hidden');
+      }
+    });
+  }
+
   updateClientsUI(true);
   updateTechniciansUI(true);
 }
 
 function updateClientsUI(silent = false) {
   const list = getAllClients();
-  const datalist = document.getElementById('datalist-clientes');
+  const select = document.getElementById('cliente');
   const tbody = document.getElementById('clients-table-body');
 
-  if (datalist) {
-    datalist.innerHTML = list.map(c => {
-      const val = c.ubicacion && c.ubicacion !== 'Extraído de Historial' ? `${c.nombre} - ${c.ubicacion}` : c.nombre;
-      return `<option value="${val}">`;
-    }).join('');
+  if (select) {
+    const currentVal = select.value;
+    select.innerHTML = `<option value="" disabled ${!currentVal ? 'selected' : ''}>-- Seleccione Cliente / Ubicación --</option>` +
+      list.map(c => {
+        const val = c.ubicacion && c.ubicacion !== 'Extraído de Historial' ? `${c.nombre} - ${c.ubicacion}` : c.nombre;
+        return `<option value="${val}" ${currentVal === val ? 'selected' : ''}>${val}</option>`;
+      }).join('') +
+      `<option value="__NEW_CLIENT__" style="font-weight: bold; color: #2563eb;">➕ Registrar Nuevo Cliente...</option>`;
   }
 
   if (!silent && tbody) {
@@ -1043,11 +1079,16 @@ function updateClientsUI(silent = false) {
 
 function updateTechniciansUI(silent = false) {
   const list = getAllTechnicians();
-  const datalist = document.getElementById('datalist-tecnicos');
+  const select = document.getElementById('tecnico');
   const tbody = document.getElementById('technicians-table-body');
 
-  if (datalist) {
-    datalist.innerHTML = list.map(t => `<option value="${t.nombre}">`).join('');
+  if (select) {
+    const currentVal = select.value;
+    select.innerHTML = `<option value="" disabled ${!currentVal ? 'selected' : ''}>-- Seleccione Técnico Responsable --</option>` +
+      list.map(t => {
+        return `<option value="${t.nombre}" ${currentVal === t.nombre ? 'selected' : ''}>${t.nombre}</option>`;
+      }).join('') +
+      `<option value="__NEW_TECH__" style="font-weight: bold; color: #2563eb;">➕ Registrar Nuevo Técnico...</option>`;
   }
 
   if (!silent && tbody) {

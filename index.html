@@ -90,19 +90,21 @@
 
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1" for="cliente">Cliente / Ubicación:</label>
-            <input type="text" id="cliente" name="cliente" list="datalist-clientes" placeholder="Empresa / Dirección / Oficina" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
-            <datalist id="datalist-clientes"></datalist>
+            <select id="cliente" name="cliente" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 bg-white">
+              <option value="" disabled selected>-- Seleccione Cliente / Ubicación --</option>
+            </select>
           </div>
 
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1" for="tecnico">Técnico Responsable:</label>
-            <input type="text" id="tecnico" name="tecnico" list="datalist-tecnicos" placeholder="Nombre completo" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
-            <datalist id="datalist-tecnicos"></datalist>
+            <select id="tecnico" name="tecnico" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 bg-white">
+              <option value="" disabled selected>-- Seleccione Técnico Responsable --</option>
+            </select>
           </div>
 
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1" for="tipoUnidad">Tipo de Unidad:</label>
-            <select id="tipoUnidad" name="tipoUnidad" class="form-select">
+            <select id="tipoUnidad" name="tipoUnidad" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 bg-white">
               <option value="" disabled selected>-- Seleccione Tipo de Unidad --</option>
               <option value="Mini Split">Mini Split</option>
               <option value="Multi Split">Multi Split</option>
@@ -128,7 +130,7 @@
 
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1" for="refrigerante">Refrigerante:</label>
-            <select id="refrigerante" name="refrigerante" class="form-select">
+            <select id="refrigerante" name="refrigerante" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 bg-white">
               <option value="" disabled selected>-- Seleccione Refrigerante --</option>
               <option value="R-410A">R-410A</option>
               <option value="R-32">R-32</option>
@@ -633,7 +635,7 @@
               <tr>
                 <td class="py-3 px-3 font-medium">Prueba de control remoto y modos de operación</td>
                 <td class="py-3 px-3">
-                  <select name="med_control_remoto" class="form-select form-select-sm">
+                  <select name="med_control_remoto" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs bg-white">
                     <option value="" disabled selected>-- Seleccione Estado --</option>
                     <option value="Correcto">✓ Correcto</option>
                     <option value="Reemplazar Baterías">⚠️ Reemplazar Baterías</option>
@@ -949,6 +951,6 @@
 
   <!-- Iframe oculto para procesamiento de envíos sin bloqueos de CORS -->
   <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-  <script src="app.js?v=16.0"></script>
+  <script src="app.js?v=17.0"></script>
 </body>
 </html>
