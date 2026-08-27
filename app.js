@@ -3,8 +3,8 @@
  * Lógica JavaScript Interactiva, Canvas de Firmas y Persistencia en Google Sheets
  */
 
-// URL configurada de la Aplicación Web de Google Apps Script
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyl-APjoxV_numwqMHBIxm2-MKHHPCXSWV9LaL5yTz1j7ozY0Xg4wO6uZR5jvj_h94B/exec';
+// URL configurada de la Aplicación Web de Google Apps Script vinculada a la Hoja
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwN2OV_baWfKCGQe1S3VtM-b0XbNODetzZqCggZ4PfKR9YPVGYZcsjeSbNxaZ-T-75i/exec';
 
 document.addEventListener('DOMContentLoaded', () => {
   initDate();
