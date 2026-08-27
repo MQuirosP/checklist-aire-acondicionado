@@ -301,6 +301,9 @@ function initFormSubmission() {
   const errorMessageText = document.getElementById('error-message-text');
 
   const btnReset = document.getElementById('btn-reset');
+  const btnCloseSuccess = document.getElementById('btn-close-success');
+  const btnSuccessViewHistory = document.getElementById('btn-success-view-history');
+  const btnCloseError = document.getElementById('btn-close-error');
   if (btnReset) {
     btnReset.addEventListener('click', () => {
       if (confirm('🧹 ¿Estás seguro de que deseas limpiar todo el formulario y las firmas?')) {
