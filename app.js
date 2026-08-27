@@ -744,7 +744,11 @@ function initRecordDetailModal() {
 
   if (btnPrintDetail) {
     btnPrintDetail.addEventListener('click', () => {
+      document.body.classList.add('printing-detail');
       window.print();
+      setTimeout(() => {
+        document.body.classList.remove('printing-detail');
+      }, 1000);
     });
   }
 
@@ -768,6 +772,12 @@ function loadRecordIntoForm(record) {
     if (el) el.value = val || '';
   };
 
+  const setRadio = (name, val) => {
+    if (!val) return;
+    const radio = form.querySelector(`input[name="${name}"][value="${val}"]`);
+    if (radio) radio.checked = true;
+  };
+
   setVal('fecha', record['Fecha Inspección']);
   setVal('ot', record['N° Orden / OT']);
   setVal('cliente', record['Cliente / Ubicación']);
@@ -776,6 +786,58 @@ function loadRecordIntoForm(record) {
   setVal('marcaModelo', record['Marca / Modelo']);
   setVal('idTag', record['ID / Tag Equipo']);
   setVal('refrigerante', record['Refrigerante']);
+
+  // Sección 1: Evaporadora
+  setRadio('evap_gabinete', record['Evap: Gabinete Externo']);
+  setVal('evap_gabinete_obs', record['Evap: Gabinete Obs']);
+  setRadio('evap_filtros', record['Evap: Filtros Aire']);
+  setVal('evap_filtros_obs', record['Evap: Filtros Obs']);
+  setRadio('evap_serpentin', record['Evap: Serpentín Evaporador']);
+  setVal('evap_serpentin_obs', record['Evap: Serpentín Obs']);
+  setRadio('evap_bandeja', record['Evap: Bandeja Condensados / Biocidas']);
+  setVal('evap_bandeja_obs', record['Evap: Bandeja Obs']);
+  setRadio('evap_drenaje', record['Evap: Drenaje Obstrucciones']);
+  setVal('evap_drenaje_obs', record['Evap: Drenaje Obs']);
+  setRadio('evap_turbina', record['Evap: Turbina / Fan Tangencial']);
+  setVal('evap_turbina_obs', record['Evap: Turbina Obs']);
+  setRadio('evap_motor', record['Evap: Motor Vent / Rodajes']);
+  setVal('evap_motor_obs', record['Evap: Motor Vent Obs']);
+  setRadio('evap_persianas', record['Evap: Persianas Swing / Motor paso']);
+  setVal('evap_persianas_obs', record['Evap: Persianas Obs']);
+  setRadio('evap_conexiones', record['Evap: Conexiones Eléctricas / Termistores']);
+  setVal('evap_conexiones_obs', record['Evap: Conexiones Obs']);
+
+  // Sección 2: Condensadora
+  setRadio('cond_serpentin', record['Cond: Serpentín Condensador']);
+  setVal('cond_serpentin_obs', record['Cond: Serpentín Obs']);
+  setRadio('cond_aletas', record['Cond: Aletas Aluminio']);
+  setVal('cond_aletas_obs', record['Cond: Aletas Obs']);
+  setRadio('cond_aspas', record['Cond: Aspas Ventilador']);
+  setVal('cond_aspas_obs', record['Cond: Aspas Obs']);
+  setRadio('cond_motor', record['Cond: Motor Vent / Rodamientos']);
+  setVal('cond_motor_obs', record['Cond: Motor Vent Obs']);
+  setRadio('cond_compresor', record['Cond: Compresor (Ruido/Amortiguadores)']);
+  setVal('cond_compresor_obs', record['Cond: Compresor Obs']);
+  setRadio('cond_aislamiento', record['Cond: Aislamiento Térmico Tuberías']);
+  setVal('cond_aislamiento_obs', record['Cond: Aislamiento Obs']);
+  setRadio('cond_fugas', record['Cond: Fugas Refrigerante / Aceite']);
+  setVal('cond_fugas_obs', record['Cond: Fugas Obs']);
+  setRadio('cond_soportes', record['Cond: Soportes y Anclajes']);
+  setVal('cond_soportes_obs', record['Cond: Soportes Obs']);
+
+  // Sección 3: Sistema Eléctrico
+  setRadio('elec_bornes', record['Elec: Reajuste Bornes']);
+  setVal('elec_bornes_obs', record['Elec: Bornes Obs']);
+  setRadio('elec_capacitores', record['Elec: Capacitores Medición']);
+  setVal('elec_cap_comp', record['Elec: Capacitor Comp (µF)']);
+  setVal('elec_cap_vent', record['Elec: Capacitor Vent (µF)']);
+  setVal('elec_capacitores_obs', record['Elec: Capacitores Obs']);
+  setRadio('elec_tarjetas', record['Elec: Tarjetas PCB / Errores']);
+  setVal('elec_tarjetas_obs', record['Elec: Tarjetas Obs']);
+  setRadio('elec_protecciones', record['Elec: Protecciones Eléctricas']);
+  setVal('elec_protecciones_obs', record['Elec: Protecciones Obs']);
+  setRadio('elec_tierra', record['Elec: Conexión Tierra Física']);
+  setVal('elec_tierra_obs', record['Elec: Tierra Obs']);
 
   // Cargar mediciones
   setVal('med_voltaje', record['Med: Voltaje (V AC)']);
@@ -796,7 +858,7 @@ function loadRecordIntoForm(record) {
   const tempInjInput = document.getElementById('med_temp_inyeccion');
   if (tempInjInput) tempInjInput.dispatchEvent(new Event('input'));
 
-  // Desactivar temporalmente la alerta de duplicado para permitir edicion de la misma OT
+  // Desactivar temporalmente la alerta de duplicado para permitir edición de la misma OT
   isOtDuplicate = false;
   const badge = document.getElementById('ot-validation-badge');
   if (badge) {
@@ -807,7 +869,7 @@ function loadRecordIntoForm(record) {
   // Scroll suave al formulario
   form.scrollIntoView({ behavior: 'smooth' });
 
-  alert(`✏️ Se cargaron los datos completos de la Orden "${record['N° Orden / OT']}" en el formulario para su revisión/edición.`);
+  alert(`✏️ Se cargaron absolutamente todos los datos detallados de la Orden "${record['N° Orden / OT']}" en el formulario.`);
 }
 
 /**

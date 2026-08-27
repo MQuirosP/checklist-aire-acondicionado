@@ -61,6 +61,53 @@
   border-color: #94a3b8;
 }
 
+/* Reglas de impresión limpias para exportación a PDF */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  header, 
+  nav, 
+  footer, 
+  #modal-status, 
+  #modal-history, 
+  #modal-clients, 
+  #modal-technicians,
+  iframe {
+    display: none !important;
+  }
+
+  body.printing-detail #checklist-form,
+  body.printing-detail header,
+  body.printing-detail #modal-history {
+    display: none !important;
+  }
+
+  body.printing-detail #modal-record-detail {
+    position: static !important;
+    display: block !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  body.printing-detail #modal-record-detail > div {
+    max-width: 100% !important;
+    max-height: none !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  body.printing-detail #btn-close-detail,
+  body.printing-detail #btn-print-detail,
+  body.printing-detail #btn-load-for-edit {
+    display: none !important;
+  }
+}
+
 /* Signature Pad Canvas Styling */
 .signature-pad-container canvas {
   background-color: #ffffff;
