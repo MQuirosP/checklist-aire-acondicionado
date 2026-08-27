@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initFormSubmission();
   initHistoryModal();
   initOTValidation();
+  initRecordDetailModal();
 });
 
 /**
@@ -561,6 +562,8 @@ function checkOTUniqueness() {
   }
 }
 
+let selectedRecordCache = null;
+
 function renderHistoryTable(query) {
   const tbody = document.getElementById('history-table-body');
   if (!tbody) return;
@@ -578,11 +581,11 @@ function renderHistoryTable(query) {
   });
 
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400">No hay coincidencias con la búsqueda "${query}".</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-slate-400">No hay coincidencias con la búsqueda "${query}".</td></tr>`;
     return;
   }
 
-  filtered.forEach(item => {
+  filtered.forEach((item, index) => {
     const tr = document.createElement('tr');
     tr.className = 'hover:bg-slate-50 transition border-b border-slate-100';
 
@@ -597,7 +600,164 @@ function renderHistoryTable(query) {
       <td class="py-2.5 px-3 text-slate-600">${item['Tipo de Unidad'] || ''} ${item['Marca / Modelo'] || ''}</td>
       <td class="py-2.5 px-3 text-slate-600">${item['Refrigerante'] || '--'}</td>
       <td class="py-2.5 px-3 font-semibold text-emerald-600 whitespace-nowrap">${item['Med: Delta T (°C)'] ? item['Med: Delta T (°C)'] + ' °C' : '--'}</td>
+      <td class="py-2.5 px-3 text-center whitespace-nowrap">
+        <button type="button" class="btn-view-detail-row px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded font-medium text-[11px] transition inline-flex items-center gap-1 shadow-sm" data-index="${index}">
+          👁️ Ver / Editar
+        </button>
+      </td>
     `;
     tbody.appendChild(tr);
   });
+
+  document.querySelectorAll('.btn-view-detail-row').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.getAttribute('data-index'), 10);
+      openRecordDetail(filtered[idx]);
+    });
+  });
+}
+
+function openRecordDetail(record) {
+  selectedRecordCache = record;
+  const modalDetail = document.getElementById('modal-record-detail');
+  const container = document.getElementById('detail-modal-body');
+  if (!modalDetail || !container) return;
+
+  const getVal = (key) => record[key] || '--';
+
+  container.innerHTML = `
+    <!-- Header Summary Card -->
+    <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-2">
+      <div class="flex flex-wrap justify-between items-center border-b border-slate-200 pb-2 gap-2">
+        <span class="text-sm font-bold text-blue-600">Orden / OT: ${getVal('N° Orden / OT')}</span>
+        <span class="text-xs text-slate-500">Fecha Inspección: ${getVal('Fecha Inspección')}</span>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pt-1 text-xs">
+        <div><span class="text-slate-400">Cliente / Ubicación:</span> <strong class="text-slate-700 block font-semibold">${getVal('Cliente / Ubicación')}</strong></div>
+        <div><span class="text-slate-400">Técnico Responsable:</span> <strong class="text-slate-700 block font-semibold">${getVal('Técnico Responsable')}</strong></div>
+        <div><span class="text-slate-400">Equipo:</span> <strong class="text-slate-700 block font-semibold">${getVal('Tipo de Unidad')} ${getVal('Marca / Modelo')}</strong></div>
+        <div><span class="text-slate-400">ID / Tag:</span> <strong class="text-slate-700 block font-semibold">${getVal('ID / Tag Equipo')}</strong></div>
+        <div><span class="text-slate-400">Refrigerante:</span> <strong class="text-slate-700 block font-semibold">${getVal('Refrigerante')}</strong></div>
+      </div>
+    </div>
+
+    <!-- Section 4: Operational Measurements Summary -->
+    <div class="border border-slate-200 rounded-xl p-4 bg-white shadow-sm">
+      <h4 class="font-bold text-slate-800 text-xs mb-3 border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
+        📊 Mediciones Técnicas y Operativas
+      </h4>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+        <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100"><span class="text-slate-400 block text-[10px]">Voltaje VAC:</span> <strong class="text-slate-800">${getVal('Med: Voltaje (V AC)')} V</strong></div>
+        <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100"><span class="text-slate-400 block text-[10px]">Corriente Compresor:</span> <strong class="text-slate-800">${getVal('Med: Corriente Compresor (A)')} A</strong></div>
+        <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100"><span class="text-slate-400 block text-[10px]">Corriente Ventilador:</span> <strong class="text-slate-800">${getVal('Med: Corriente Motor Ext (A)')} A</strong></div>
+        <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100"><span class="text-slate-400 block text-[10px]">Presión Baja:</span> <strong class="text-slate-800">${getVal('Med: Presión Baja (PSI)')} PSI</strong></div>
+        <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100"><span class="text-slate-400 block text-[10px]">Presión Alta:</span> <strong class="text-slate-800">${getVal('Med: Presión Alta (PSI)')} PSI</strong></div>
+        <div class="bg-emerald-50 p-2.5 rounded-lg border border-emerald-200"><span class="text-emerald-700 block text-[10px] font-semibold">Diferencial ΔT:</span> <strong class="text-emerald-800 text-sm">${getVal('Med: Delta T (°C)')} °C</strong></div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3 pt-2 border-t border-slate-100 text-xs">
+        <div><span class="text-slate-400">Superheat / Subcooling:</span> <span class="font-medium text-slate-700">${getVal('Med: Superheat / Subcooling')}</span></div>
+        <div><span class="text-slate-400">Control Remoto:</span> <span class="font-medium text-slate-700">${getVal('Med: Control Remoto Estado')}</span></div>
+      </div>
+    </div>
+
+    <!-- Section 5: Observaciones Finales -->
+    <div class="border border-slate-200 rounded-xl p-4 bg-white shadow-sm">
+      <h4 class="font-bold text-slate-800 text-xs mb-2 flex items-center gap-1">📝 Diagnóstico y Observaciones Finales</h4>
+      <p class="bg-slate-50 p-3 rounded-lg text-xs text-slate-700 whitespace-pre-wrap leading-relaxed border border-slate-200">${getVal('Diagnóstico y Observaciones Finales')}</p>
+    </div>
+
+    <!-- Signatures Preview -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+      <div class="border border-slate-200 rounded-xl p-3 bg-slate-50 text-center">
+        <span class="text-[11px] font-semibold text-slate-600 block mb-1.5">Firma Técnico: ${getVal('Nombre Técnico')}</span>
+        ${record['Firma Técnico (DataURL)'] ? `<img src="${record['Firma Técnico (DataURL)']}" class="h-20 mx-auto object-contain bg-white rounded-lg border border-slate-300 p-1" alt="Firma Técnico">` : '<span class="text-slate-400 italic text-[11px]">Sin firma registrada</span>'}
+      </div>
+      <div class="border border-slate-200 rounded-xl p-3 bg-slate-50 text-center">
+        <span class="text-[11px] font-semibold text-slate-600 block mb-1.5">Firma Cliente: ${getVal('Nombre Cliente')}</span>
+        ${record['Firma Cliente (DataURL)'] ? `<img src="${record['Firma Cliente (DataURL)']}" class="h-20 mx-auto object-contain bg-white rounded-lg border border-slate-300 p-1" alt="Firma Cliente">` : '<span class="text-slate-400 italic text-[11px]">Sin firma registrada</span>'}
+      </div>
+    </div>
+  `;
+
+  modalDetail.classList.remove('hidden');
+}
+
+function initRecordDetailModal() {
+  const modalDetail = document.getElementById('modal-record-detail');
+  const btnCloseDetail = document.getElementById('btn-close-detail');
+  const btnLoadForEdit = document.getElementById('btn-load-for-edit');
+  const btnPrintDetail = document.getElementById('btn-print-detail');
+
+  if (btnCloseDetail) {
+    btnCloseDetail.addEventListener('click', () => {
+      if (modalDetail) modalDetail.classList.add('hidden');
+    });
+  }
+
+  if (btnPrintDetail) {
+    btnPrintDetail.addEventListener('click', () => {
+      window.print();
+    });
+  }
+
+  if (btnLoadForEdit) {
+    btnLoadForEdit.addEventListener('click', () => {
+      if (!selectedRecordCache) return;
+      loadRecordIntoForm(selectedRecordCache);
+      if (modalDetail) modalDetail.classList.add('hidden');
+      const modalHistory = document.getElementById('modal-history');
+      if (modalHistory) modalHistory.classList.add('hidden');
+    });
+  }
+}
+
+function loadRecordIntoForm(record) {
+  const form = document.getElementById('checklist-form');
+  if (!form || !record) return;
+
+  const setVal = (id, val) => {
+    const el = document.getElementById(id) || form.elements[id];
+    if (el) el.value = val || '';
+  };
+
+  setVal('fecha', record['Fecha Inspección']);
+  setVal('ot', record['N° Orden / OT']);
+  setVal('cliente', record['Cliente / Ubicación']);
+  setVal('tecnico', record['Técnico Responsable']);
+  setVal('tipoUnidad', record['Tipo de Unidad']);
+  setVal('marcaModelo', record['Marca / Modelo']);
+  setVal('idTag', record['ID / Tag Equipo']);
+  setVal('refrigerante', record['Refrigerante']);
+
+  // Cargar mediciones
+  setVal('med_voltaje', record['Med: Voltaje (V AC)']);
+  setVal('med_corriente_comp', record['Med: Corriente Compresor (A)']);
+  setVal('med_corriente_vent', record['Med: Corriente Motor Ext (A)']);
+  setVal('med_presion_baja', record['Med: Presión Baja (PSI)']);
+  setVal('med_presion_alta', record['Med: Presión Alta (PSI)']);
+  setVal('med_temp_inyeccion', record['Med: Temp Inyección (°C)']);
+  setVal('med_temp_retorno', record['Med: Temp Retorno (°C)']);
+  setVal('med_superheat', record['Med: Superheat / Subcooling']);
+  setVal('med_control_remoto', record['Med: Control Remoto Estado']);
+  setVal('observaciones_finales', record['Diagnóstico y Observaciones Finales']);
+
+  setVal('nombre_tecnico_firma', record['Nombre Técnico']);
+  setVal('nombre_cliente_firma', record['Nombre Cliente']);
+
+  // Recalcular Delta T
+  const tempInjInput = document.getElementById('med_temp_inyeccion');
+  if (tempInjInput) tempInjInput.dispatchEvent(new Event('input'));
+
+  // Desactivar temporalmente la alerta de duplicado para permitir edicion de la misma OT
+  isOtDuplicate = false;
+  const badge = document.getElementById('ot-validation-badge');
+  if (badge) {
+    badge.className = 'block text-[11px] font-medium mt-1 text-blue-600 font-semibold';
+    badge.textContent = '✏️ Modo Edición / Revisión activo';
+  }
+
+  // Scroll suave al formulario
+  form.scrollIntoView({ behavior: 'smooth' });
+
+  alert(`✏️ Se cargaron los datos completos de la Orden "${record['N° Orden / OT']}" en el formulario para su revisión/edición.`);
 }
