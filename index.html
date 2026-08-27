@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mantenimiento Preventivo - Aire Acondicionado</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen pb-12">
+
+  <!-- Sticky Header Bar -->
+  <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
+      <div class="flex items-center space-x-3">
+        <div class="bg-blue-600 p-2 rounded-lg">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold leading-tight">Hoja de Mantenimiento Preventivo</h1>
+          <p class="text-xs text-slate-400">Aire Acondicionado</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2 text-xs">
+        <button type="button" id="btn-save-draft" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+          </svg>
+          Borrador Local
+        </button>
+        <span id="draft-status" class="text-slate-400 text-xs hidden sm:inline">Guardado automáticamente</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 pt-6">
+
+    <!-- Form Main Container -->
+    <form id="checklist-form" class="space-y-6">
+
+      <!-- DATOS GENERALES -->
+      <section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="bg-slate-800 text-white px-5 py-3.5 flex justify-between items-center">
+          <h2 class="font-semibold text-base flex items-center gap-2">
+            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Información General de la Orden
+          </h2>
+          <button type="button" id="btn-fill-today" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded transition text-blue-200">
+            Fecha Actual
+          </button>
+        </div>
+
+        <div class="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1" for="fecha">Fecha:</label>
+            <input type="date" id="fecha" name="fecha" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1" for="ot">N° de Orden / OT:</label>
+            <input type="text" id="ot" name="ot" placeholder="Ej. OT-2026-001" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1" for="cliente">Cliente / Ubicación:</label>
+            <input type="text" id="cliente" name="cliente" placeholder="Empresa / Dirección / Oficina" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1" for="tecnico">Técnico Responsable:</label>
+            <input type="text" id="tecnico" name="tecnico" placeholder="Nombre completo" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1" for="tipoUnidad">Tipo de Unidad:</label>
+            <select id="tipoUnidad" name="tipoUnidad" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+              <option value="Mini Split">Mini Split</option>
+              <option value="Multi Split">Multi Split</option>
+              <option value="Paquete">Paquete</option>
+              <option value="Cassette">Cassette</option>
+              <option value="Ducto">Ducto</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1" for="marcaModelo">Marca / Modelo:</label>
+            <input type="text" id="marcaModelo" name="marcaModelo" placeholder="Ej. Carrier 18k BTU" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1" for="idTag">ID / Tag Equipo:</label>
+            <input type="text" id="idTag" name="idTag" placeholder="Ej. AC-P3-02" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1" for="refrigerante">Refrigerante:</label>
+            <select id="refrigerante" name="refrigerante" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+              <option value="R-410A">R-410A</option>
+              <option value="R-32">R-32</option>
+              <option value="R-22">R-22</option>
+              <option value="R-134a">R-134a</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- 1. UNIDAD EVAPORADORA (INTERIOR) -->
+      <section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="bg-slate-800 text-white px-5 py-3.5 flex justify-between items-center">
+          <h2 class="font-semibold text-base flex items-center gap-2">
+            <span class="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">1</span>
+            Unidad Evaporadora (Interior)
+          </h2>
+          <button type="button" class="btn-bulk-good text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded transition flex items-center gap-1" data-section="evap">
+            ✓ Marcar Todos Bueno (B)
+          </button>
+        </div>
+
+        <div class="p-5 space-y-4">
+          <!-- Item Helper function rendered items -->
+          <div id="section-evap-container" class="space-y-4">
+            <!-- Inspection Item 1 -->
+            <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                <span class="font-medium text-sm text-slate-800">1.1 Inspección general y limpieza de gabinete externo</span>
+                <div class="flex items-center gap-2">
+                  <label class="radio-btn"><input type="radio" name="evap_gabinete" value="B"><span>B</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_gabinete" value="R"><span>R</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_gabinete" value="M"><span>M</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_gabinete" value="N/A"><span>N/A</span></label>
+                </div>
+              </div>
+              <input type="text" name="evap_gabinete_obs" placeholder="Observaciones / Mediciones..." class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+            </div>
+
+            <!-- Item 2 -->
+            <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                <span class="font-medium text-sm text-slate-800">1.2 Limpieza y desinfección de filtros de aire</span>
+                <div class="flex items-center gap-2">
+                  <label class="radio-btn"><input type="radio" name="evap_filtros" value="B"><span>B</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_filtros" value="R"><span>R</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_filtros" value="M"><span>M</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_filtros" value="N/A"><span>N/A</span></label>
+                </div>
+              </div>
+              <input type="text" name="evap_filtros_obs" placeholder="Observaciones / Mediciones..." class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+            </div>
+
+            <!-- Item 3 -->
+            <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                <span class="font-medium text-sm text-slate-800">1.3 Limpieza y serpentín evaporador (aletas de aluminio)</span>
+                <div class="flex items-center gap-2">
+                  <label class="radio-btn"><input type="radio" name="evap_serpentin" value="B"><span>B</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_serpentin" value="R"><span>R</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_serpentin" value="M"><span>M</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_serpentin" value="N/A"><span>N/A</span></label>
+                </div>
+              </div>
+              <input type="text" name="evap_serpentin_obs" placeholder="Observaciones / Mediciones..." class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+            </div>
+
+            <!-- Item 4 -->
+            <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                <span class="font-medium text-sm text-slate-800">1.4 Limpieza de bandeja de condensados y aplicación de pastillas biocidas</span>
+                <div class="flex items-center gap-2">
+                  <label class="radio-btn"><input type="radio" name="evap_bandeja" value="B"><span>B</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_bandeja" value="R"><span>R</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_bandeja" value="M"><span>M</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_bandeja" value="N/A"><span>N/A</span></label>
+                </div>
+              </div>
+              <input type="text" name="evap_bandeja_obs" placeholder="Observaciones / Mediciones..." class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+            </div>
+
+            <!-- Item 5 -->
+            <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                <span class="font-medium text-sm text-slate-800">1.5 Comprobación de flujo y drenaje libre de obstrucciones</span>
+                <div class="flex items-center gap-2">
+                  <label class="radio-btn"><input type="radio" name="evap_drenaje" value="B"><span>B</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_drenaje" value="R"><span>R</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_drenaje" value="M"><span>M</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_drenaje" value="N/A"><span>N/A</span></label>
+                </div>
+              </div>
+              <input type="text" name="evap_drenaje_obs" placeholder="Observaciones / Mediciones..." class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+            </div>
+
+            <!-- Item 6 -->
+            <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                <span class="font-medium text-sm text-slate-800">1.6 Inspección y limpieza de turbina / ventilador tangencial</span>
+                <div class="flex items-center gap-2">
+                  <label class="radio-btn"><input type="radio" name="evap_turbina" value="B"><span>B</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_turbina" value="R"><span>R</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_turbina" value="M"><span>M</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_turbina" value="N/A"><span>N/A</span></label>
+                </div>
+              </div>
+              <input type="text" name="evap_turbina_obs" placeholder="Observaciones / Mediciones..." class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+            </div>
+
+            <!-- Item 7 -->
+            <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                <span class="font-medium text-sm text-slate-800">1.7 Revisión de motor de ventilación y rodajes (ruidos/vibración)</span>
+                <div class="flex items-center gap-2">
+                  <label class="radio-btn"><input type="radio" name="evap_motor" value="B"><span>B</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_motor" value="R"><span>R</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_motor" value="M"><span>M</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_motor" value="N/A"><span>N/A</span></label>
+                </div>
+              </div>
+              <input type="text" name="evap_motor_obs" placeholder="Observaciones / Mediciones..." class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+            </div>
+
+            <!-- Item 8 -->
+            <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                <span class="font-medium text-sm text-slate-800">1.8 Revisión de persianas de flujo de aire (swing) y motor paso a paso</span>
+                <div class="flex items-center gap-2">
+                  <label class="radio-btn"><input type="radio" name="evap_persianas" value="B"><span>B</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_persianas" value="R"><span>R</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_persianas" value="M"><span>M</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_persianas" value="N/A"><span>N/A</span></label>
+                </div>
+              </div>
+              <input type="text" name="evap_persianas_obs" placeholder="Observaciones / Mediciones..." class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+            </div>
+
+            <!-- Item 9 -->
+            <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                <span class="font-medium text-sm text-slate-800">1.9 Verificación de conexiones eléctricas internas y termistores</span>
+                <div class="flex items-center gap-2">
+                  <label class="radio-btn"><input type="radio" name="evap_conexiones" value="B"><span>B</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_conexiones" value="R"><span>R</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_conexiones" value="M"><span>M</span></label>
+                  <label class="radio-btn"><input type="radio" name="evap_conexiones" value="N/A"><span>N/A</span></label>
+                </div>
+              </div>
+              <input type="text" name="evap_conexiones_obs" placeholder="Observaciones / Mediciones..." class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. UNIDAD CONDENSADORA (EXTERIOR) -->
+      <section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="bg-slate-800 text-white px-5 py-3.5 flex justify-between items-center">
+          <h2 class="font-semibold text-base flex items-center gap-2">
+            <span class="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">2</span>
+            Unidad Condensadora (Exterior)
+          </h2>
+          <button type="button" class="btn-bulk-good text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded transition flex items-center gap-1" data-section="cond">
+            ✓ Marcar Todos Bueno (B)
+          </button>
+        </div>
+
+        <div class="p-5 space-y-4">
+          <div id="section-cond-container" class="space-y-4">
+            <!-- Item 1 -->
+            <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                <span class="font-medium text-sm text-slate-800">2.1 Limpieza de serpentín condensador con desincrustante / agua a presión</span>
+                <div class="flex items-center gap-2">
+                  <label class="radio-btn"><input type="radio" name="cond_serpentin" value="B"><span>B</span></label>
+                  <label class="radio-btn"><input type="radio" name="cond_serpentin" value="R"><span>R</span></label>
+                  <label class="radio-btn"><input type="radio" name="cond_serpentin" value="M"><span>M</span></label>
+                  <label class="radio-btn"><input type="radio" name="cond_serpentin" value="N/A"><span>N/A</span></label>
+                </div>
+              </div>
+              <input type="text" name="cond_serpentin_obs" placeholder="Observaciones / Mediciones..." class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+            </div>
+
+            <!-- Item 2 -->
+            <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                <span class="font-medium text-sm text-slate-800">2.2 Peinado y alineación de aletas de aluminio dañadas</span>
+                <div class="flex items-center gap-2">
+                  <label class="radio-btn"><input type="radio" name="cond_aletas" value="B"><span>B</span></label>
+                  <label class="radio-btn"><input type="radio" name="cond_aletas" value="R"><span>R</span></label>
+                  <label class="radio-btn"><input type="radio" name="cond_aletas" value="M"><span>M</span></label>
+                  <label class="radio-btn"><input type="radio" name="cond_aletas" value="N/A"><span>N/A</span></label>
+                </div>
+              </div>
+              <input type="text" name="cond_aletas_obs" placeholder="Observaciones / Mediciones..." class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+            </div>
+
+            <!-- Item 3 -->
+            <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                <span class="font-medium text-sm text-slate-800">2.3 Inspección de aspas de ventilador exterior y balanceo</span>
+                <div class="flex items-center gap-2">
+                  <label class="radio-btn"><input type="radio" name="cond_aspas" value="B"><span>B</span></label>
+                  <label class="radio-btn"><input type="radio" name="cond_aspas" value="R"><span>R</span></label>
+                  <label class="radio-btn"><input type="radio" name="cond_aspas" value="M"><span>M</span></label>
+                  <label class="radio-btn"><input type="radio" name="cond_aspas" value="N/A"><span>N/A</span></label>
+                </div>
+              </div>
+              <input type="text" name="cond_aspas_obs" placeholder="Observaciones / Mediciones..." class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+            </div>
+
+            <!-- Item 4 -->
+            <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                <span class="font-medium text-sm text-slate-800">2.4 Verificación de motor de ventilador y rodamientos</span>
+                <div class="flex items-center gap-2">
+                  <label class="radio-btn"><input type="radio" name="cond_motor" value="B"><span>B</span></label>
+                  <label class="radio-btn"><input type="radio" name="cond_motor" value="R"><span>R</span></label>
+                  <label class="radio-btn"><input type="radio" name="cond_motor" value="M"><span>M</span></label>
+                  <label class="radio-btn"><input type="radio" name="cond_motor" value="N/A"><span>N/A</span></label>
+                </div>
+              </div>
+              <input type="text" name="cond_motor_obs" placeholder="Observaciones / Mediciones..." class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+            </div>
+
+            <!-- Item 5 -->
+            <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                <span class="font-medium text-sm text-slate-800">2.5 Inspección del compresor (ruido, amortiguadores antivibración)</span>
+                <div class="flex items-center gap-2">
+                  <label class="radio-btn"><input type="radio" name="cond_compresor" value="B"><span>B</span></label>
+                  <label class="radio-btn"><input type="radio" name="cond_compresor" value="R"><span>R</span></label>
+                  <label class="radio-btn"><input type="radio" name="cond_compresor" value="M"><span>M</span></label>
+                  <label class="radio-btn"><input type="radio" name="cond_compresor" value="N/A"><span>N/A</span></label>
+                </div>
+              </div>
+              <input type="text" name="cond_compresor_obs" placeholder="Observaciones / Mediciones..." class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+            </div>
+
+            <!-- Item 6 -->
+            <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                <span class="font-medium text-sm text-slate-800">2.6 Revisión de aislamiento térmico de tuberías de refrigeración (Armaflex)</span>
+                <div class="flex items-center gap-2">
+                  <label class="radio-btn"><input type="radio" name="cond_aislamiento" value="B"><span>B</span></label>
+                  <label class="radio-btn"><input type="radio" name="cond_aislamiento" value="R"><span>R</span></label>
+                  <label class="radio-btn"><input type="radio" name="cond_aislamiento" value="M"><span>M</span></label>
+                  <label class="radio-btn"><input type="radio" name="cond_aislamiento" value="N/A"><span>N/A</span></label>
+                </div>
+              </div>
+              <input type="text" name="cond_aislamiento_obs" placeholder="Observaciones / Mediciones..." class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+            </div>
+
+            <!-- Item 7 -->
+            <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                <span class="font-medium text-sm text-slate-800">2.7 Detección visual / electrónica de fugas de refrigerante y aceite</span>
+                <div class="flex items-center gap-2">
+                  <label class="radio-btn"><input type="radio" name="cond_fugas" value="B"><span>B</span></label>
+                  <label class="radio-btn"><input type="radio" name="cond_fugas" value="R"><span>R</span></label>
+                  <label class="radio-btn"><input type="radio" name="cond_fugas" value="M"><span>M</span></label>
+                  <label class="radio-btn"><input type="radio" name="cond_fugas" value="N/A"><span>N/A</span></label>
+                </div>
+              </div>
+              <input type="text" name="cond_fugas_obs" placeholder="Observaciones / Mediciones..." class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+            </div>
+
+            <!-- Item 8 -->
+            <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                <span class="font-medium text-sm text-slate-800">2.8 Inspección de soportes, bases de condensadora y anclajes</span>
+                <div class="flex items-center gap-2">
+                  <label class="radio-btn"><input type="radio" name="cond_soportes" value="B"><span>B</span></label>
+                  <label class="radio-btn"><input type="radio" name="cond_soportes" value="R"><span>R</span></label>
+                  <label class="radio-btn"><input type="radio" name="cond_soportes" value="M"><span>M</span></label>
+                  <label class="radio-btn"><input type="radio" name="cond_soportes" value="N/A"><span>N/A</span></label>
+                </div>
+              </div>
+              <input type="text" name="cond_soportes_obs" placeholder="Observaciones / Mediciones..." class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. SISTEMA ELÉCTRICO Y ELECTRÓNICO -->
+      <section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="bg-slate-800 text-white px-5 py-3.5 flex justify-between items-center">
+          <h2 class="font-semibold text-base flex items-center gap-2">
+            <span class="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">3</span>
+            Sistema Eléctrico y Electrónico
+          </h2>
+          <button type="button" class="btn-bulk-good text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded transition flex items-center gap-1" data-section="elec">
+            ✓ Marcar Todos Bueno (B)
+          </button>
+        </div>
+
+        <div class="p-5 space-y-4">
+          <div id="section-elec-container" class="space-y-4">
+            <!-- Item 1 -->
+            <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                <span class="font-medium text-sm text-slate-800">3.1 Reajuste de bornes y bornas de conexión en tablillas / contactores</span>
+                <div class="flex items-center gap-2">
+                  <label class="radio-btn"><input type="radio" name="elec_bornes" value="B"><span>B</span></label>
+                  <label class="radio-btn"><input type="radio" name="elec_bornes" value="R"><span>R</span></label>
+                  <label class="radio-btn"><input type="radio" name="elec_bornes" value="M"><span>M</span></label>
+                  <label class="radio-btn"><input type="radio" name="elec_bornes" value="N/A"><span>N/A</span></label>
+                </div>
+              </div>
+              <input type="text" name="elec_bornes_obs" placeholder="Observaciones / Mediciones..." class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+            </div>
+
+            <!-- Item 2 (Special Capacitor measurements) -->
+            <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                <span class="font-medium text-sm text-slate-800">3.2 Inspección de capacitores de arranque/marcha (medición de µF)</span>
+                <div class="flex items-center gap-2">
+                  <label class="radio-btn"><input type="radio" name="elec_capacitores" value="B"><span>B</span></label>
+                  <label class="radio-btn"><input type="radio" name="elec_capacitores" value="R"><span>R</span></label>
+                  <label class="radio-btn"><input type="radio" name="elec_capacitores" value="M"><span>M</span></label>
+                  <label class="radio-btn"><input type="radio" name="elec_capacitores" value="N/A"><span>N/A</span></label>
+                </div>
+              </div>
+
+              <!-- Capacitor fields -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 my-2 bg-white p-2.5 rounded border border-slate-200">
+                <div class="flex items-center gap-2">
+                  <label class="text-xs font-semibold text-slate-600 whitespace-nowrap">Capacitor Comp:</label>
+                  <input type="text" name="elec_cap_comp" placeholder="Ej. 35" class="w-full px-2.5 py-1 border border-slate-300 rounded text-xs">
+                  <span class="text-xs text-slate-500">µF</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <label class="text-xs font-semibold text-slate-600 whitespace-nowrap">Capacitor Vent:</label>
+                  <input type="text" name="elec_cap_vent" placeholder="Ej. 5" class="w-full px-2.5 py-1 border border-slate-300 rounded text-xs">
+                  <span class="text-xs text-slate-500">µF</span>
+                </div>
+              </div>
+              <input type="text" name="elec_capacitores_obs" placeholder="Observaciones adicionales..." class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+            </div>
+
+            <!-- Item 3 -->
+            <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                <span class="font-medium text-sm text-slate-800">3.3 Inspección de tarjetas electrónicas (placas PCB) e indicadores de error</span>
+                <div class="flex items-center gap-2">
+                  <label class="radio-btn"><input type="radio" name="elec_tarjetas" value="B"><span>B</span></label>
+                  <label class="radio-btn"><input type="radio" name="elec_tarjetas" value="R"><span>R</span></label>
+                  <label class="radio-btn"><input type="radio" name="elec_tarjetas" value="M"><span>M</span></label>
+                  <label class="radio-btn"><input type="radio" name="elec_tarjetas" value="N/A"><span>N/A</span></label>
+                </div>
+              </div>
+              <input type="text" name="elec_tarjetas_obs" placeholder="Observaciones / Mediciones..." class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+            </div>
+
+            <!-- Item 4 -->
+            <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                <span class="font-medium text-sm text-slate-800">3.4 Inspección de protecciones eléctricas (termomagnética, diferencial)</span>
+                <div class="flex items-center gap-2">
+                  <label class="radio-btn"><input type="radio" name="elec_protecciones" value="B"><span>B</span></label>
+                  <label class="radio-btn"><input type="radio" name="elec_protecciones" value="R"><span>R</span></label>
+                  <label class="radio-btn"><input type="radio" name="elec_protecciones" value="M"><span>M</span></label>
+                  <label class="radio-btn"><input type="radio" name="elec_protecciones" value="N/A"><span>N/A</span></label>
+                </div>
+              </div>
+              <input type="text" name="elec_protecciones_obs" placeholder="Observaciones / Mediciones..." class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+            </div>
+
+            <!-- Item 5 -->
+            <div class="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+                <span class="font-medium text-sm text-slate-800">3.5 Verificación de conexión a tierra física</span>
+                <div class="flex items-center gap-2">
+                  <label class="radio-btn"><input type="radio" name="elec_tierra" value="B"><span>B</span></label>
+                  <label class="radio-btn"><input type="radio" name="elec_tierra" value="R"><span>R</span></label>
+                  <label class="radio-btn"><input type="radio" name="elec_tierra" value="M"><span>M</span></label>
+                  <label class="radio-btn"><input type="radio" name="elec_tierra" value="N/A"><span>N/A</span></label>
+                </div>
+              </div>
+              <input type="text" name="elec_tierra_obs" placeholder="Observaciones / Mediciones..." class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. PRUEBAS OPERATIVAS Y MEDICIONES TÉCNICAS -->
+      <section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="bg-slate-800 text-white px-5 py-3.5">
+          <h2 class="font-semibold text-base flex items-center gap-2">
+            <span class="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">4</span>
+            Pruebas Operativas y Mediciones Técnicas
+          </h2>
+        </div>
+
+        <div class="p-5 overflow-x-auto">
+          <table class="w-full text-left text-sm min-w-[600px]">
+            <thead class="bg-slate-100 text-slate-700 font-semibold text-xs border-b border-slate-200">
+              <tr>
+                <th class="py-2.5 px-3">Parámetro de Medición</th>
+                <th class="py-2.5 px-3 w-48">Valor Medido</th>
+                <th class="py-2.5 px-3">Rango de Referencia / Estado</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 text-xs">
+              <!-- Row 1 -->
+              <tr>
+                <td class="py-3 px-3 font-medium">Voltaje en vacío / bajo carga (V)</td>
+                <td class="py-3 px-3">
+                  <div class="flex items-center gap-1">
+                    <input type="text" name="med_voltaje" placeholder="220" class="w-full px-2.5 py-1 border border-slate-300 rounded">
+                    <span class="text-slate-500">V AC</span>
+                  </div>
+                </td>
+                <td class="py-3 px-3 text-slate-500">Nominal ±10% (ej. 208-230V / 115V)</td>
+              </tr>
+              <!-- Row 2 -->
+              <tr>
+                <td class="py-3 px-3 font-medium">Corriente de trabajo del compresor (A)</td>
+                <td class="py-3 px-3">
+                  <div class="flex items-center gap-1">
+                    <input type="text" name="med_corriente_comp" placeholder="8.5" class="w-full px-2.5 py-1 border border-slate-300 rounded">
+                    <span class="text-slate-500">A</span>
+                  </div>
+                </td>
+                <td class="py-3 px-3 text-slate-500">RLA Nominal según placa de datos</td>
+              </tr>
+              <!-- Row 3 -->
+              <tr>
+                <td class="py-3 px-3 font-medium">Corriente del motor ventilador exterior (A)</td>
+                <td class="py-3 px-3">
+                  <div class="flex items-center gap-1">
+                    <input type="text" name="med_corriente_vent" placeholder="0.8" class="w-full px-2.5 py-1 border border-slate-300 rounded">
+                    <span class="text-slate-500">A</span>
+                  </div>
+                </td>
+                <td class="py-3 px-3 text-slate-500">FLA Nominal según placa de datos</td>
+              </tr>
+              <!-- Row 4 -->
+              <tr>
+                <td class="py-3 px-3 font-medium">Presión de baja (Succión) (PSI)</td>
+                <td class="py-3 px-3">
+                  <div class="flex items-center gap-1">
+                    <input type="text" name="med_presion_baja" placeholder="120" class="w-full px-2.5 py-1 border border-slate-300 rounded">
+                    <span class="text-slate-500">PSI</span>
+                  </div>
+                </td>
+                <td class="py-3 px-3 text-slate-500">R-410A: ~110-130 PSI / R-22: ~60-70 PSI</td>
+              </tr>
+              <!-- Row 5 -->
+              <tr>
+                <td class="py-3 px-3 font-medium">Presión de alta (Descarga) (PSI)</td>
+                <td class="py-3 px-3">
+                  <div class="flex items-center gap-1">
+                    <input type="text" name="med_presion_alta" placeholder="320" class="w-full px-2.5 py-1 border border-slate-300 rounded">
+                    <span class="text-slate-500">PSI</span>
+                  </div>
+                </td>
+                <td class="py-3 px-3 text-slate-500">Según temperatura ambiente y refrigerante</td>
+              </tr>
+              <!-- Row 6: Temp Inyeccion -->
+              <tr>
+                <td class="py-3 px-3 font-medium">Temperatura de inyección (Evaporador)</td>
+                <td class="py-3 px-3">
+                  <div class="flex items-center gap-1">
+                    <input type="number" step="0.1" id="med_temp_inyeccion" name="med_temp_inyeccion" placeholder="12" class="w-full px-2.5 py-1 border border-slate-300 rounded">
+                    <span class="text-slate-500">°C</span>
+                  </div>
+                </td>
+                <td class="py-3 px-3 text-slate-500">Salida de rejilla interior</td>
+              </tr>
+              <!-- Row 7: Temp Retorno & Delta T calculated -->
+              <tr>
+                <td class="py-3 px-3 font-medium">
+                  Temperatura de retorno (Evaporador)
+                  <div class="text-[11px] text-blue-600 font-bold mt-0.5" id="delta-t-badge">
+                    Diferencial ΔT: -- °C
+                  </div>
+                </td>
+                <td class="py-3 px-3">
+                  <div class="flex items-center gap-1">
+                    <input type="number" step="0.1" id="med_temp_retorno" name="med_temp_retorno" placeholder="22" class="w-full px-2.5 py-1 border border-slate-300 rounded">
+                    <span class="text-slate-500">°C</span>
+                  </div>
+                  <!-- Hidden field to store calculated Delta T value -->
+                  <input type="hidden" id="med_delta_t" name="med_delta_t" value="">
+                </td>
+                <td class="py-3 px-3 text-slate-500">
+                  <span class="font-medium text-slate-700">Diferencial ΔT ideal: 8°C a 12°C</span> (14°F-22°F)
+                </td>
+              </tr>
+              <!-- Row 8 -->
+              <tr>
+                <td class="py-3 px-3 font-medium">Superheat (Sobrecalentamiento) / Subcooling</td>
+                <td class="py-3 px-3">
+                  <input type="text" name="med_superheat" placeholder="Ej. SH: 6°C / SC: 5°C" class="w-full px-2.5 py-1 border border-slate-300 rounded">
+                </td>
+                <td class="py-3 px-3 text-slate-500">Verificación de carga óptima de refrigerante</td>
+              </tr>
+              <!-- Row 9 -->
+              <tr>
+                <td class="py-3 px-3 font-medium">Prueba de control remoto y modos de operación</td>
+                <td class="py-3 px-3">
+                  <select name="med_control_remoto" class="w-full px-2.5 py-1 border border-slate-300 rounded bg-white">
+                    <option value="Correcto">✓ Correcto</option>
+                    <option value="Reemplazar Baterías">⚠️ Reemplazar Baterías</option>
+                    <option value="Falla Control">❌ Falla en Control</option>
+                  </select>
+                </td>
+                <td class="py-3 px-3 text-slate-500">Comprobación de Cool, Heat, Fan, Dry</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 5. DIAGNÓSTICO Y OBSERVACIONES FINALES -->
+      <section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="bg-slate-800 text-white px-5 py-3.5">
+          <h2 class="font-semibold text-base flex items-center gap-2">
+            <span class="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">5</span>
+            Diagnóstico y Observaciones Finales
+          </h2>
+        </div>
+
+        <div class="p-5">
+          <label class="block text-xs font-semibold text-slate-600 mb-2">
+            Describa cualquier trabajo correctivo adicional realizado, anomalías detectadas o recomendaciones de reparación/repuestos necesarios:
+          </label>
+          <textarea id="observaciones_finales" name="observaciones_finales" rows="4" placeholder="Ej. Se realizó limpieza general y desinfección profunda. Se recomienda cambio de capacitor de ventilador en la próxima revisión." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"></textarea>
+        </div>
+      </section>
+
+      <!-- 6. FIRMAS DIGITALES DE CONFORMIDAD -->
+      <section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="bg-slate-800 text-white px-5 py-3.5">
+          <h2 class="font-semibold text-base flex items-center gap-2">
+            <span class="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">6</span>
+            Firmas de Conformidad
+          </h2>
+        </div>
+
+        <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Firma Técnico -->
+          <div class="border border-slate-200 rounded-lg p-4 bg-slate-50">
+            <h3 class="text-sm font-semibold text-slate-700 mb-2">Firma del Técnico Responsable</h3>
+            <div class="mb-3">
+              <label class="block text-xs text-slate-500 mb-1">Nombre del Técnico:</label>
+              <input type="text" id="nombre_tecnico_firma" name="nombre_tecnico_firma" placeholder="Nombre completo" class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs">
+            </div>
+            <div class="signature-pad-container bg-white border border-slate-300 rounded-lg overflow-hidden relative">
+              <canvas id="canvas-tecnico" width="400" height="150" class="w-full h-36 touch-none cursor-crosshair"></canvas>
+              <button type="button" class="btn-clear-canvas absolute top-2 right-2 text-[10px] bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 rounded shadow-sm" data-target="canvas-tecnico">Limpiar</button>
+            </div>
+          </div>
+
+          <!-- Firma Cliente -->
+          <div class="border border-slate-200 rounded-lg p-4 bg-slate-50">
+            <h3 class="text-sm font-semibold text-slate-700 mb-2">Firma del Cliente / Conformidad</h3>
+            <div class="mb-3">
+              <label class="block text-xs text-slate-500 mb-1">Nombre del Cliente:</label>
+              <input type="text" id="nombre_cliente_firma" name="nombre_cliente_firma" placeholder="Nombre del representante" class="w-full px-3 py-1.5 bg-white border border-slate-300 rounded text-xs">
+            </div>
+            <div class="signature-pad-container bg-white border border-slate-300 rounded-lg overflow-hidden relative">
+              <canvas id="canvas-cliente" width="400" height="150" class="w-full h-36 touch-none cursor-crosshair"></canvas>
+              <button type="button" class="btn-clear-canvas absolute top-2 right-2 text-[10px] bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 rounded shadow-sm" data-target="canvas-cliente">Limpiar</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SUBMIT BUTTON BAR -->
+      <div class="flex items-center justify-between gap-4 pt-2">
+        <button type="button" id="btn-reset" class="px-5 py-3 border border-slate-300 text-slate-600 rounded-xl hover:bg-slate-100 font-medium text-sm transition">
+          Limpiar Formulario
+        </button>
+        <button type="submit" id="btn-submit" class="px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition flex items-center gap-2 text-base">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+          </svg>
+          Guardar Mantenimiento en Google Sheets
+        </button>
+      </div>
+
+    </form>
+  </main>
+
+  <!-- MODAL DE PROCESANDO / EXITO / ERROR -->
+  <div id="modal-status" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl text-center">
+      <!-- Loading State -->
+      <div id="modal-loading" class="space-y-4">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+        <h3 class="text-base font-semibold text-slate-800">Enviando registro...</h3>
+        <p class="text-xs text-slate-500">Guardando la información en Google Sheets.</p>
+      </div>
+
+      <!-- Success State -->
+      <div id="modal-success" class="space-y-4 hidden">
+        <div class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+        <h3 class="text-lg font-bold text-slate-800">¡Registro Exitoso!</h3>
+        <p class="text-xs text-slate-600">El reporte de mantenimiento preventivo ha sido guardado correctamente en la Hoja de Cálculo de Google Sheets.</p>
+        <button type="button" id="btn-close-success" class="w-full py-2.5 bg-emerald-600 text-white font-medium rounded-lg text-sm hover:bg-emerald-700 transition">
+          Aceptar
+        </button>
+      </div>
+
+      <!-- Error State -->
+      <div id="modal-error" class="space-y-4 hidden">
+        <div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </div>
+        <h3 class="text-lg font-bold text-slate-800">Error al Enviar</h3>
+        <p id="error-message-text" class="text-xs text-slate-600">No se pudo conectar con Google Sheets. Por favor revisa la URL en app.js.</p>
+        <button type="button" id="btn-close-error" class="w-full py-2.5 bg-slate-700 text-white font-medium rounded-lg text-sm hover:bg-slate-800 transition">
+          Cerrar e Intentar de Nuevo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

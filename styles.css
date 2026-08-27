@@ -1,0 +1,68 @@
+/* Estilos personalizados para Checklist Aire Acondicionado */
+
+/* Radio button pills para B, R, M, N/A */
+.radio-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.radio-btn input[type="radio"] {
+  display: none;
+}
+
+.radio-btn span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 0.5rem;
+  border: 1px solid #cbd5e1; /* slate-300 */
+  background-color: #ffffff;
+  color: #475569; /* slate-600 */
+  transition: all 0.15s ease-in-out;
+}
+
+/* Radio States */
+.radio-btn input[type="radio"][value="B"]:checked + span {
+  background-color: #059669; /* emerald-600 */
+  color: #ffffff;
+  border-color: #059669;
+  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.25);
+}
+
+.radio-btn input[type="radio"][value="R"]:checked + span {
+  background-color: #d97706; /* amber-600 */
+  color: #ffffff;
+  border-color: #d97706;
+  box-shadow: 0 2px 4px rgba(217, 119, 6, 0.25);
+}
+
+.radio-btn input[type="radio"][value="M"]:checked + span {
+  background-color: #dc2626; /* red-600 */
+  color: #ffffff;
+  border-color: #dc2626;
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.25);
+}
+
+.radio-btn input[type="radio"][value="N/A"]:checked + span {
+  background-color: #64748b; /* slate-500 */
+  color: #ffffff;
+  border-color: #64748b;
+  box-shadow: 0 2px 4px rgba(100, 116, 139, 0.25);
+}
+
+.radio-btn:hover span {
+  border-color: #94a3b8;
+}
+
+/* Signature Pad Canvas Styling */
+.signature-pad-container canvas {
+  background-color: #ffffff;
+  touch-action: none;
+}
