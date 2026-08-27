@@ -102,13 +102,16 @@
 
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1" for="tipoUnidad">Tipo de Unidad:</label>
-            <select id="tipoUnidad" name="tipoUnidad" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
-              <option value="" disabled selected>Seleccione el tipo...</option>
+            <select id="tipoUnidad" name="tipoUnidad" class="form-select">
+              <option value="" disabled selected>-- Seleccione Tipo de Unidad --</option>
               <option value="Mini Split">Mini Split</option>
               <option value="Multi Split">Multi Split</option>
               <option value="Paquete">Paquete</option>
               <option value="Cassette">Cassette</option>
               <option value="Ducto">Ducto</option>
+              <option value="Piso Techo">Piso Techo</option>
+              <option value="VRF / VRV">VRF / VRV</option>
+              <option value="Chiller / Fan Coil">Chiller / Fan Coil</option>
               <option value="Otro">Otro</option>
             </select>
           </div>
@@ -125,12 +128,14 @@
 
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1" for="refrigerante">Refrigerante:</label>
-            <select id="refrigerante" name="refrigerante" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
-              <option value="" disabled selected>Seleccione refrigerante...</option>
+            <select id="refrigerante" name="refrigerante" class="form-select">
+              <option value="" disabled selected>-- Seleccione Refrigerante --</option>
               <option value="R-410A">R-410A</option>
               <option value="R-32">R-32</option>
               <option value="R-22">R-22</option>
               <option value="R-134a">R-134a</option>
+              <option value="R-407C">R-407C</option>
+              <option value="R-404A">R-404A</option>
               <option value="Otro">Otro</option>
             </select>
           </div>
@@ -628,10 +633,13 @@
               <tr>
                 <td class="py-3 px-3 font-medium">Prueba de control remoto y modos de operación</td>
                 <td class="py-3 px-3">
-                  <select name="med_control_remoto" class="w-full px-2.5 py-1 border border-slate-300 rounded bg-white">
+                  <select name="med_control_remoto" class="form-select form-select-sm">
+                    <option value="" disabled selected>-- Seleccione Estado --</option>
                     <option value="Correcto">✓ Correcto</option>
                     <option value="Reemplazar Baterías">⚠️ Reemplazar Baterías</option>
-                    <option value="Falla Control">❌ Falla en Control</option>
+                    <option value="Falla en Control">❌ Falla en Control</option>
+                    <option value="Sin Control">🚫 Sin Control</option>
+                    <option value="N/A">N/A</option>
                   </select>
                 </td>
                 <td class="py-3 px-3 text-slate-500">Comprobación de Cool, Heat, Fan, Dry</td>
@@ -941,6 +949,6 @@
 
   <!-- Iframe oculto para procesamiento de envíos sin bloqueos de CORS -->
   <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-  <script src="app.js?v=15.0"></script>
+  <script src="app.js?v=16.0"></script>
 </body>
 </html>
