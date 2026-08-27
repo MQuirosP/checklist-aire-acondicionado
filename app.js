@@ -300,7 +300,7 @@ function initFormSubmission() {
   }
 
   if (btnSuccessViewHistory) {
-    btnSuccessViewHistory.addEventListener('click', () => {
+    btnSuccessViewHistory.addEventListener('click', async () => {
       modal.classList.add('hidden');
       const otInput = document.getElementById('ot');
       const modalHistory = document.getElementById('modal-history');
@@ -309,6 +309,9 @@ function initFormSubmission() {
         const searchInput = document.getElementById('history-search');
         if (searchInput && otInput) {
           searchInput.value = otInput.value;
+        }
+        await fetchHistoryData(false);
+        if (searchInput && otInput) {
           renderHistoryTable(otInput.value);
         }
       }
@@ -472,14 +475,17 @@ async function fetchHistoryData(silent = false) {
     if (historyDataCache.length > 0) {
       if (!silent && loading) {
         loading.classList.add('hidden');
-        container.classList.remove('hidden');
-        renderHistoryTable('');
+        if (empty) empty.classList.add('hidden');
+        if (container) container.classList.remove('hidden');
+        const searchInput = document.getElementById('history-search');
+        renderHistoryTable(searchInput ? searchInput.value : '');
       }
       checkOTUniqueness();
     } else {
       if (!silent && loading) {
         loading.classList.add('hidden');
-        empty.classList.remove('hidden');
+        if (container) container.classList.add('hidden');
+        if (empty) empty.classList.remove('hidden');
       }
       checkOTUniqueness();
     }
@@ -488,7 +494,8 @@ async function fetchHistoryData(silent = false) {
     historyDataCache = [];
     if (!silent && loading) {
       loading.classList.add('hidden');
-      empty.classList.remove('hidden');
+      if (container) container.classList.add('hidden');
+      if (empty) empty.classList.remove('hidden');
     }
   }
 }
