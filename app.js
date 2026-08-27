@@ -203,22 +203,6 @@ function initDraftStorage() {
       }
     });
   }
-
-  const btnReset = document.getElementById('btn-reset');
-  if (btnReset) {
-    btnReset.addEventListener('click', () => {
-      if (confirm('¿Está seguro de limpiar todo el formulario y borrar el borrador guardado?')) {
-        form.reset();
-        localStorage.removeItem(STORAGE_KEY);
-        // Limpiar canvas
-        ['canvas-tecnico', 'canvas-cliente'].forEach(id => {
-          const canvas = document.getElementById(id);
-          if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-        });
-        initDate();
-      }
-    });
-  }
 }
 
 let saveTimeout = null;
@@ -296,6 +280,7 @@ function resetFormComplete() {
 
   const otInput = document.getElementById('ot');
   if (otInput) {
+    otInput.value = '';
     otInput.classList.remove('border-rose-500', 'border-emerald-500');
   }
 
@@ -308,9 +293,8 @@ function resetFormComplete() {
     }
   });
 
-  // Re-inicializar fecha actual y generar nueva OT única
+  // Re-inicializar fecha actual
   initDate();
-  if (typeof generateUniqueOT === 'function') generateUniqueOT();
 }
 
 /**
