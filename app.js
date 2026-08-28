@@ -1085,9 +1085,13 @@ async function fetchClients(silent = false) {
     const res = await fetch(fetchUrl, { cache: 'no-store' });
     const data = await res.json();
     clientsCache = Array.isArray(data) ? data : [];
-    updateClientsUI(silent);
+    updateClientsUI();
   } catch (err) {
     console.error('Error al cargar clientes desde Google Sheets:', err);
+    const tbody = document.getElementById('clients-table-body');
+    if (tbody && clientsCache.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-rose-600 font-semibold bg-rose-50 border border-rose-100 rounded-lg">⚠️ Error al consultar los clientes desde Google Sheets. Por favor intente de nuevo.</td></tr>`;
+    }
   }
 }
 
@@ -1097,9 +1101,13 @@ async function fetchTechnicians(silent = false) {
     const res = await fetch(fetchUrl, { cache: 'no-store' });
     const data = await res.json();
     techniciansCache = Array.isArray(data) ? data : [];
-    updateTechniciansUI(silent);
+    updateTechniciansUI();
   } catch (err) {
     console.error('Error al cargar técnicos desde Google Sheets:', err);
+    const tbody = document.getElementById('technicians-table-body');
+    if (tbody && techniciansCache.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-rose-600 font-semibold bg-rose-50 border border-rose-100 rounded-lg">⚠️ Error al consultar los técnicos desde Google Sheets. Por favor intente de nuevo.</td></tr>`;
+    }
   }
 }
 
@@ -1109,9 +1117,13 @@ async function fetchEquipmentTypes(silent = false) {
     const res = await fetch(fetchUrl, { cache: 'no-store' });
     const data = await res.json();
     equipmentTypesCache = Array.isArray(data) ? data : [];
-    updateEquipmentTypesUI(silent);
+    updateEquipmentTypesUI();
   } catch (err) {
     console.error('Error al cargar catálogo de equipos desde Google Sheets:', err);
+    const tbody = document.getElementById('equipments-table-body');
+    if (tbody && equipmentTypesCache.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-rose-600 font-semibold bg-rose-50 border border-rose-100 rounded-lg">⚠️ Error al consultar el catálogo de equipos desde Google Sheets. Por favor intente de nuevo.</td></tr>`;
+    }
   }
 }
 
