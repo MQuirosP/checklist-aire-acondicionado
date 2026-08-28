@@ -782,31 +782,31 @@ function openRecordDetail(record) {
   const getVal = (key) => record[key] || '--';
 
   const allChecklistItems = [
-    { label: 'Gab. Evap', key: 'Evap: Gabinete Externo', obsKey: 'Evap: Gabinete Obs' },
-    { label: 'Filtros Aire', key: 'Evap: Filtros Aire', obsKey: 'Evap: Filtros Obs' },
-    { label: 'Serp. Evap', key: 'Evap: Serpentín Evaporador', obsKey: 'Evap: Serpentín Obs' },
-    { label: 'Bandeja/Biocida', key: 'Evap: Bandeja Condensados / Biocidas', obsKey: 'Evap: Bandeja Obs' },
-    { label: 'Drenaje', key: 'Evap: Drenaje Obstrucciones', obsKey: 'Evap: Drenaje Obs' },
-    { label: 'Turbina/Fan', key: 'Evap: Turbina / Fan Tangencial', obsKey: 'Evap: Turbina Obs' },
-    { label: 'Motor Evap', key: 'Evap: Motor Vent / Rodajes', obsKey: 'Evap: Motor Vent Obs' },
-    { label: 'Persianas', key: 'Evap: Persianas Swing / Motor paso', obsKey: 'Evap: Persianas Obs' },
-    { label: 'Elec. Evap', key: 'Evap: Conexiones Eléctricas / Termistores', obsKey: 'Evap: Conexiones Obs' },
-    { label: 'Serp. Cond', key: 'Cond: Serpentín Condensador', obsKey: 'Cond: Serpentín Obs' },
-    { label: 'Aletas Alum', key: 'Cond: Aletas Aluminio', obsKey: 'Cond: Aletas Obs' },
-    { label: 'Aspas Vent', key: 'Cond: Aspas Ventilador', obsKey: 'Cond: Aspas Obs' },
-    { label: 'Motor Cond', key: 'Cond: Motor Vent / Rodamientos', obsKey: 'Cond: Motor Vent Obs' },
-    { label: 'Compresor', key: 'Cond: Compresor (Ruido/Amortiguadores)', obsKey: 'Cond: Compresor Obs' },
-    { label: 'Aislamiento', key: 'Cond: Aislamiento Térmico Tuberías', obsKey: 'Cond: Aislamiento Obs' },
-    { label: 'Fugas Ref/Aceite', key: 'Cond: Fugas Refrigerante / Aceite', obsKey: 'Cond: Fugas Obs' },
-    { label: 'Soportes', key: 'Cond: Soportes y Anclajes', obsKey: 'Cond: Soportes Obs' },
-    { label: 'Bornes Elec', key: 'Elec: Reajuste Bornes', obsKey: 'Elec: Bornes Obs' },
-    { label: 'Capacitores', key: 'Elec: Capacitores Medición', obsKey: 'Elec: Capacitores Obs' },
-    { label: 'Tarjetas PCB', key: 'Elec: Tarjetas PCB / Errores', obsKey: 'Elec: Tarjetas Obs' },
-    { label: 'Protecciones', key: 'Elec: Protecciones Eléctricas', obsKey: 'Elec: Protecciones Obs' },
-    { label: 'Tierra Física', key: 'Elec: Conexión Tierra Física', obsKey: 'Elec: Tierra Obs' }
+    { label: 'Evap: Gabinete Externo', key: 'Evap: Gabinete Externo' },
+    { label: 'Evap: Filtros de Aire', key: 'Evap: Filtros Aire' },
+    { label: 'Evap: Serpentín Evap.', key: 'Evap: Serpentín Evaporador' },
+    { label: 'Evap: Bandeja / Biocidas', key: 'Evap: Bandeja Condensados / Biocidas' },
+    { label: 'Evap: Limpieza Drenaje', key: 'Evap: Drenaje Obstrucciones' },
+    { label: 'Evap: Turbina / Fan', key: 'Evap: Turbina / Fan Tangencial' },
+    { label: 'Evap: Motor / Rodajes', key: 'Evap: Motor Vent / Rodajes' },
+    { label: 'Evap: Persianas Swing', key: 'Evap: Persianas Swing / Motor paso' },
+    { label: 'Evap: Conexiones Elec.', key: 'Evap: Conexiones Eléctricas / Termistores' },
+    { label: 'Cond: Serpentín Cond.', key: 'Cond: Serpentín Condensador' },
+    { label: 'Cond: Aletas Aluminio', key: 'Cond: Aletas Aluminio' },
+    { label: 'Cond: Aspas Ventilador', key: 'Cond: Aspas Ventilador' },
+    { label: 'Cond: Motor / Rodamientos', key: 'Cond: Motor Vent / Rodamientos' },
+    { label: 'Cond: Compresor (Ruido)', key: 'Cond: Compresor (Ruido/Amortiguadores)' },
+    { label: 'Cond: Aislamiento Térmico', key: 'Cond: Aislamiento Térmico Tuberías' },
+    { label: 'Cond: Fugas Ref./Aceite', key: 'Cond: Fugas Refrigerante / Aceite' },
+    { label: 'Cond: Soportes y Anclajes', key: 'Cond: Soportes y Anclajes' },
+    { label: 'Elec: Reajuste Bornes', key: 'Elec: Reajuste Bornes' },
+    { label: 'Elec: Capacitores', key: 'Elec: Capacitores Medición' },
+    { label: 'Elec: Tarjetas PCB / Err', key: 'Elec: Tarjetas PCB / Errores' },
+    { label: 'Elec: Protecciones Elec.', key: 'Elec: Protecciones Eléctricas' },
+    { label: 'Elec: Tierra Física', key: 'Elec: Conexión Tierra Física' }
   ];
 
-  // Helper para renderizar pill de inspección ultra-compacto (6 columnas)
+  // Helper para renderizar pill de inspección compacto de 1 sola línea (4 columnas)
   const renderItemPill = (item) => {
     const val = record[item.key] || '--';
     let colorClass = 'bg-slate-100 text-slate-700 border-slate-300';
@@ -814,9 +814,9 @@ function openRecordDetail(record) {
     if (val === 'R') colorClass = 'bg-amber-100 text-amber-800 border-amber-300';
     if (val === 'M') colorClass = 'bg-rose-100 text-rose-800 border-rose-300';
     if (val === 'N/A') colorClass = 'bg-slate-100 text-slate-500 border-slate-200';
-    return `<div class="p-0.5 px-1 bg-slate-50 border border-slate-200 rounded text-[8px] flex items-center justify-between gap-0.5 leading-none">
-      <span class="text-slate-700 font-medium truncate mr-0.5" title="${item.label}">${item.label}</span>
-      <span class="px-1 py-0.2 rounded text-[7.5px] font-bold border shrink-0 ${colorClass}">${val}</span>
+    return `<div class="p-1 px-1.5 bg-slate-50 border border-slate-200 rounded text-[9.5px] flex items-center justify-between gap-1 leading-none">
+      <span class="text-slate-700 font-semibold truncate mr-0.5">${item.label}</span>
+      <span class="px-1.5 py-0.5 rounded text-[8.5px] font-bold border shrink-0 ${colorClass}">${val}</span>
     </div>`;
   };
 
@@ -841,13 +841,13 @@ function openRecordDetail(record) {
   const isEquipoOtro = (record['Tipo de Unidad'] || '').toString().trim() === 'Otro';
 
   const checklistBlockHTML = isEquipoOtro ? '' : `
-    <!-- Puntos Revisados / Inspeccionados (6 Columnas Ultra-Compactas) -->
-    <div class="border border-slate-200 rounded-xl p-1 px-1.5 bg-white shadow-sm">
-      <h4 class="font-bold text-slate-800 text-[9.5px] mb-0.5 border-b border-slate-100 pb-0.5 flex items-center justify-between">
-        <span>✅ Checklist (22 Puntos)</span>
-        <span class="text-[8px] text-slate-500 font-normal"><strong>B</strong>: Bueno | <strong>R</strong>: Regular | <strong>M</strong>: Malo | <strong>N/A</strong>: No Aplica</span>
+    <!-- Puntos Revisados / Inspeccionados (4 Columnas - 1 Sola Línea) -->
+    <div class="border border-slate-200 rounded-xl p-1.5 px-2 bg-white shadow-sm">
+      <h4 class="font-bold text-slate-800 text-[10px] mb-1 border-b border-slate-100 pb-0.5 flex items-center justify-between">
+        <span>✅ Checklist de Inspección y Mantenimiento (22 Puntos Evaluados)</span>
+        <span class="text-[8.5px] text-slate-500 font-normal"><strong>B</strong>: Bueno | <strong>R</strong>: Regular | <strong>M</strong>: Malo | <strong>N/A</strong>: No Aplica</span>
       </h4>
-      <div class="grid grid-cols-3 sm:grid-cols-6 gap-0.5">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-1">
         ${allChecklistItems.map(item => renderItemPill(item)).join('')}
       </div>
     </div>
