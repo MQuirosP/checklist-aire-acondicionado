@@ -168,8 +168,10 @@ function doPost(e) {
     // 8. Por defecto: Guardar Mantenimiento en la pestaña Mantenimientos
     var sheet = ss.getSheetByName('Mantenimientos') || ss.getSheets()[0];
 
-    if (sheet.getLastRow() === 0) {
-      var headers = [
+    var sheetHeaders = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), 1)).getValues()[0];
+
+    if (sheet.getLastRow() === 0 || !sheetHeaders[0]) {
+      sheetHeaders = [
         "Fecha / Hora Registro", "Fecha Inspección", "N° Orden / OT", "Tipo de Mantenimiento", "Cliente / Ubicación", "Técnico Responsable",
         "Tipo de Unidad", "Subtipo / Categoría Equipo", "Marca / Modelo", "ID / Tag Equipo", "Refrigerante",
         "Evap: Gabinete Externo", "Evap: Gabinete Obs", "Evap: Filtros Aire", "Evap: Filtros Obs",
@@ -188,8 +190,8 @@ function doPost(e) {
         "Med: Presión Alta (PSI)", "Med: Control Remoto Estado", "Diagnóstico y Observaciones Finales",
         "Nombre Técnico", "Firma Técnico (DataURL)", "Nombre Cliente", "Firma Cliente (DataURL)"
       ];
-      sheet.appendRow(headers);
-      sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#e2e8f0");
+      sheet.appendRow(sheetHeaders);
+      sheet.getRange(1, 1, 1, sheetHeaders.length).setFontWeight("bold").setBackground("#e2e8f0");
       sheet.setFrozenRows(1);
     }
 
@@ -199,8 +201,10 @@ function doPost(e) {
     if (data.ot && data.ot.toString().trim() !== "") {
       var otClean = data.ot.toString().trim().toLowerCase();
       var rows = sheet.getDataRange().getValues();
+      var otColIdx = sheetHeaders.indexOf("N° Orden / OT");
+      if (otColIdx === -1) otColIdx = 2;
       for (var i = 1; i < rows.length; i++) {
-        var existingOt = (rows[i][2] || "").toString().trim().toLowerCase();
+        var existingOt = (rows[i][otColIdx] || "").toString().trim().toLowerCase();
         if (existingOt === otClean) {
           return ContentService
             .createTextOutput(JSON.stringify({ 
@@ -212,25 +216,80 @@ function doPost(e) {
       }
     }
 
-    var row = [
-      timestamp, data.fecha || "", data.ot || "", data.tipoMantenimiento || "Preventivo", data.cliente || "", data.tecnico || "",
-      data.tipoUnidad || "", data.subtipoEquipo || "", data.marcaModelo || "", data.idTag || "", data.refrigerante || "",
-      data.evap_gabinete || "", data.evap_gabinete_obs || "", data.evap_filtros || "", data.evap_filtros_obs || "",
-      data.evap_serpentin || "", data.evap_serpentin_obs || "", data.evap_bandeja || "", data.evap_bandeja_obs || "",
-      data.evap_drenaje || "", data.evap_drenaje_obs || "", data.evap_turbina || "", data.evap_turbina_obs || "",
-      data.evap_motor || "", data.evap_motor_obs || "", data.evap_persianas || "", data.evap_persianas_obs || "",
-      data.evap_conexiones || "", data.evap_conexiones_obs || "",
-      data.cond_serpentin || "", data.cond_serpentin_obs || "", data.cond_aletas || "", data.cond_aletas_obs || "",
-      data.cond_aspas || "", data.cond_aspas_obs || "", data.cond_motor || "", data.cond_motor_obs || "",
-      data.cond_compresor || "", data.cond_compresor_obs || "", data.cond_aislamiento || "", data.cond_aislamiento_obs || "",
-      data.cond_fugas || "", data.cond_fugas_obs || "", data.cond_soportes || "", data.cond_soportes_obs || "",
-      data.elec_bornes || "", data.elec_bornes_obs || "", data.elec_capacitores || "", data.elec_cap_comp || "",
-      data.elec_cap_vent || "", data.elec_capacitores_obs || "", data.elec_tarjetas || "", data.elec_tarjetas_obs || "",
-      data.elec_protecciones || "", data.elec_protecciones_obs || "", data.elec_tierra || "", data.elec_tierra_obs || "",
-      data.med_voltaje || "", data.med_corriente_comp || "", data.med_corriente_vent || "", data.med_presion_baja || "",
-      data.med_presion_alta || "", data.med_control_remoto || "", data.observaciones_finales || "",
-      data.nombre_tecnico_firma || "", data.firma_tecnico || "", data.nombre_cliente_firma || "", data.firma_cliente || ""
-    ];
+    var dataMap = {
+      "Fecha / Hora Registro": timestamp,
+      "Fecha Inspección": data.fecha || "",
+      "N° Orden / OT": data.ot || "",
+      "Tipo de Mantenimiento": data.tipoMantenimiento || "Preventivo",
+      "Cliente / Ubicación": data.cliente || "",
+      "Técnico Responsable": data.tecnico || "",
+      "Tipo de Unidad": data.tipoUnidad || "",
+      "Subtipo / Categoría Equipo": data.subtipoEquipo || "",
+      "Marca / Modelo": data.marcaModelo || "",
+      "ID / Tag Equipo": data.idTag || "",
+      "Refrigerante": data.refrigerante || "",
+      "Evap: Gabinete Externo": data.evap_gabinete || "",
+      "Evap: Gabinete Obs": data.evap_gabinete_obs || "",
+      "Evap: Filtros Aire": data.evap_filtros || "",
+      "Evap: Filtros Obs": data.evap_filtros_obs || "",
+      "Evap: Serpentín Evaporador": data.evap_serpentin || "",
+      "Evap: Serpentín Obs": data.evap_serpentin_obs || "",
+      "Evap: Bandeja Condensados / Biocidas": data.evap_bandeja || "",
+      "Evap: Bandeja Obs": data.evap_bandeja_obs || "",
+      "Evap: Drenaje Obstrucciones": data.evap_drenaje || "",
+      "Evap: Drenaje Obs": data.evap_drenaje_obs || "",
+      "Evap: Turbina / Fan Tangencial": data.evap_turbina || "",
+      "Evap: Turbina Obs": data.evap_turbina_obs || "",
+      "Evap: Motor Vent / Rodajes": data.evap_motor || "",
+      "Evap: Motor Vent Obs": data.evap_motor_obs || "",
+      "Evap: Persianas Swing / Motor paso": data.evap_persianas || "",
+      "Evap: Persianas Obs": data.evap_persianas_obs || "",
+      "Evap: Conexiones Eléctricas / Termistores": data.evap_conexiones || "",
+      "Evap: Conexiones Obs": data.evap_conexiones_obs || "",
+      "Cond: Serpentín Condensador": data.cond_serpentin || "",
+      "Cond: Serpentín Obs": data.cond_serpentin_obs || "",
+      "Cond: Aletas Aluminio": data.cond_aletas || "",
+      "Cond: Aletas Obs": data.cond_aletas_obs || "",
+      "Cond: Aspas Ventilador": data.cond_aspas || "",
+      "Cond: Aspas Obs": data.cond_aspas_obs || "",
+      "Cond: Motor Vent / Rodamientos": data.cond_motor || "",
+      "Cond: Motor Vent Obs": data.cond_motor_obs || "",
+      "Cond: Compresor (Ruido/Amortiguadores)": data.cond_compresor || "",
+      "Cond: Compresor Obs": data.cond_compresor_obs || "",
+      "Cond: Aislamiento Térmico Tuberías": data.cond_aislamiento || "",
+      "Cond: Aislamiento Obs": data.cond_aislamiento_obs || "",
+      "Cond: Fugas Refrigerante / Aceite": data.cond_fugas || "",
+      "Cond: Fugas Obs": data.cond_fugas_obs || "",
+      "Cond: Soportes y Anclajes": data.cond_soportes || "",
+      "Cond: Soportes Obs": data.cond_soportes_obs || "",
+      "Elec: Reajuste Bornes": data.elec_bornes || "",
+      "Elec: Bornes Obs": data.elec_bornes_obs || "",
+      "Elec: Capacitores Medición": data.elec_capacitores || "",
+      "Elec: Capacitor Comp (µF)": data.elec_cap_comp || "",
+      "Elec: Capacitor Vent (µF)": data.elec_cap_vent || "",
+      "Elec: Capacitores Obs": data.elec_capacitores_obs || "",
+      "Elec: Tarjetas PCB / Errores": data.elec_tarjetas || "",
+      "Elec: Tarjetas Obs": data.elec_tarjetas_obs || "",
+      "Elec: Protecciones Eléctricas": data.elec_protecciones || "",
+      "Elec: Protecciones Obs": data.elec_protecciones_obs || "",
+      "Elec: Conexión Tierra Física": data.elec_tierra || "",
+      "Elec: Tierra Obs": data.elec_tierra_obs || "",
+      "Med: Voltaje (V AC)": data.med_voltaje || "",
+      "Med: Corriente Compresor (A)": data.med_corriente_comp || "",
+      "Med: Corriente Motor Ext (A)": data.med_corriente_vent || "",
+      "Med: Presión Baja (PSI)": data.med_presion_baja || "",
+      "Med: Presión Alta (PSI)": data.med_presion_alta || "",
+      "Med: Control Remoto Estado": data.med_control_remoto || "",
+      "Diagnóstico y Observaciones Finales": data.observaciones_finales || "",
+      "Nombre Técnico": data.nombre_tecnico_firma || "",
+      "Firma Técnico (DataURL)": data.firma_tecnico || "",
+      "Nombre Cliente": data.nombre_cliente_firma || "",
+      "Firma Cliente (DataURL)": data.firma_cliente || ""
+    };
+
+    var row = sheetHeaders.map(function(h) {
+      return dataMap[h] !== undefined ? dataMap[h] : "";
+    });
 
     sheet.appendRow(row);
     return ContentService.createTextOutput(JSON.stringify({ "result": "success", "row": sheet.getLastRow() })).setMimeType(ContentService.MimeType.JSON);

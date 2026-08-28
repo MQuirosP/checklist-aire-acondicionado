@@ -774,7 +774,23 @@ function openRecordDetail(record) {
     </div>`;
   };
 
+  const fechaVal = typeof record['Fecha Inspección'] === 'string' && record['Fecha Inspección'].includes('T') ? record['Fecha Inspección'].split('T')[0] : (record['Fecha Inspección'] || '--');
   const tipoMant = getVal('Tipo de Mantenimiento') !== '--' ? getVal('Tipo de Mantenimiento') : 'Preventivo';
+
+  // Saneamiento de firmas en caso de registros con desplazamiento previo de columnas
+  let rawTecNombre = record['Nombre Técnico'] || getVal('Técnico Responsable');
+  let rawTecFirma = record['Firma Técnico (DataURL)'] || '';
+  if (rawTecNombre && rawTecNombre.startsWith('data:image')) {
+    rawTecFirma = rawTecNombre;
+    rawTecNombre = getVal('Técnico Responsable');
+  }
+
+  let rawCliNombre = record['Nombre Cliente'] || getVal('Cliente / Ubicación');
+  let rawCliFirma = record['Firma Cliente (DataURL)'] || '';
+  if (rawCliNombre && rawCliNombre.startsWith('data:image')) {
+    rawCliFirma = rawCliNombre;
+    rawCliNombre = getVal('Cliente / Ubicación');
+  }
 
   container.innerHTML = `
     <!-- Header Summary Card -->
@@ -784,7 +800,7 @@ function openRecordDetail(record) {
           <span class="text-xs font-bold text-blue-600">Orden / OT: ${getVal('N° Orden / OT')}</span>
           <span class="px-2 py-0.5 text-[10px] font-bold rounded-full ${tipoMant === 'Correctivo' ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-blue-100 text-blue-800 border border-blue-300'}">${tipoMant}</span>
         </div>
-        <span class="text-xs text-slate-500 font-medium">Fecha: ${getVal('Fecha Inspección')}</span>
+        <span class="text-xs text-slate-500 font-medium">Fecha: ${fechaVal}</span>
       </div>
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs">
         <div><span class="text-slate-400 block text-[10px]">Cliente / Ubicación:</span> <strong class="text-slate-800 font-semibold truncate block">${getVal('Cliente / Ubicación')}</strong></div>
@@ -801,17 +817,17 @@ function openRecordDetail(record) {
       </h4>
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5">
         ${renderItemPill('Evap: Gabinete', 'Evap: Gabinete Externo')}
-        ${renderItemPill('Evap: Filtros', 'Evap: Filtros de Aire')}
-        ${renderItemPill('Evap: Serpentín', 'Evap: Serpentín / Panal')}
-        ${renderItemPill('Evap: Bandeja', 'Evap: Bandeja de Condensado')}
-        ${renderItemPill('Evap: Turbina', 'Evap: Turbina / Blower')}
-        ${renderItemPill('Cond: Gabinete', 'Cond: Gabinete Exteriort')}
-        ${renderItemPill('Cond: Serpentín', 'Cond: Serpentín / Panal')}
-        ${renderItemPill('Cond: Aspas', 'Cond: Aspas / Moto-ventilador')}
-        ${renderItemPill('Elec: Bornes', 'Elec: Ajuste de Bornes')}
-        ${renderItemPill('Elec: Capacitores', 'Elec: Capacitores')}
-        ${renderItemPill('Elec: Contactor', 'Elec: Contactor / Relés')}
-        ${renderItemPill('Desagüe: Drenaje', 'Elec: Limpieza de Drenaje')}
+        ${renderItemPill('Evap: Filtros', 'Evap: Filtros Aire')}
+        ${renderItemPill('Evap: Serpentín', 'Evap: Serpentín Evaporador')}
+        ${renderItemPill('Evap: Bandeja', 'Evap: Bandeja Condensados / Biocidas')}
+        ${renderItemPill('Evap: Turbina', 'Evap: Turbina / Fan Tangencial')}
+        ${renderItemPill('Cond: Serpentín', 'Cond: Serpentín Condensador')}
+        ${renderItemPill('Cond: Aletas', 'Cond: Aletas Aluminio')}
+        ${renderItemPill('Cond: Aspas', 'Cond: Aspas Ventilador')}
+        ${renderItemPill('Elec: Bornes', 'Elec: Reajuste Bornes')}
+        ${renderItemPill('Elec: Capacitores', 'Elec: Capacitores Medición')}
+        ${renderItemPill('Elec: Tarjetas', 'Elec: Tarjetas PCB / Errores')}
+        ${renderItemPill('Desagüe: Drenaje', 'Evap: Drenaje Obstrucciones')}
       </div>
     </div>
 
@@ -839,12 +855,12 @@ function openRecordDetail(record) {
     <!-- Signatures Preview -->
     <div class="grid grid-cols-2 gap-3 pt-1">
       <div class="border border-slate-200 rounded-xl p-2 bg-slate-50 text-center">
-        <span class="text-[10px] font-semibold text-slate-600 block mb-1">Firma Técnico: ${getVal('Nombre Técnico')}</span>
-        ${record['Firma Técnico (DataURL)'] ? `<img src="${record['Firma Técnico (DataURL)']}" class="h-12 mx-auto object-contain bg-white rounded border border-slate-300 p-0.5" alt="Firma Técnico">` : '<span class="text-slate-400 italic text-[10px]">Sin firma</span>'}
+        <span class="text-[10px] font-semibold text-slate-600 block mb-1">Firma Técnico: ${rawTecNombre}</span>
+        ${rawTecFirma && rawTecFirma.startsWith('data:image') ? `<img src="${rawTecFirma}" class="h-12 mx-auto object-contain bg-white rounded border border-slate-300 p-0.5" alt="Firma Técnico">` : '<span class="text-slate-400 italic text-[10px]">Sin firma</span>'}
       </div>
       <div class="border border-slate-200 rounded-xl p-2 bg-slate-50 text-center">
-        <span class="text-[10px] font-semibold text-slate-600 block mb-1">Firma Cliente: ${getVal('Nombre Cliente')}</span>
-        ${record['Firma Cliente (DataURL)'] ? `<img src="${record['Firma Cliente (DataURL)']}" class="h-12 mx-auto object-contain bg-white rounded border border-slate-300 p-0.5" alt="Firma Cliente">` : '<span class="text-slate-400 italic text-[10px]">Sin firma</span>'}
+        <span class="text-[10px] font-semibold text-slate-600 block mb-1">Firma Cliente: ${rawCliNombre}</span>
+        ${rawCliFirma && rawCliFirma.startsWith('data:image') ? `<img src="${rawCliFirma}" class="h-12 mx-auto object-contain bg-white rounded border border-slate-300 p-0.5" alt="Firma Cliente">` : '<span class="text-slate-400 italic text-[10px]">Sin firma</span>'}
       </div>
     </div>
   `;
