@@ -61,51 +61,49 @@
   border-color: #94a3b8;
 }
 
-/* Reglas de impresión limpias para exportación a PDF (Ajustado a 1 hoja) */
+/* Reglas de impresión limpias para exportación a PDF (Strict 1 Page) */
 @media print {
   @page {
     size: letter portrait;
-    margin: 6mm 8mm;
+    margin: 4mm 6mm;
   }
 
   body {
     background: #ffffff !important;
     color: #000000 !important;
-    font-size: 10px !important;
-    line-height: 1.2 !important;
+    font-size: 9.5px !important;
+    line-height: 1.15 !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
-  header, 
-  nav, 
-  footer, 
-  #modal-status, 
-  #modal-history, 
-  #modal-clients, 
-  #modal-technicians,
-  #modal-equipment-types,
-  iframe {
+  /* Ocultar todos los elementos hijos directos de body excepto el modal de detalle */
+  body.printing-detail > *:not(#modal-record-detail) {
     display: none !important;
   }
 
-  body.printing-detail #checklist-form,
-  body.printing-detail header,
-  body.printing-detail #modal-history {
-    display: none !important;
-  }
-
+  /* Forzar el modal de detalle arriba del todo en la página 1 */
   body.printing-detail #modal-record-detail {
-    position: static !important;
     display: block !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: auto !important;
     background: transparent !important;
     backdrop-filter: none !important;
     padding: 0 !important;
     margin: 0 !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
+    overflow: visible !important;
+    page-break-after: avoid !important;
+    page-break-before: avoid !important;
+    break-after: avoid !important;
+    break-before: avoid !important;
   }
 
   body.printing-detail #modal-record-detail > div {
     max-width: 100% !important;
+    width: 100% !important;
     max-height: none !important;
     box-shadow: none !important;
     border: none !important;
@@ -115,25 +113,26 @@
 
   body.printing-detail #detail-modal-body {
     padding: 0 !important;
-    gap: 6px !important;
+    gap: 4px !important;
     overflow: visible !important;
   }
 
   body.printing-detail #detail-modal-body > div {
-    padding: 6px 8px !important;
-    margin-bottom: 4px !important;
-    border-radius: 6px !important;
+    padding: 3px 5px !important;
+    margin-bottom: 3px !important;
+    border-radius: 4px !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
 
   body.printing-detail img {
-    max-height: 40px !important;
+    max-height: 35px !important;
   }
 
   body.printing-detail #btn-close-detail,
   body.printing-detail #btn-print-detail,
-  body.printing-detail #btn-load-for-edit {
+  body.printing-detail #btn-load-for-edit,
+  body.printing-detail .no-print {
     display: none !important;
   }
 }
