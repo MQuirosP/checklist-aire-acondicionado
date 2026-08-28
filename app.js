@@ -1326,12 +1326,12 @@ function updateClientsUI() {
       return;
     }
     tbody.innerHTML = listToRender.map(c => {
-      const id = c.ID || c.id || '--';
-      const nombre = c['Nombre / Empresa'] || c.nombre || '--';
-      const ubicacion = c['Ubicación / Dirección'] || c.ubicacion || '--';
-      const telefono = c['Teléfono'] || c.telefono || '--';
-      const correo = c['Correo'] || c.correo || '--';
-      const estado = c.Estado || c['Estado'] || 'Activo';
+      const id = String(c.ID || c.id || '--');
+      const nombre = String(c['Nombre / Empresa'] || c.nombre || '--');
+      const ubicacion = String(c['Ubicación / Dirección'] || c.ubicacion || '--');
+      const telefono = String(c['Teléfono'] || c.telefono || '--');
+      const correo = String(c['Correo'] || c.correo || '--');
+      const estado = String(c.Estado || c['Estado'] || 'Activo');
       const isInactive = estado === 'Inactivo';
 
       return `
@@ -1342,10 +1342,10 @@ function updateClientsUI() {
           <td class="py-2 px-3 font-semibold ${isInactive ? 'text-rose-600' : 'text-emerald-600'}">${estado}</td>
           <td class="py-2 px-3 text-center">
             <div class="flex items-center justify-center gap-1">
-              <button type="button" onclick="startEditClient('${id}', '${nombre.replace(/'/g, "\\'")}', '${ubicacion.replace(/'/g, "\\'")}', '${telefono.replace(/'/g, "\\'")}', '${correo.replace(/'/g, "\\'")}')" class="px-2 py-1 text-[11px] font-semibold rounded bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition">
+              <button type="button" onclick="startEditClient('${id.replace(/'/g, "\\'")}', '${nombre.replace(/'/g, "\\'")}', '${ubicacion.replace(/'/g, "\\'")}', '${telefono.replace(/'/g, "\\'")}', '${correo.replace(/'/g, "\\'")}')" class="px-2 py-1 text-[11px] font-semibold rounded bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition">
                 ✏️ Editar
               </button>
-              <button type="button" onclick="toggleClientSoftDelete('${id}', '${nombre.replace(/'/g, "\\'")}', '${estado}')" class="px-2 py-1 text-[11px] font-semibold rounded ${isInactive ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'} transition">
+              <button type="button" onclick="toggleClientSoftDelete('${id.replace(/'/g, "\\'")}', '${nombre.replace(/'/g, "\\'")}', '${estado}')" class="px-2 py-1 text-[11px] font-semibold rounded ${isInactive ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'} transition">
                 ${isInactive ? '🔄 Reactivar' : '🗑️ Desactivar'}
               </button>
             </div>
@@ -1403,11 +1403,11 @@ function updateTechniciansUI() {
       return;
     }
     tbody.innerHTML = listToRender.map(t => {
-      const id = t.ID || t.id || '--';
-      const nombre = t['Nombre del Técnico'] || t.nombre || '--';
-      const cedula = t['Cédula / ID'] || t.cedula || '--';
-      const telefono = t['Teléfono'] || t.telefono || '--';
-      const estado = t.Estado || t['Estado'] || 'Activo';
+      const id = String(t.ID || t.id || '--');
+      const nombre = String(t['Nombre del Técnico'] || t.nombre || '--');
+      const cedula = String(t['Cédula / ID'] || t.cedula || '--');
+      const telefono = String(t['Teléfono'] || t.telefono || '--');
+      const estado = String(t.Estado || t['Estado'] || 'Activo');
       const isInactive = estado === 'Inactivo';
 
       return `
@@ -1418,10 +1418,10 @@ function updateTechniciansUI() {
           <td class="py-2 px-3 font-semibold ${isInactive ? 'text-rose-600' : 'text-emerald-600'}">${estado}</td>
           <td class="py-2 px-3 text-center">
             <div class="flex items-center justify-center gap-1">
-              <button type="button" onclick="startEditTechnician('${id}', '${nombre.replace(/'/g, "\\'")}', '${cedula.replace(/'/g, "\\'")}', '${telefono.replace(/'/g, "\\'")}')" class="px-2 py-1 text-[11px] font-semibold rounded bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition">
+              <button type="button" onclick="startEditTechnician('${id.replace(/'/g, "\\'")}', '${nombre.replace(/'/g, "\\'")}', '${cedula.replace(/'/g, "\\'")}', '${telefono.replace(/'/g, "\\'")}')" class="px-2 py-1 text-[11px] font-semibold rounded bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition">
                 ✏️ Editar
               </button>
-              <button type="button" onclick="toggleTechnicianSoftDelete('${id}', '${nombre.replace(/'/g, "\\'")}', '${estado}')" class="px-2 py-1 text-[11px] font-semibold rounded ${isInactive ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'} transition">
+              <button type="button" onclick="toggleTechnicianSoftDelete('${id.replace(/'/g, "\\'")}', '${nombre.replace(/'/g, "\\'")}', '${estado}')" class="px-2 py-1 text-[11px] font-semibold rounded ${isInactive ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'} transition">
                 ${isInactive ? '🔄 Reactivar' : '🗑️ Desactivar'}
               </button>
             </div>
@@ -1604,10 +1604,10 @@ function updateEquipmentTypesUI() {
       return;
     }
     tbody.innerHTML = listToRender.map(eq => {
-      const id = eq.ID || eq.id || '--';
-      const nombre = eq['Nombre Categoría'] || eq.nombre || '--';
-      const desc = eq['Descripción / Ejemplo'] || eq.descripcion || '--';
-      const estado = eq.Estado || eq['Estado'] || 'Activo';
+      const id = String(eq.ID || eq.id || '--');
+      const nombre = String(eq['Nombre Categoría'] || eq.nombre || '--');
+      const desc = String(eq['Descripción / Ejemplo'] || eq.descripcion || '--');
+      const estado = String(eq.Estado || eq['Estado'] || 'Activo');
       const isInactive = estado === 'Inactivo';
 
       return `
@@ -1617,10 +1617,10 @@ function updateEquipmentTypesUI() {
           <td class="py-2 px-3 font-semibold ${isInactive ? 'text-rose-600' : 'text-emerald-600'}">${estado}</td>
           <td class="py-2 px-3 text-center">
             <div class="flex items-center justify-center gap-1">
-              <button type="button" onclick="startEditEquipment('${id}', '${nombre.replace(/'/g, "\\'")}', '${desc.replace(/'/g, "\\'")}')" class="px-2 py-1 text-[11px] font-semibold rounded bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition">
+              <button type="button" onclick="startEditEquipment('${id.replace(/'/g, "\\'")}', '${nombre.replace(/'/g, "\\'")}', '${desc.replace(/'/g, "\\'")}')" class="px-2 py-1 text-[11px] font-semibold rounded bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition">
                 ✏️ Editar
               </button>
-              <button type="button" onclick="toggleEquipmentSoftDelete('${id}', '${nombre.replace(/'/g, "\\'")}', '${estado}')" class="px-2 py-1 text-[11px] font-semibold rounded ${isInactive ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'} transition">
+              <button type="button" onclick="toggleEquipmentSoftDelete('${id.replace(/'/g, "\\'")}', '${nombre.replace(/'/g, "\\'")}', '${estado}')" class="px-2 py-1 text-[11px] font-semibold rounded ${isInactive ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'} transition">
                 ${isInactive ? '🔄 Reactivar' : '🗑️ Desactivar'}
               </button>
             </div>
