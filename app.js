@@ -759,18 +759,46 @@ function openRecordDetail(record) {
 
   const getVal = (key) => record[key] || '--';
 
+  const allChecklistItems = [
+    { label: 'Evap: Gabinete Externo', key: 'Evap: Gabinete Externo', obsKey: 'Evap: Gabinete Obs' },
+    { label: 'Evap: Filtros de Aire', key: 'Evap: Filtros Aire', obsKey: 'Evap: Filtros Obs' },
+    { label: 'Evap: Serpentín Evap.', key: 'Evap: Serpentín Evaporador', obsKey: 'Evap: Serpentín Obs' },
+    { label: 'Evap: Bandeja / Biocidas', key: 'Evap: Bandeja Condensados / Biocidas', obsKey: 'Evap: Bandeja Obs' },
+    { label: 'Evap: Limpieza Drenaje', key: 'Evap: Drenaje Obstrucciones', obsKey: 'Evap: Drenaje Obs' },
+    { label: 'Evap: Turbina / Fan', key: 'Evap: Turbina / Fan Tangencial', obsKey: 'Evap: Turbina Obs' },
+    { label: 'Evap: Motor / Rodajes', key: 'Evap: Motor Vent / Rodajes', obsKey: 'Evap: Motor Vent Obs' },
+    { label: 'Evap: Persianas Swing', key: 'Evap: Persianas Swing / Motor paso', obsKey: 'Evap: Persianas Obs' },
+    { label: 'Evap: Conexiones Elec.', key: 'Evap: Conexiones Eléctricas / Termistores', obsKey: 'Evap: Conexiones Obs' },
+    { label: 'Cond: Serpentín Cond.', key: 'Cond: Serpentín Condensador', obsKey: 'Cond: Serpentín Obs' },
+    { label: 'Cond: Aletas Aluminio', key: 'Cond: Aletas Aluminio', obsKey: 'Cond: Aletas Obs' },
+    { label: 'Cond: Aspas Ventilador', key: 'Cond: Aspas Ventilador', obsKey: 'Cond: Aspas Obs' },
+    { label: 'Cond: Motor / Rodamientos', key: 'Cond: Motor Vent / Rodamientos', obsKey: 'Cond: Motor Vent Obs' },
+    { label: 'Cond: Compresor (Ruido)', key: 'Cond: Compresor (Ruido/Amortiguadores)', obsKey: 'Cond: Compresor Obs' },
+    { label: 'Cond: Aislamiento Térmico', key: 'Cond: Aislamiento Térmico Tuberías', obsKey: 'Cond: Aislamiento Obs' },
+    { label: 'Cond: Fugas Ref./Aceite', key: 'Cond: Fugas Refrigerante / Aceite', obsKey: 'Cond: Fugas Obs' },
+    { label: 'Cond: Soportes y Anclajes', key: 'Cond: Soportes y Anclajes', obsKey: 'Cond: Soportes Obs' },
+    { label: 'Elec: Reajuste Bornes', key: 'Elec: Reajuste Bornes', obsKey: 'Elec: Bornes Obs' },
+    { label: 'Elec: Capacitores', key: 'Elec: Capacitores Medición', obsKey: 'Elec: Capacitores Obs' },
+    { label: 'Elec: Tarjetas PCB / Err', key: 'Elec: Tarjetas PCB / Errores', obsKey: 'Elec: Tarjetas Obs' },
+    { label: 'Elec: Protecciones Elec.', key: 'Elec: Protecciones Eléctricas', obsKey: 'Elec: Protecciones Obs' },
+    { label: 'Elec: Tierra Física', key: 'Elec: Conexión Tierra Física', obsKey: 'Elec: Tierra Obs' }
+  ];
+
   // Helper para renderizar pill de inspección
-  const renderItemPill = (label, key) => {
-    const val = record[key];
-    if (!val) return '';
+  const renderItemPill = (item) => {
+    const val = record[item.key] || '--';
+    const obs = record[item.obsKey] ? `<span class="text-[9px] text-slate-500 italic block font-normal leading-none mt-0.5">(${record[item.obsKey]})</span>` : '';
     let colorClass = 'bg-slate-100 text-slate-700 border-slate-300';
     if (val === 'B') colorClass = 'bg-emerald-100 text-emerald-800 border-emerald-300';
     if (val === 'R') colorClass = 'bg-amber-100 text-amber-800 border-amber-300';
     if (val === 'M') colorClass = 'bg-rose-100 text-rose-800 border-rose-300';
-    if (val === 'N/A') colorClass = 'bg-slate-100 text-slate-600 border-slate-200';
-    return `<div class="flex items-center justify-between p-1.5 bg-slate-50 border rounded-md text-[11px]">
-      <span class="text-slate-600 truncate mr-1">${label}</span>
-      <span class="px-1.5 py-0.5 rounded text-[10px] font-bold border ${colorClass}">${val}</span>
+    if (val === 'N/A') colorClass = 'bg-slate-100 text-slate-500 border-slate-200';
+    return `<div class="p-1.5 bg-slate-50 border border-slate-200 rounded-md text-[10px]">
+      <div class="flex items-center justify-between gap-1">
+        <span class="text-slate-700 font-semibold truncate mr-1">${item.label}</span>
+        <span class="px-1.5 py-0.5 rounded text-[9px] font-bold border shrink-0 ${colorClass}">${val}</span>
+      </div>
+      ${obs}
     </div>`;
   };
 
@@ -812,22 +840,12 @@ function openRecordDetail(record) {
 
     <!-- Puntos Revisados / Inspeccionados -->
     <div class="border border-slate-200 rounded-xl p-3 bg-white shadow-sm">
-      <h4 class="font-bold text-slate-800 text-xs mb-2 border-b border-slate-100 pb-1 flex items-center gap-1.5">
-        ✅ Puntos Inspeccionados y Revisados
+      <h4 class="font-bold text-slate-800 text-xs mb-2 border-b border-slate-100 pb-1 flex items-center justify-between">
+        <span>✅ Checklist de Inspección y Mantenimiento (22 Puntos Evaludos)</span>
+        <span class="text-[10px] text-slate-500 font-normal"><strong>B</strong>: Bueno | <strong>R</strong>: Regular | <strong>M</strong>: Malo | <strong>N/A</strong>: No Aplica</span>
       </h4>
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5">
-        ${renderItemPill('Evap: Gabinete', 'Evap: Gabinete Externo')}
-        ${renderItemPill('Evap: Filtros', 'Evap: Filtros Aire')}
-        ${renderItemPill('Evap: Serpentín', 'Evap: Serpentín Evaporador')}
-        ${renderItemPill('Evap: Bandeja', 'Evap: Bandeja Condensados / Biocidas')}
-        ${renderItemPill('Evap: Turbina', 'Evap: Turbina / Fan Tangencial')}
-        ${renderItemPill('Cond: Serpentín', 'Cond: Serpentín Condensador')}
-        ${renderItemPill('Cond: Aletas', 'Cond: Aletas Aluminio')}
-        ${renderItemPill('Cond: Aspas', 'Cond: Aspas Ventilador')}
-        ${renderItemPill('Elec: Bornes', 'Elec: Reajuste Bornes')}
-        ${renderItemPill('Elec: Capacitores', 'Elec: Capacitores Medición')}
-        ${renderItemPill('Elec: Tarjetas', 'Elec: Tarjetas PCB / Errores')}
-        ${renderItemPill('Desagüe: Drenaje', 'Evap: Drenaje Obstrucciones')}
+        ${allChecklistItems.map(item => renderItemPill(item)).join('')}
       </div>
     </div>
 
