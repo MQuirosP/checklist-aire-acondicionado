@@ -692,6 +692,26 @@ function checkOTUniqueness() {
   }
 }
 
+function formatLocalDate(val) {
+  if (!val) return '--';
+  const str = String(val).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  if (str.includes('T')) {
+    const part = str.split('T')[0];
+    if (/^\d{4}-\d{2}-\d{2}$/.test(part)) return part;
+  }
+  try {
+    const d = new Date(str);
+    if (isNaN(d.getTime())) return str;
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  } catch (e) {
+    return str;
+  }
+}
+
 let selectedRecordCache = null;
 
 function renderHistoryTable(query) {
@@ -723,8 +743,7 @@ function renderHistoryTable(query) {
     const tr = document.createElement('tr');
     tr.className = 'hover:bg-slate-50 transition border-b border-slate-100';
 
-    const fechaRaw = item['Fecha Inspección'] || item['Fecha / Hora Registro'] || '--';
-    const fechaFormatted = typeof fechaRaw === 'string' && fechaRaw.includes('T') ? fechaRaw.split('T')[0] : fechaRaw;
+    const fechaFormatted = formatLocalDate(item['Fecha Inspección'] || item['Fecha / Hora Registro']);
 
     tr.innerHTML = `
       <td class="py-2.5 px-3 font-medium text-slate-700 whitespace-nowrap">${fechaFormatted}</td>
@@ -743,10 +762,13 @@ function renderHistoryTable(query) {
     tbody.appendChild(tr);
   });
 
-  document.querySelectorAll('.btn-view-detail-row').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const idx = parseInt(btn.getAttribute('data-index'), 10);
-      openRecordDetail(filtered[idx]);
+  // Event listeners para botones de ver detalle en tabla
+  tbody.querySelectorAll('.btn-view-detail-row').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const idx = parseInt(e.currentTarget.getAttribute('data-index'));
+      if (!isNaN(idx) && filtered[idx]) {
+        openRecordDetail(filtered[idx]);
+      }
     });
   });
 }
@@ -802,7 +824,7 @@ function openRecordDetail(record) {
     </div>`;
   };
 
-  const fechaVal = typeof record['Fecha Inspección'] === 'string' && record['Fecha Inspección'].includes('T') ? record['Fecha Inspección'].split('T')[0] : (record['Fecha Inspección'] || '--');
+  const fechaVal = formatLocalDate(record['Fecha Inspección'] || record['Fecha / Hora Registro']);
   const tipoMant = getVal('Tipo de Mantenimiento') !== '--' ? getVal('Tipo de Mantenimiento') : 'Preventivo';
 
   // Saneamiento de firmas en caso de registros con desplazamiento previo de columnas
