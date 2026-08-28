@@ -352,9 +352,6 @@ function getSheetJson(sheet) {
   if (rows.length < 2) return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
   var headers = rows[0];
   var data = [];
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var tz = ss ? ss.getSpreadsheetTimeZone() : Session.getScriptTimeZone();
-
   for (var i = 1; i < rows.length; i++) {
     var row = rows[i];
     var hasContent = false;
@@ -368,16 +365,7 @@ function getSheetJson(sheet) {
 
     var obj = {};
     for (var j = 0; j < headers.length; j++) {
-      var val = row[j];
-      if (val instanceof Date) {
-        var headerName = (headers[j] || "").toString();
-        if (headerName.indexOf("Fecha Inspección") !== -1) {
-          val = Utilities.formatDate(val, tz, "yyyy-MM-dd");
-        } else {
-          val = Utilities.formatDate(val, tz, "yyyy-MM-dd HH:mm:ss");
-        }
-      }
-      obj[headers[j]] = val !== undefined ? val : "";
+      obj[headers[j]] = row[j];
     }
     data.push(obj);
   }
