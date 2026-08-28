@@ -579,12 +579,25 @@ async function fetchHistoryData(silent = false) {
     // Parametro de fecha unico para ignorar cualquier cache del navegador/servidor
     const fetchUrl = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + '_t=' + Date.now();
     const res = await fetch(fetchUrl, { cache: 'no-store' });
-    const data = await res.json();
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (parseErr) {
+      console.error('La respuesta de Google Apps Script no es un JSON válido:', text);
+      if (!silent && loading) {
+        loading.classList.add('hidden');
+        if (container && historyDataCache.length > 0) container.classList.remove('hidden');
+      }
+      return;
+    }
 
-    historyDataCache = Array.isArray(data) ? data : [];
+    if (Array.isArray(data)) {
+      historyDataCache = data;
+    }
 
-    if (typeof updateClientsUI === 'function') updateClientsUI(true);
-    if (typeof updateTechniciansUI === 'function') updateTechniciansUI(true);
+    if (typeof updateClientsUI === 'function') updateClientsUI();
+    if (typeof updateTechniciansUI === 'function') updateTechniciansUI();
 
     if (historyDataCache.length > 0) {
       if (!silent && loading) {
@@ -605,11 +618,13 @@ async function fetchHistoryData(silent = false) {
     }
   } catch (err) {
     console.error('Error al cargar historial:', err);
-    historyDataCache = [];
     if (!silent && loading) {
       loading.classList.add('hidden');
-      if (container) container.classList.add('hidden');
-      if (empty) empty.classList.remove('hidden');
+      if (container && historyDataCache.length > 0) {
+        container.classList.remove('hidden');
+      } else if (empty) {
+        empty.classList.remove('hidden');
+      }
     }
   }
 }
@@ -1112,9 +1127,18 @@ async function fetchClients(silent = false) {
   try {
     const fetchUrl = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + 'action=clientes&_t=' + Date.now();
     const res = await fetch(fetchUrl, { cache: 'no-store' });
-    const data = await res.json();
-    clientsCache = Array.isArray(data) ? data : [];
-    updateClientsUI();
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error('Respuesta no válida para clientes desde Google Sheets:', text);
+      return;
+    }
+    if (Array.isArray(data)) {
+      clientsCache = data;
+      updateClientsUI();
+    }
   } catch (err) {
     console.error('Error al cargar clientes desde Google Sheets:', err);
     const tbody = document.getElementById('clients-table-body');
@@ -1128,9 +1152,18 @@ async function fetchTechnicians(silent = false) {
   try {
     const fetchUrl = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + 'action=tecnicos&_t=' + Date.now();
     const res = await fetch(fetchUrl, { cache: 'no-store' });
-    const data = await res.json();
-    techniciansCache = Array.isArray(data) ? data : [];
-    updateTechniciansUI();
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error('Respuesta no válida para técnicos desde Google Sheets:', text);
+      return;
+    }
+    if (Array.isArray(data)) {
+      techniciansCache = data;
+      updateTechniciansUI();
+    }
   } catch (err) {
     console.error('Error al cargar técnicos desde Google Sheets:', err);
     const tbody = document.getElementById('technicians-table-body');
@@ -1144,9 +1177,18 @@ async function fetchEquipmentTypes(silent = false) {
   try {
     const fetchUrl = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + 'action=equipos&_t=' + Date.now();
     const res = await fetch(fetchUrl, { cache: 'no-store' });
-    const data = await res.json();
-    equipmentTypesCache = Array.isArray(data) ? data : [];
-    updateEquipmentTypesUI();
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error('Respuesta no válida para catálogo de equipos desde Google Sheets:', text);
+      return;
+    }
+    if (Array.isArray(data)) {
+      equipmentTypesCache = data;
+      updateEquipmentTypesUI();
+    }
   } catch (err) {
     console.error('Error al cargar catálogo de equipos desde Google Sheets:', err);
     const tbody = document.getElementById('equipments-table-body');
