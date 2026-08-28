@@ -1054,6 +1054,25 @@ function loadRecordIntoForm(record) {
   setVal('nombre_tecnico_firma', record['Nombre Técnico']);
   setVal('nombre_cliente_firma', record['Nombre Cliente']);
 
+  // Cargar firmas existentes en el lienzo si están presentes
+  const drawSignatureToCanvas = (canvasId, dataUrl) => {
+    if (!dataUrl || typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image')) return;
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    };
+    img.src = dataUrl;
+  };
+
+  const firmaTechData = record['Firma Técnico (DataURL)'] || record['Firma Técnico'];
+  const firmaClientData = record['Firma Cliente (DataURL)'] || record['Firma Cliente'];
+  if (firmaTechData) drawSignatureToCanvas('canvas-tecnico', firmaTechData);
+  if (firmaClientData) drawSignatureToCanvas('canvas-cliente', firmaClientData);
+
   // Recalcular Delta T
   const tempInjInput = document.getElementById('med_temp_inyeccion');
   if (tempInjInput) tempInjInput.dispatchEvent(new Event('input'));

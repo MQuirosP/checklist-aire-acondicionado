@@ -197,7 +197,7 @@ function doPost(e) {
 
     var timestamp = new Date();
 
-    // Verificación de unicidad por N° Orden / OT
+    var targetRowIndex = -1;
     if (data.ot && data.ot.toString().trim() !== "") {
       var otClean = data.ot.toString().trim().toLowerCase();
       var rows = sheet.getDataRange().getValues();
@@ -206,12 +206,8 @@ function doPost(e) {
       for (var i = 1; i < rows.length; i++) {
         var existingOt = (rows[i][otColIdx] || "").toString().trim().toLowerCase();
         if (existingOt === otClean) {
-          return ContentService
-            .createTextOutput(JSON.stringify({ 
-              "result": "error", 
-              "error": "La Orden de Trabajo / OT '" + data.ot + "' ya fue registrada previamente." 
-            }))
-            .setMimeType(ContentService.MimeType.JSON);
+          targetRowIndex = i + 1;
+          break;
         }
       }
     }
@@ -291,8 +287,13 @@ function doPost(e) {
       return dataMap[h] !== undefined ? dataMap[h] : "";
     });
 
-    sheet.appendRow(row);
-    return ContentService.createTextOutput(JSON.stringify({ "result": "success", "row": sheet.getLastRow() })).setMimeType(ContentService.MimeType.JSON);
+    if (targetRowIndex !== -1) {
+      sheet.getRange(targetRowIndex, 1, 1, row.length).setValues([row]);
+      return ContentService.createTextOutput(JSON.stringify({ "result": "success", "updatedRow": targetRowIndex })).setMimeType(ContentService.MimeType.JSON);
+    } else {
+      sheet.appendRow(row);
+      return ContentService.createTextOutput(JSON.stringify({ "result": "success", "row": sheet.getLastRow() })).setMimeType(ContentService.MimeType.JSON);
+    }
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({ "result": "error", "error": err.toString() })).setMimeType(ContentService.MimeType.JSON);
   } finally {
