@@ -782,45 +782,41 @@ function openRecordDetail(record) {
   const getVal = (key) => record[key] || '--';
 
   const allChecklistItems = [
-    { label: 'Evap: Gabinete Externo', key: 'Evap: Gabinete Externo', obsKey: 'Evap: Gabinete Obs' },
-    { label: 'Evap: Filtros de Aire', key: 'Evap: Filtros Aire', obsKey: 'Evap: Filtros Obs' },
-    { label: 'Evap: Serpentín Evap.', key: 'Evap: Serpentín Evaporador', obsKey: 'Evap: Serpentín Obs' },
-    { label: 'Evap: Bandeja / Biocidas', key: 'Evap: Bandeja Condensados / Biocidas', obsKey: 'Evap: Bandeja Obs' },
-    { label: 'Evap: Limpieza Drenaje', key: 'Evap: Drenaje Obstrucciones', obsKey: 'Evap: Drenaje Obs' },
-    { label: 'Evap: Turbina / Fan', key: 'Evap: Turbina / Fan Tangencial', obsKey: 'Evap: Turbina Obs' },
-    { label: 'Evap: Motor / Rodajes', key: 'Evap: Motor Vent / Rodajes', obsKey: 'Evap: Motor Vent Obs' },
-    { label: 'Evap: Persianas Swing', key: 'Evap: Persianas Swing / Motor paso', obsKey: 'Evap: Persianas Obs' },
-    { label: 'Evap: Conexiones Elec.', key: 'Evap: Conexiones Eléctricas / Termistores', obsKey: 'Evap: Conexiones Obs' },
-    { label: 'Cond: Serpentín Cond.', key: 'Cond: Serpentín Condensador', obsKey: 'Cond: Serpentín Obs' },
-    { label: 'Cond: Aletas Aluminio', key: 'Cond: Aletas Aluminio', obsKey: 'Cond: Aletas Obs' },
-    { label: 'Cond: Aspas Ventilador', key: 'Cond: Aspas Ventilador', obsKey: 'Cond: Aspas Obs' },
-    { label: 'Cond: Motor / Rodamientos', key: 'Cond: Motor Vent / Rodamientos', obsKey: 'Cond: Motor Vent Obs' },
-    { label: 'Cond: Compresor (Ruido)', key: 'Cond: Compresor (Ruido/Amortiguadores)', obsKey: 'Cond: Compresor Obs' },
-    { label: 'Cond: Aislamiento Térmico', key: 'Cond: Aislamiento Térmico Tuberías', obsKey: 'Cond: Aislamiento Obs' },
-    { label: 'Cond: Fugas Ref./Aceite', key: 'Cond: Fugas Refrigerante / Aceite', obsKey: 'Cond: Fugas Obs' },
-    { label: 'Cond: Soportes y Anclajes', key: 'Cond: Soportes y Anclajes', obsKey: 'Cond: Soportes Obs' },
-    { label: 'Elec: Reajuste Bornes', key: 'Elec: Reajuste Bornes', obsKey: 'Elec: Bornes Obs' },
-    { label: 'Elec: Capacitores', key: 'Elec: Capacitores Medición', obsKey: 'Elec: Capacitores Obs' },
-    { label: 'Elec: Tarjetas PCB / Err', key: 'Elec: Tarjetas PCB / Errores', obsKey: 'Elec: Tarjetas Obs' },
-    { label: 'Elec: Protecciones Elec.', key: 'Elec: Protecciones Eléctricas', obsKey: 'Elec: Protecciones Obs' },
-    { label: 'Elec: Tierra Física', key: 'Elec: Conexión Tierra Física', obsKey: 'Elec: Tierra Obs' }
+    { label: 'Gab. Evap', key: 'Evap: Gabinete Externo', obsKey: 'Evap: Gabinete Obs' },
+    { label: 'Filtros Aire', key: 'Evap: Filtros Aire', obsKey: 'Evap: Filtros Obs' },
+    { label: 'Serp. Evap', key: 'Evap: Serpentín Evaporador', obsKey: 'Evap: Serpentín Obs' },
+    { label: 'Bandeja/Biocida', key: 'Evap: Bandeja Condensados / Biocidas', obsKey: 'Evap: Bandeja Obs' },
+    { label: 'Drenaje', key: 'Evap: Drenaje Obstrucciones', obsKey: 'Evap: Drenaje Obs' },
+    { label: 'Turbina/Fan', key: 'Evap: Turbina / Fan Tangencial', obsKey: 'Evap: Turbina Obs' },
+    { label: 'Motor Evap', key: 'Evap: Motor Vent / Rodajes', obsKey: 'Evap: Motor Vent Obs' },
+    { label: 'Persianas', key: 'Evap: Persianas Swing / Motor paso', obsKey: 'Evap: Persianas Obs' },
+    { label: 'Elec. Evap', key: 'Evap: Conexiones Eléctricas / Termistores', obsKey: 'Evap: Conexiones Obs' },
+    { label: 'Serp. Cond', key: 'Cond: Serpentín Condensador', obsKey: 'Cond: Serpentín Obs' },
+    { label: 'Aletas Alum', key: 'Cond: Aletas Aluminio', obsKey: 'Cond: Aletas Obs' },
+    { label: 'Aspas Vent', key: 'Cond: Aspas Ventilador', obsKey: 'Cond: Aspas Obs' },
+    { label: 'Motor Cond', key: 'Cond: Motor Vent / Rodamientos', obsKey: 'Cond: Motor Vent Obs' },
+    { label: 'Compresor', key: 'Cond: Compresor (Ruido/Amortiguadores)', obsKey: 'Cond: Compresor Obs' },
+    { label: 'Aislamiento', key: 'Cond: Aislamiento Térmico Tuberías', obsKey: 'Cond: Aislamiento Obs' },
+    { label: 'Fugas Ref/Aceite', key: 'Cond: Fugas Refrigerante / Aceite', obsKey: 'Cond: Fugas Obs' },
+    { label: 'Soportes', key: 'Cond: Soportes y Anclajes', obsKey: 'Cond: Soportes Obs' },
+    { label: 'Bornes Elec', key: 'Elec: Reajuste Bornes', obsKey: 'Elec: Bornes Obs' },
+    { label: 'Capacitores', key: 'Elec: Capacitores Medición', obsKey: 'Elec: Capacitores Obs' },
+    { label: 'Tarjetas PCB', key: 'Elec: Tarjetas PCB / Errores', obsKey: 'Elec: Tarjetas Obs' },
+    { label: 'Protecciones', key: 'Elec: Protecciones Eléctricas', obsKey: 'Elec: Protecciones Obs' },
+    { label: 'Tierra Física', key: 'Elec: Conexión Tierra Física', obsKey: 'Elec: Tierra Obs' }
   ];
 
-  // Helper para renderizar pill de inspección
+  // Helper para renderizar pill de inspección ultra-compacto (6 columnas)
   const renderItemPill = (item) => {
     const val = record[item.key] || '--';
-    const obs = record[item.obsKey] ? `<span class="text-[9px] text-slate-500 italic block font-normal leading-none mt-0.5">(${record[item.obsKey]})</span>` : '';
     let colorClass = 'bg-slate-100 text-slate-700 border-slate-300';
     if (val === 'B') colorClass = 'bg-emerald-100 text-emerald-800 border-emerald-300';
     if (val === 'R') colorClass = 'bg-amber-100 text-amber-800 border-amber-300';
     if (val === 'M') colorClass = 'bg-rose-100 text-rose-800 border-rose-300';
     if (val === 'N/A') colorClass = 'bg-slate-100 text-slate-500 border-slate-200';
-    return `<div class="p-1.5 bg-slate-50 border border-slate-200 rounded-md text-[10px]">
-      <div class="flex items-center justify-between gap-1">
-        <span class="text-slate-700 font-semibold truncate mr-1">${item.label}</span>
-        <span class="px-1.5 py-0.5 rounded text-[9px] font-bold border shrink-0 ${colorClass}">${val}</span>
-      </div>
-      ${obs}
+    return `<div class="p-0.5 px-1 bg-slate-50 border border-slate-200 rounded text-[8px] flex items-center justify-between gap-0.5 leading-none">
+      <span class="text-slate-700 font-medium truncate mr-0.5" title="${item.label}">${item.label}</span>
+      <span class="px-1 py-0.2 rounded text-[7.5px] font-bold border shrink-0 ${colorClass}">${val}</span>
     </div>`;
   };
 
@@ -845,13 +841,13 @@ function openRecordDetail(record) {
   const isEquipoOtro = (record['Tipo de Unidad'] || '').toString().trim() === 'Otro';
 
   const checklistBlockHTML = isEquipoOtro ? '' : `
-    <!-- Puntos Revisados / Inspeccionados -->
-    <div class="border border-slate-200 rounded-xl p-2 bg-white shadow-sm">
-      <h4 class="font-bold text-slate-800 text-[11px] mb-1 border-b border-slate-100 pb-0.5 flex items-center justify-between">
-        <span>✅ Checklist de Inspección y Mantenimiento (22 Puntos Evaluados)</span>
-        <span class="text-[9px] text-slate-500 font-normal"><strong>B</strong>: Bueno | <strong>R</strong>: Regular | <strong>M</strong>: Malo | <strong>N/A</strong>: No Aplica</span>
+    <!-- Puntos Revisados / Inspeccionados (6 Columnas Ultra-Compactas) -->
+    <div class="border border-slate-200 rounded-xl p-1 px-1.5 bg-white shadow-sm">
+      <h4 class="font-bold text-slate-800 text-[9.5px] mb-0.5 border-b border-slate-100 pb-0.5 flex items-center justify-between">
+        <span>✅ Checklist (22 Puntos)</span>
+        <span class="text-[8px] text-slate-500 font-normal"><strong>B</strong>: Bueno | <strong>R</strong>: Regular | <strong>M</strong>: Malo | <strong>N/A</strong>: No Aplica</span>
       </h4>
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1">
+      <div class="grid grid-cols-3 sm:grid-cols-6 gap-0.5">
         ${allChecklistItems.map(item => renderItemPill(item)).join('')}
       </div>
     </div>
@@ -859,43 +855,43 @@ function openRecordDetail(record) {
 
   container.innerHTML = `
     <!-- Header Summary Card -->
-    <div class="bg-slate-50 border border-slate-200 p-2.5 rounded-xl space-y-1">
-      <div class="flex flex-wrap justify-between items-center border-b border-slate-200 pb-1.5 gap-2">
+    <div class="bg-slate-50 border border-slate-200 p-2 rounded-xl space-y-1">
+      <div class="flex flex-wrap justify-between items-center border-b border-slate-200 pb-1 gap-2">
         <div class="flex items-center gap-2">
           <span class="text-xs font-bold text-blue-600">Orden / OT: ${getVal('N° Orden / OT')}</span>
           <span class="px-2 py-0.5 text-[10px] font-bold rounded-full ${tipoMant === 'Correctivo' ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-blue-100 text-blue-800 border border-blue-300'}">${tipoMant}</span>
         </div>
         <span class="text-xs text-slate-500 font-medium">Fecha: ${fechaVal}</span>
       </div>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs">
-        <div><span class="text-slate-400 block text-[10px]">Cliente / Ubicación:</span> <strong class="text-slate-800 font-semibold truncate block">${getVal('Cliente / Ubicación')}</strong></div>
-        <div><span class="text-slate-400 block text-[10px]">Técnico Responsable:</span> <strong class="text-slate-800 font-semibold truncate block">${getVal('Técnico Responsable')}</strong></div>
-        <div><span class="text-slate-400 block text-[10px]">Equipo / Marca:</span> <strong class="text-slate-800 font-semibold truncate block">${getVal('Tipo de Unidad')} ${getVal('Subtipo / Categoría Equipo') ? '(' + getVal('Subtipo / Categoría Equipo') + ')' : ''} ${getVal('Marca / Modelo')}</strong></div>
-        <div><span class="text-slate-400 block text-[10px]">Tag / Refrigerante:</span> <strong class="text-slate-800 font-semibold truncate block">${getVal('ID / Tag Equipo')} (${getVal('Refrigerante')})</strong></div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-0.5 text-xs">
+        <div><span class="text-slate-400 block text-[9.5px]">Cliente / Ubicación:</span> <strong class="text-slate-800 font-semibold truncate block">${getVal('Cliente / Ubicación')}</strong></div>
+        <div><span class="text-slate-400 block text-[9.5px]">Técnico Responsable:</span> <strong class="text-slate-800 font-semibold truncate block">${getVal('Técnico Responsable')}</strong></div>
+        <div><span class="text-slate-400 block text-[9.5px]">Equipo / Marca:</span> <strong class="text-slate-800 font-semibold truncate block">${getVal('Tipo de Unidad')} ${getVal('Subtipo / Categoría Equipo') ? '(' + getVal('Subtipo / Categoría Equipo') + ')' : ''} ${getVal('Marca / Modelo')}</strong></div>
+        <div><span class="text-slate-400 block text-[9.5px]">Tag / Refrigerante:</span> <strong class="text-slate-800 font-semibold truncate block">${getVal('ID / Tag Equipo')} (${getVal('Refrigerante')})</strong></div>
       </div>
     </div>
 
     ${checklistBlockHTML}
 
     <!-- Section 4: Operational Measurements Summary -->
-    <div class="border border-slate-200 rounded-xl p-2.5 bg-white shadow-sm">
-      <h4 class="font-bold text-slate-800 text-xs mb-1.5 border-b border-slate-100 pb-0.5 flex items-center gap-1.5">
+    <div class="border border-slate-200 rounded-xl p-2 bg-white shadow-sm">
+      <h4 class="font-bold text-slate-800 text-[11px] mb-1 border-b border-slate-100 pb-0.5 flex items-center gap-1.5">
         📊 Mediciones Técnicas
       </h4>
-      <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5 text-xs text-center">
-        <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[9px]">Voltaje:</span> <strong class="text-slate-800 text-[11px]">${getVal('Med: Voltaje (V AC)')} V</strong></div>
-        <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[9px]">Corr. Compr:</span> <strong class="text-slate-800 text-[11px]">${getVal('Med: Corriente Compresor (A)')} A</strong></div>
-        <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[9px]">Corr. Vent:</span> <strong class="text-slate-800 text-[11px]">${getVal('Med: Corriente Motor Ext (A)')} A</strong></div>
-        <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[9px]">Presión Baja:</span> <strong class="text-slate-800 text-[11px]">${getVal('Med: Presión Baja (PSI)')} PSI</strong></div>
-        <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[9px]">Presión Alta:</span> <strong class="text-slate-800 text-[11px]">${getVal('Med: Presión Alta (PSI)')} PSI</strong></div>
-        <div class="bg-emerald-50 p-1 rounded border border-emerald-200"><span class="text-emerald-700 block text-[9px] font-semibold">ΔT:</span> <strong class="text-emerald-800 text-[11px]">${getVal('Med: Delta T (°C)')} °C</strong></div>
+      <div class="grid grid-cols-3 sm:grid-cols-6 gap-1 text-xs text-center">
+        <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[8.5px]">Voltaje:</span> <strong class="text-slate-800 text-[10px]">${getVal('Med: Voltaje (V AC)')} V</strong></div>
+        <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[8.5px]">Corr. Compr:</span> <strong class="text-slate-800 text-[10px]">${getVal('Med: Corriente Compresor (A)')} A</strong></div>
+        <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[8.5px]">Corr. Vent:</span> <strong class="text-slate-800 text-[10px]">${getVal('Med: Corriente Motor Ext (A)')} A</strong></div>
+        <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[8.5px]">Presión Baja:</span> <strong class="text-slate-800 text-[10px]">${getVal('Med: Presión Baja (PSI)')} PSI</strong></div>
+        <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[8.5px]">Presión Alta:</span> <strong class="text-slate-800 text-[10px]">${getVal('Med: Presión Alta (PSI)')} PSI</strong></div>
+        <div class="bg-emerald-50 p-1 rounded border border-emerald-200"><span class="text-emerald-700 block text-[8.5px] font-semibold">ΔT:</span> <strong class="text-emerald-800 text-[10px]">${getVal('Med: Delta T (°C)')} °C</strong></div>
       </div>
     </div>
 
-    <!-- Section 5: Observaciones Finales -->
-    <div class="border border-slate-200 rounded-xl p-3 bg-white shadow-sm">
+    <!-- Section 5: Observaciones Finales (Espacio Maximizado) -->
+    <div class="border border-slate-200 rounded-xl p-2.5 bg-white shadow-sm flex-1">
       <h4 class="font-bold text-slate-800 text-xs mb-1 flex items-center gap-1">📝 Observaciones y Trabajo Realizado</h4>
-      <p class="bg-slate-50 p-2.5 rounded text-[11px] text-slate-700 whitespace-pre-wrap leading-relaxed border border-slate-200 ${isEquipoOtro ? 'min-h-[140px]' : 'min-h-[60px]'}">${getVal('Diagnóstico y Observaciones Finales')}</p>
+      <p class="bg-slate-50 p-2.5 rounded text-[11px] text-slate-700 whitespace-pre-wrap leading-relaxed border border-slate-200 ${isEquipoOtro ? 'min-h-[160px]' : 'min-h-[90px]'}">${getVal('Diagnóstico y Observaciones Finales')}</p>
     </div>
 
     <!-- Signatures Preview -->
