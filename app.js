@@ -223,6 +223,7 @@ function initMobileMenu() {
   const dropdown = document.getElementById('mobile-dropdown-menu');
   const btnClients = document.getElementById('btn-mobile-clients');
   const btnTechs = document.getElementById('btn-mobile-technicians');
+  const btnEquipments = document.getElementById('btn-mobile-equipments');
   const btnHistory = document.getElementById('btn-mobile-history');
   const btnDraft = document.getElementById('btn-mobile-draft');
 
