@@ -29,8 +29,11 @@ function initDate() {
   const btnToday = document.getElementById('btn-fill-today');
 
   const setToday = () => {
-    const today = new Date().toISOString().split('T')[0];
-    fechaInput.value = today;
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    fechaInput.value = `${year}-${month}-${day}`;
   };
 
   if (!fechaInput.value) setToday();
