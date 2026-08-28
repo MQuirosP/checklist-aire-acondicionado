@@ -842,9 +842,24 @@ function openRecordDetail(record) {
     rawCliNombre = getVal('Cliente / Ubicación');
   }
 
+  const isEquipoOtro = (record['Tipo de Unidad'] || '').toString().trim() === 'Otro';
+
+  const checklistBlockHTML = isEquipoOtro ? '' : `
+    <!-- Puntos Revisados / Inspeccionados -->
+    <div class="border border-slate-200 rounded-xl p-2 bg-white shadow-sm">
+      <h4 class="font-bold text-slate-800 text-[11px] mb-1 border-b border-slate-100 pb-0.5 flex items-center justify-between">
+        <span>✅ Checklist de Inspección y Mantenimiento (22 Puntos Evaluados)</span>
+        <span class="text-[9px] text-slate-500 font-normal"><strong>B</strong>: Bueno | <strong>R</strong>: Regular | <strong>M</strong>: Malo | <strong>N/A</strong>: No Aplica</span>
+      </h4>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1">
+        ${allChecklistItems.map(item => renderItemPill(item)).join('')}
+      </div>
+    </div>
+  `;
+
   container.innerHTML = `
     <!-- Header Summary Card -->
-    <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl space-y-1.5">
+    <div class="bg-slate-50 border border-slate-200 p-2.5 rounded-xl space-y-1">
       <div class="flex flex-wrap justify-between items-center border-b border-slate-200 pb-1.5 gap-2">
         <div class="flex items-center gap-2">
           <span class="text-xs font-bold text-blue-600">Orden / OT: ${getVal('N° Orden / OT')}</span>
@@ -855,45 +870,36 @@ function openRecordDetail(record) {
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs">
         <div><span class="text-slate-400 block text-[10px]">Cliente / Ubicación:</span> <strong class="text-slate-800 font-semibold truncate block">${getVal('Cliente / Ubicación')}</strong></div>
         <div><span class="text-slate-400 block text-[10px]">Técnico Responsable:</span> <strong class="text-slate-800 font-semibold truncate block">${getVal('Técnico Responsable')}</strong></div>
-        <div><span class="text-slate-400 block text-[10px]">Equipo / Marca:</span> <strong class="text-slate-800 font-semibold truncate block">${getVal('Tipo de Unidad')} ${getVal('Marca / Modelo')}</strong></div>
+        <div><span class="text-slate-400 block text-[10px]">Equipo / Marca:</span> <strong class="text-slate-800 font-semibold truncate block">${getVal('Tipo de Unidad')} ${getVal('Subtipo / Categoría Equipo') ? '(' + getVal('Subtipo / Categoría Equipo') + ')' : ''} ${getVal('Marca / Modelo')}</strong></div>
         <div><span class="text-slate-400 block text-[10px]">Tag / Refrigerante:</span> <strong class="text-slate-800 font-semibold truncate block">${getVal('ID / Tag Equipo')} (${getVal('Refrigerante')})</strong></div>
       </div>
     </div>
 
-    <!-- Puntos Revisados / Inspeccionados -->
-    <div class="border border-slate-200 rounded-xl p-3 bg-white shadow-sm">
-      <h4 class="font-bold text-slate-800 text-xs mb-2 border-b border-slate-100 pb-1 flex items-center justify-between">
-        <span>✅ Checklist de Inspección y Mantenimiento (22 Puntos Evaludos)</span>
-        <span class="text-[10px] text-slate-500 font-normal"><strong>B</strong>: Bueno | <strong>R</strong>: Regular | <strong>M</strong>: Malo | <strong>N/A</strong>: No Aplica</span>
-      </h4>
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5">
-        ${allChecklistItems.map(item => renderItemPill(item)).join('')}
-      </div>
-    </div>
+    ${checklistBlockHTML}
 
     <!-- Section 4: Operational Measurements Summary -->
-    <div class="border border-slate-200 rounded-xl p-3 bg-white shadow-sm">
-      <h4 class="font-bold text-slate-800 text-xs mb-2 border-b border-slate-100 pb-1 flex items-center gap-1.5">
+    <div class="border border-slate-200 rounded-xl p-2.5 bg-white shadow-sm">
+      <h4 class="font-bold text-slate-800 text-xs mb-1.5 border-b border-slate-100 pb-0.5 flex items-center gap-1.5">
         📊 Mediciones Técnicas
       </h4>
-      <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 text-xs text-center">
-        <div class="bg-slate-50 p-1.5 rounded border border-slate-100"><span class="text-slate-400 block text-[9px]">Voltaje:</span> <strong class="text-slate-800 text-[11px]">${getVal('Med: Voltaje (V AC)')} V</strong></div>
-        <div class="bg-slate-50 p-1.5 rounded border border-slate-100"><span class="text-slate-400 block text-[9px]">Corr. Compr:</span> <strong class="text-slate-800 text-[11px]">${getVal('Med: Corriente Compresor (A)')} A</strong></div>
-        <div class="bg-slate-50 p-1.5 rounded border border-slate-100"><span class="text-slate-400 block text-[9px]">Corr. Vent:</span> <strong class="text-slate-800 text-[11px]">${getVal('Med: Corriente Motor Ext (A)')} A</strong></div>
-        <div class="bg-slate-50 p-1.5 rounded border border-slate-100"><span class="text-slate-400 block text-[9px]">Presión Baja:</span> <strong class="text-slate-800 text-[11px]">${getVal('Med: Presión Baja (PSI)')} PSI</strong></div>
-        <div class="bg-slate-50 p-1.5 rounded border border-slate-100"><span class="text-slate-400 block text-[9px]">Presión Alta:</span> <strong class="text-slate-800 text-[11px]">${getVal('Med: Presión Alta (PSI)')} PSI</strong></div>
-        <div class="bg-emerald-50 p-1.5 rounded border border-emerald-200"><span class="text-emerald-700 block text-[9px] font-semibold">ΔT:</span> <strong class="text-emerald-800 text-[11px]">${getVal('Med: Delta T (°C)')} °C</strong></div>
+      <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5 text-xs text-center">
+        <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[9px]">Voltaje:</span> <strong class="text-slate-800 text-[11px]">${getVal('Med: Voltaje (V AC)')} V</strong></div>
+        <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[9px]">Corr. Compr:</span> <strong class="text-slate-800 text-[11px]">${getVal('Med: Corriente Compresor (A)')} A</strong></div>
+        <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[9px]">Corr. Vent:</span> <strong class="text-slate-800 text-[11px]">${getVal('Med: Corriente Motor Ext (A)')} A</strong></div>
+        <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[9px]">Presión Baja:</span> <strong class="text-slate-800 text-[11px]">${getVal('Med: Presión Baja (PSI)')} PSI</strong></div>
+        <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[9px]">Presión Alta:</span> <strong class="text-slate-800 text-[11px]">${getVal('Med: Presión Alta (PSI)')} PSI</strong></div>
+        <div class="bg-emerald-50 p-1 rounded border border-emerald-200"><span class="text-emerald-700 block text-[9px] font-semibold">ΔT:</span> <strong class="text-emerald-800 text-[11px]">${getVal('Med: Delta T (°C)')} °C</strong></div>
       </div>
     </div>
 
     <!-- Section 5: Observaciones Finales -->
     <div class="border border-slate-200 rounded-xl p-3 bg-white shadow-sm">
       <h4 class="font-bold text-slate-800 text-xs mb-1 flex items-center gap-1">📝 Observaciones y Trabajo Realizado</h4>
-      <p class="bg-slate-50 p-2 rounded text-[11px] text-slate-700 whitespace-pre-wrap leading-tight border border-slate-200">${getVal('Diagnóstico y Observaciones Finales')}</p>
+      <p class="bg-slate-50 p-2.5 rounded text-[11px] text-slate-700 whitespace-pre-wrap leading-relaxed border border-slate-200 ${isEquipoOtro ? 'min-h-[140px]' : 'min-h-[60px]'}">${getVal('Diagnóstico y Observaciones Finales')}</p>
     </div>
 
     <!-- Signatures Preview -->
-    <div class="grid grid-cols-2 gap-3 pt-1">
+    <div class="grid grid-cols-2 gap-3 pt-0.5">
       <div class="border border-slate-200 rounded-xl p-2 bg-slate-50 text-center">
         <span class="text-[10px] font-semibold text-slate-600 block mb-1">Firma Técnico: ${rawTecNombre}</span>
         ${rawTecFirma && rawTecFirma.startsWith('data:image') ? `<img src="${rawTecFirma}" class="h-12 mx-auto object-contain bg-white rounded border border-slate-300 p-0.5" alt="Firma Técnico">` : '<span class="text-slate-400 italic text-[10px]">Sin firma</span>'}
