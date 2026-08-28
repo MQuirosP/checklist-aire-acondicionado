@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initOTValidation();
   initRecordDetailModal();
   initClientsAndTechniciansManagement();
+  initEquipmentManagement();
 });
 
 /**
@@ -283,6 +284,11 @@ function resetFormComplete() {
     otInput.value = '';
     otInput.classList.remove('border-rose-500', 'border-emerald-500');
   }
+
+  const containerSubtipo = document.getElementById('container-subtipo-equipo');
+  if (containerSubtipo) containerSubtipo.classList.add('hidden');
+  const subtipoSelect = document.getElementById('subtipoEquipo');
+  if (subtipoSelect) subtipoSelect.value = '';
 
   // Limpiar lienzos de firmas
   ['canvas-tecnico', 'canvas-cliente'].forEach(id => {
@@ -796,6 +802,11 @@ function loadRecordIntoForm(record) {
   setSelectVal('cliente', record['Cliente / Ubicación']);
   setSelectVal('tecnico', record['Técnico Responsable']);
   setSelectVal('tipoUnidad', record['Tipo de Unidad']);
+  if (record['Tipo de Unidad'] === 'Otro') {
+    const containerSubtipo = document.getElementById('container-subtipo-equipo');
+    if (containerSubtipo) containerSubtipo.classList.remove('hidden');
+    setSelectVal('subtipoEquipo', record['Subtipo / Categoría Equipo']);
+  }
   setVal('marcaModelo', record['Marca / Modelo']);
   setVal('idTag', record['ID / Tag Equipo']);
   setSelectVal('refrigerante', record['Refrigerante']);
@@ -886,57 +897,46 @@ function loadRecordIntoForm(record) {
 }
 
 /**
- * 9. Gestión de Clientes y Técnicos (Almacenamiento Local + Extracción Automática)
+ * 9. Gestión de Clientes, Técnicos y Catálogo de Equipos (Google Sheets 100% Cloud + Soft-Delete)
  */
-const CLIENTS_STORAGE_KEY = 'app_clientes_custom_v1';
-const TECHS_STORAGE_KEY = 'app_tecnicos_custom_v1';
+let clientsCache = [];
+let techniciansCache = [];
+let equipmentTypesCache = [];
 
-function getCustomClients() {
+async function fetchClients(silent = false) {
   try {
-    return JSON.parse(localStorage.getItem(CLIENTS_STORAGE_KEY)) || [];
-  } catch (e) {
-    return [];
+    const fetchUrl = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + 'action=clientes&_t=' + Date.now();
+    const res = await fetch(fetchUrl, { cache: 'no-store' });
+    const data = await res.json();
+    clientsCache = Array.isArray(data) ? data : [];
+    updateClientsUI(silent);
+  } catch (err) {
+    console.error('Error al cargar clientes desde Google Sheets:', err);
   }
 }
 
-function getCustomTechnicians() {
+async function fetchTechnicians(silent = false) {
   try {
-    return JSON.parse(localStorage.getItem(TECHS_STORAGE_KEY)) || [];
-  } catch (e) {
-    return [];
+    const fetchUrl = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + 'action=tecnicos&_t=' + Date.now();
+    const res = await fetch(fetchUrl, { cache: 'no-store' });
+    const data = await res.json();
+    techniciansCache = Array.isArray(data) ? data : [];
+    updateTechniciansUI(silent);
+  } catch (err) {
+    console.error('Error al cargar técnicos desde Google Sheets:', err);
   }
 }
 
-function getAllClients() {
-  const custom = getCustomClients();
-  const list = [...custom];
-
-  // Extraer clientes únicos de los mantenimientos guardados en el historial
-  if (Array.isArray(historyDataCache)) {
-    historyDataCache.forEach(item => {
-      const raw = (item['Cliente / Ubicación'] || '').toString().trim();
-      if (raw && !list.some(c => (c.nombre || '').toLowerCase() === raw.toLowerCase() || (`${c.nombre} - ${c.ubicacion}`).toLowerCase() === raw.toLowerCase())) {
-        list.push({ id: 'AUTO-' + (list.length + 1), nombre: raw, ubicacion: 'Extraído de Historial', telefono: '--', auto: true });
-      }
-    });
+async function fetchEquipmentTypes(silent = false) {
+  try {
+    const fetchUrl = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + 'action=equipos&_t=' + Date.now();
+    const res = await fetch(fetchUrl, { cache: 'no-store' });
+    const data = await res.json();
+    equipmentTypesCache = Array.isArray(data) ? data : [];
+    updateEquipmentTypesUI(silent);
+  } catch (err) {
+    console.error('Error al cargar catálogo de equipos desde Google Sheets:', err);
   }
-  return list;
-}
-
-function getAllTechnicians() {
-  const custom = getCustomTechnicians();
-  const list = [...custom];
-
-  // Extraer técnicos únicos de los mantenimientos guardados en el historial
-  if (Array.isArray(historyDataCache)) {
-    historyDataCache.forEach(item => {
-      const raw = (item['Técnico Responsable'] || '').toString().trim();
-      if (raw && !list.some(t => (t.nombre || '').toLowerCase() === raw.toLowerCase())) {
-        list.push({ id: 'AUTO-' + (list.length + 1), nombre: raw, cedula: 'Extraído de Historial', telefono: '--', auto: true });
-      }
-    });
-  }
-  return list;
 }
 
 function initClientsAndTechniciansManagement() {
@@ -944,16 +944,18 @@ function initClientsAndTechniciansManagement() {
   const modalClients = document.getElementById('modal-clients');
   const btnCloseClients = document.getElementById('btn-close-clients');
   const formAddClient = document.getElementById('form-add-client');
+  const showInactiveClients = document.getElementById('show-inactive-clients');
 
   const btnViewTechnicians = document.getElementById('btn-view-technicians');
   const modalTechnicians = document.getElementById('modal-technicians');
   const btnCloseTechnicians = document.getElementById('btn-close-technicians');
   const formAddTechnician = document.getElementById('form-add-technician');
+  const showInactiveTechnicians = document.getElementById('show-inactive-technicians');
 
   if (btnViewClients && modalClients) {
     btnViewClients.addEventListener('click', () => {
       modalClients.classList.remove('hidden');
-      updateClientsUI(false);
+      fetchClients(false);
     });
   }
 
@@ -961,8 +963,12 @@ function initClientsAndTechniciansManagement() {
     btnCloseClients.addEventListener('click', () => modalClients.classList.add('hidden'));
   }
 
+  if (showInactiveClients) {
+    showInactiveClients.addEventListener('change', () => updateClientsUI(false));
+  }
+
   if (formAddClient) {
-    formAddClient.addEventListener('submit', (e) => {
+    formAddClient.addEventListener('submit', async (e) => {
       e.preventDefault();
       const name = document.getElementById('new-client-name').value.trim();
       const location = document.getElementById('new-client-location').value.trim();
@@ -971,26 +977,32 @@ function initClientsAndTechniciansManagement() {
 
       if (!name || !location) return;
 
-      const custom = getCustomClients();
-      const newClient = {
-        id: 'CLI-' + (custom.length + 1).toString().padStart(2, '0'),
+      const payload = {
+        action: 'add_cliente',
         nombre: name,
         ubicacion: location,
-        telefono: phone || '--',
-        correo: email || '--'
+        telefono: phone,
+        correo: email
       };
 
-      custom.push(newClient);
-      localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(custom));
-      formAddClient.reset();
-      updateClientsUI(false);
+      try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          body: JSON.stringify(payload)
+        });
+        formAddClient.reset();
+        setTimeout(() => fetchClients(false), 1200);
+      } catch (err) {
+        console.error('Error al guardar cliente:', err);
+      }
     });
   }
 
   if (btnViewTechnicians && modalTechnicians) {
     btnViewTechnicians.addEventListener('click', () => {
       modalTechnicians.classList.remove('hidden');
-      updateTechniciansUI(false);
+      fetchTechnicians(false);
     });
   }
 
@@ -998,8 +1010,12 @@ function initClientsAndTechniciansManagement() {
     btnCloseTechnicians.addEventListener('click', () => modalTechnicians.classList.add('hidden'));
   }
 
+  if (showInactiveTechnicians) {
+    showInactiveTechnicians.addEventListener('change', () => updateTechniciansUI(false));
+  }
+
   if (formAddTechnician) {
-    formAddTechnician.addEventListener('submit', (e) => {
+    formAddTechnician.addEventListener('submit', async (e) => {
       e.preventDefault();
       const name = document.getElementById('new-tech-name').value.trim();
       const cedula = document.getElementById('new-tech-cedula').value.trim();
@@ -1007,18 +1023,24 @@ function initClientsAndTechniciansManagement() {
 
       if (!name || !cedula) return;
 
-      const custom = getCustomTechnicians();
-      const newTech = {
-        id: 'TEC-' + (custom.length + 1).toString().padStart(2, '0'),
+      const payload = {
+        action: 'add_tecnico',
         nombre: name,
         cedula: cedula,
-        telefono: phone || '--'
+        telefono: phone
       };
 
-      custom.push(newTech);
-      localStorage.setItem(TECHS_STORAGE_KEY, JSON.stringify(custom));
-      formAddTechnician.reset();
-      updateTechniciansUI(false);
+      try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          body: JSON.stringify(payload)
+        });
+        formAddTechnician.reset();
+        setTimeout(() => fetchTechnicians(false), 1200);
+      } catch (err) {
+        console.error('Error al guardar técnico:', err);
+      }
     });
   }
 
@@ -1042,67 +1064,301 @@ function initClientsAndTechniciansManagement() {
     });
   }
 
-  updateClientsUI(true);
-  updateTechniciansUI(true);
+  fetchClients(true);
+  fetchTechnicians(true);
 }
 
 function updateClientsUI(silent = false) {
-  const list = getAllClients();
   const select = document.getElementById('cliente');
   const tbody = document.getElementById('clients-table-body');
+  const showInactive = document.getElementById('show-inactive-clients')?.checked;
 
   if (select) {
     const currentVal = select.value;
+    const activeClients = clientsCache.filter(c => (c.Estado || c['Estado'] || 'Activo') !== 'Inactivo');
     select.innerHTML = `<option value="" disabled ${!currentVal ? 'selected' : ''}>Seleccionar...</option>` +
-      list.map(c => {
-        const val = c.ubicacion && c.ubicacion !== 'Extraído de Historial' ? `${c.nombre} - ${c.ubicacion}` : c.nombre;
+      activeClients.map(c => {
+        const nombre = c['Nombre / Empresa'] || c.nombre || '';
+        const ubicacion = c['Ubicación / Dirección'] || c.ubicacion || '';
+        const val = ubicacion && ubicacion !== 'Extraído de Historial' ? `${nombre} - ${ubicacion}` : nombre;
         return `<option value="${val}" ${currentVal === val ? 'selected' : ''}>${val}</option>`;
       }).join('') +
       `<option value="__NEW_CLIENT__" style="font-weight: bold; color: #2563eb;">➕ Registrar Nuevo Cliente...</option>`;
   }
 
   if (!silent && tbody) {
-    if (list.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">No hay clientes registrados aún.</td></tr>`;
+    const listToRender = showInactive ? clientsCache : clientsCache.filter(c => (c.Estado || c['Estado'] || 'Activo') !== 'Inactivo');
+    if (listToRender.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-400">No hay clientes registrados ${showInactive ? '' : 'activos'}.</td></tr>`;
       return;
     }
-    tbody.innerHTML = list.map(c => `
-      <tr class="hover:bg-slate-50 border-b border-slate-100">
-        <td class="py-2 px-3 font-bold ${c.auto ? 'text-slate-400' : 'text-blue-600'}">${c.id}</td>
-        <td class="py-2 px-3 font-semibold text-slate-800">${c.nombre}</td>
-        <td class="py-2 px-3 text-slate-600">${c.ubicacion}</td>
-        <td class="py-2 px-3 text-slate-600">${c.telefono}</td>
-      </tr>
-    `).join('');
+    tbody.innerHTML = listToRender.map(c => {
+      const id = c.ID || c.id || '--';
+      const nombre = c['Nombre / Empresa'] || c.nombre || '--';
+      const ubicacion = c['Ubicación / Dirección'] || c.ubicacion || '--';
+      const telefono = c['Teléfono'] || c.telefono || '--';
+      const estado = c.Estado || c['Estado'] || 'Activo';
+      const isInactive = estado === 'Inactivo';
+
+      return `
+        <tr class="hover:bg-slate-50 border-b border-slate-100 ${isInactive ? 'bg-slate-50 opacity-60' : ''}">
+          <td class="py-2 px-3 font-bold text-blue-600">${id}</td>
+          <td class="py-2 px-3 font-semibold text-slate-800">${nombre}</td>
+          <td class="py-2 px-3 text-slate-600">${ubicacion}</td>
+          <td class="py-2 px-3 text-slate-600">${telefono}</td>
+          <td class="py-2 px-3 font-semibold ${isInactive ? 'text-rose-600' : 'text-emerald-600'}">${estado}</td>
+          <td class="py-2 px-3 text-center">
+            <button type="button" onclick="toggleClientSoftDelete('${id}', '${nombre}', '${estado}')" class="px-2.5 py-1 text-[11px] font-semibold rounded ${isInactive ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'} transition">
+              ${isInactive ? '🔄 Reactivar' : '🗑️ Desactivar'}
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+}
+
+async function toggleClientSoftDelete(id, nombre, currentStatus) {
+  const newStatus = currentStatus === 'Inactivo' ? 'Activo' : 'Inactivo';
+  const actionText = newStatus === 'Inactivo' ? 'desactivar' : 'reactivar';
+  if (!confirm(`¿Estás seguro de que deseas ${actionText} al cliente "${nombre}"?`)) return;
+
+  const payload = {
+    action: 'toggle_cliente',
+    id: id,
+    nombre: nombre,
+    estado: newStatus
+  };
+
+  try {
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify(payload)
+    });
+    setTimeout(() => fetchClients(false), 1200);
+  } catch (err) {
+    console.error('Error al cambiar estado de cliente:', err);
   }
 }
 
 function updateTechniciansUI(silent = false) {
-  const list = getAllTechnicians();
   const select = document.getElementById('tecnico');
   const tbody = document.getElementById('technicians-table-body');
+  const showInactive = document.getElementById('show-inactive-technicians')?.checked;
 
   if (select) {
     const currentVal = select.value;
+    const activeTechs = techniciansCache.filter(t => (t.Estado || t['Estado'] || 'Activo') !== 'Inactivo');
     select.innerHTML = `<option value="" disabled ${!currentVal ? 'selected' : ''}>Seleccionar...</option>` +
-      list.map(t => {
-        return `<option value="${t.nombre}" ${currentVal === t.nombre ? 'selected' : ''}>${t.nombre}</option>`;
+      activeTechs.map(t => {
+        const nombre = t['Nombre del Técnico'] || t.nombre || '';
+        return `<option value="${nombre}" ${currentVal === nombre ? 'selected' : ''}>${nombre}</option>`;
       }).join('') +
       `<option value="__NEW_TECH__" style="font-weight: bold; color: #2563eb;">➕ Registrar Nuevo Técnico...</option>`;
   }
 
   if (!silent && tbody) {
-    if (list.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">No hay técnicos registrados aún.</td></tr>`;
+    const listToRender = showInactive ? techniciansCache : techniciansCache.filter(t => (t.Estado || t['Estado'] || 'Activo') !== 'Inactivo');
+    if (listToRender.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-400">No hay técnicos registrados ${showInactive ? '' : 'activos'}.</td></tr>`;
       return;
     }
-    tbody.innerHTML = list.map(t => `
-      <tr class="hover:bg-slate-50 border-b border-slate-100">
-        <td class="py-2 px-3 font-bold ${t.auto ? 'text-slate-400' : 'text-blue-600'}">${t.id}</td>
-        <td class="py-2 px-3 font-semibold text-slate-800">${t.nombre}</td>
-        <td class="py-2 px-3 text-slate-600">${t.cedula}</td>
-        <td class="py-2 px-3 text-slate-600">${t.telefono}</td>
-      </tr>
-    `).join('');
+    tbody.innerHTML = listToRender.map(t => {
+      const id = t.ID || t.id || '--';
+      const nombre = t['Nombre del Técnico'] || t.nombre || '--';
+      const cedula = t['Cédula / ID'] || t.cedula || '--';
+      const telefono = t['Teléfono'] || t.telefono || '--';
+      const estado = t.Estado || t['Estado'] || 'Activo';
+      const isInactive = estado === 'Inactivo';
+
+      return `
+        <tr class="hover:bg-slate-50 border-b border-slate-100 ${isInactive ? 'bg-slate-50 opacity-60' : ''}">
+          <td class="py-2 px-3 font-bold text-blue-600">${id}</td>
+          <td class="py-2 px-3 font-semibold text-slate-800">${nombre}</td>
+          <td class="py-2 px-3 text-slate-600">${cedula}</td>
+          <td class="py-2 px-3 text-slate-600">${telefono}</td>
+          <td class="py-2 px-3 font-semibold ${isInactive ? 'text-rose-600' : 'text-emerald-600'}">${estado}</td>
+          <td class="py-2 px-3 text-center">
+            <button type="button" onclick="toggleTechnicianSoftDelete('${id}', '${nombre}', '${estado}')" class="px-2.5 py-1 text-[11px] font-semibold rounded ${isInactive ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'} transition">
+              ${isInactive ? '🔄 Reactivar' : '🗑️ Desactivar'}
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+}
+
+async function toggleTechnicianSoftDelete(id, nombre, currentStatus) {
+  const newStatus = currentStatus === 'Inactivo' ? 'Activo' : 'Inactivo';
+  const actionText = newStatus === 'Inactivo' ? 'desactivar' : 'reactivar';
+  if (!confirm(`¿Estás seguro de que deseas ${actionText} al técnico "${nombre}"?`)) return;
+
+  const payload = {
+    action: 'toggle_tecnico',
+    id: id,
+    nombre: nombre,
+    estado: newStatus
+  };
+
+  try {
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify(payload)
+    });
+    setTimeout(() => fetchTechnicians(false), 1200);
+  } catch (err) {
+    console.error('Error al cambiar estado de técnico:', err);
+  }
+}
+
+/**
+ * 10. Gestión del Catálogo de Equipos "Otros" (Soft-Delete + Google Sheets)
+ */
+function initEquipmentManagement() {
+  const tipoUnidadSelect = document.getElementById('tipoUnidad');
+  const containerSubtipo = document.getElementById('container-subtipo-equipo');
+  const subtipoSelect = document.getElementById('subtipoEquipo');
+  const btnManage = document.getElementById('btn-manage-equipment-types');
+  const modalEquipments = document.getElementById('modal-equipment-types');
+  const btnCloseEquipments = document.getElementById('btn-close-equipment-types');
+  const formAddEquipment = document.getElementById('form-add-equipment-type');
+  const showInactiveEquipments = document.getElementById('show-inactive-equipments');
+
+  if (tipoUnidadSelect && containerSubtipo) {
+    tipoUnidadSelect.addEventListener('change', (e) => {
+      if (e.target.value === 'Otro') {
+        containerSubtipo.classList.remove('hidden');
+        fetchEquipmentTypes(true);
+      } else {
+        containerSubtipo.classList.add('hidden');
+        if (subtipoSelect) subtipoSelect.value = '';
+      }
+    });
+  }
+
+  if (subtipoSelect) {
+    subtipoSelect.addEventListener('change', (e) => {
+      if (e.target.value === '__MANAGE_EQUIPMENT__') {
+        e.target.value = '';
+        if (modalEquipments) modalEquipments.classList.remove('hidden');
+      }
+    });
+  }
+
+  if (btnManage && modalEquipments) {
+    btnManage.addEventListener('click', () => {
+      modalEquipments.classList.remove('hidden');
+      fetchEquipmentTypes(false);
+    });
+  }
+
+  if (btnCloseEquipments) {
+    btnCloseEquipments.addEventListener('click', () => modalEquipments.classList.add('hidden'));
+  }
+
+  if (showInactiveEquipments) {
+    showInactiveEquipments.addEventListener('change', () => updateEquipmentTypesUI(false));
+  }
+
+  if (formAddEquipment) {
+    formAddEquipment.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('new-equipment-name').value.trim();
+      const desc = document.getElementById('new-equipment-desc').value.trim();
+
+      if (!name) return;
+
+      const payload = {
+        action: 'add_equipo',
+        nombre: name,
+        descripcion: desc
+      };
+
+      try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          body: JSON.stringify(payload)
+        });
+        formAddEquipment.reset();
+        setTimeout(() => fetchEquipmentTypes(false), 1200);
+      } catch (err) {
+        console.error('Error al agregar tipo de equipo:', err);
+      }
+    });
+  }
+
+  fetchEquipmentTypes(true);
+}
+
+function updateEquipmentTypesUI(silent = false) {
+  const select = document.getElementById('subtipoEquipo');
+  const tbody = document.getElementById('equipments-table-body');
+  const showInactive = document.getElementById('show-inactive-equipments')?.checked;
+
+  if (select) {
+    const currentVal = select.value;
+    const activeEquipments = equipmentTypesCache.filter(eq => (eq.Estado || eq['Estado'] || 'Activo') !== 'Inactivo');
+    select.innerHTML = `<option value="" disabled ${!currentVal ? 'selected' : ''}>Seleccionar Subtipo...</option>` +
+      activeEquipments.map(eq => {
+        const nombre = eq['Nombre Categoría'] || eq.nombre || '';
+        return `<option value="${nombre}" ${currentVal === nombre ? 'selected' : ''}>${nombre}</option>`;
+      }).join('') +
+      `<option value="__MANAGE_EQUIPMENT__" style="font-weight: bold; color: #2563eb;">➕ Gestionar Catálogo...</option>`;
+  }
+
+  if (!silent && tbody) {
+    const listToRender = showInactive ? equipmentTypesCache : equipmentTypesCache.filter(eq => (eq.Estado || eq['Estado'] || 'Activo') !== 'Inactivo');
+    if (listToRender.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-400">No hay categorías registradas ${showInactive ? '' : 'activas'}.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = listToRender.map(eq => {
+      const id = eq.ID || eq.id || '--';
+      const nombre = eq['Nombre Categoría'] || eq.nombre || '--';
+      const desc = eq['Descripción / Ejemplo'] || eq.descripcion || '--';
+      const estado = eq.Estado || eq['Estado'] || 'Activo';
+      const isInactive = estado === 'Inactivo';
+
+      return `
+        <tr class="hover:bg-slate-50 border-b border-slate-100 ${isInactive ? 'bg-slate-50 opacity-60' : ''}">
+          <td class="py-2 px-3 font-bold text-blue-600">${id}</td>
+          <td class="py-2 px-3 font-semibold text-slate-800">${nombre}</td>
+          <td class="py-2 px-3 text-slate-600">${desc}</td>
+          <td class="py-2 px-3 font-semibold ${isInactive ? 'text-rose-600' : 'text-emerald-600'}">${estado}</td>
+          <td class="py-2 px-3 text-center">
+            <button type="button" onclick="toggleEquipmentSoftDelete('${id}', '${nombre}', '${estado}')" class="px-2.5 py-1 text-[11px] font-semibold rounded ${isInactive ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'} transition">
+              ${isInactive ? '🔄 Reactivar' : '🗑️ Desactivar'}
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+}
+
+async function toggleEquipmentSoftDelete(id, nombre, currentStatus) {
+  const newStatus = currentStatus === 'Inactivo' ? 'Activo' : 'Inactivo';
+  const actionText = newStatus === 'Inactivo' ? 'desactivar' : 'reactivar';
+  if (!confirm(`¿Estás seguro de que deseas ${actionText} la categoría "${nombre}"?`)) return;
+
+  const payload = {
+    action: 'toggle_equipo',
+    id: id,
+    estado: newStatus
+  };
+
+  try {
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify(payload)
+    });
+    setTimeout(() => fetchEquipmentTypes(false), 1200);
+  } catch (err) {
+    console.error('Error al cambiar estado de categoría de equipo:', err);
   }
 }
