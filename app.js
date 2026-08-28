@@ -1131,6 +1131,7 @@ function initClientsAndTechniciansManagement() {
   if (btnViewClients && modalClients) {
     btnViewClients.addEventListener('click', () => {
       modalClients.classList.remove('hidden');
+      updateClientsUI();
       fetchClients(false);
     });
   }
@@ -1140,7 +1141,7 @@ function initClientsAndTechniciansManagement() {
   }
 
   if (showInactiveClients) {
-    showInactiveClients.addEventListener('change', () => updateClientsUI(false));
+    showInactiveClients.addEventListener('change', () => updateClientsUI());
   }
 
   const btnCancelClient = document.getElementById('btn-cancel-edit-client');
@@ -1184,6 +1185,7 @@ function initClientsAndTechniciansManagement() {
   if (btnViewTechnicians && modalTechnicians) {
     btnViewTechnicians.addEventListener('click', () => {
       modalTechnicians.classList.remove('hidden');
+      updateTechniciansUI();
       fetchTechnicians(false);
     });
   }
@@ -1299,7 +1301,7 @@ window.resetTechnicianEditForm = function() {
   if (cancelBtn) cancelBtn.classList.add('hidden');
 };
 
-function updateClientsUI(silent = false) {
+function updateClientsUI() {
   const select = document.getElementById('cliente');
   const tbody = document.getElementById('clients-table-body');
   const showInactive = document.getElementById('show-inactive-clients')?.checked;
@@ -1317,7 +1319,7 @@ function updateClientsUI(silent = false) {
       `<option value="__NEW_CLIENT__" style="font-weight: bold; color: #2563eb;">➕ Registrar Nuevo Cliente...</option>`;
   }
 
-  if (!silent && tbody) {
+  if (tbody) {
     const listToRender = showInactive ? clientsCache : clientsCache.filter(c => (c.Estado || c['Estado'] || 'Activo') !== 'Inactivo');
     if (listToRender.length === 0) {
       tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-400">No hay clientes registrados ${showInactive ? '' : 'activos'}.</td></tr>`;
@@ -1378,7 +1380,7 @@ async function toggleClientSoftDelete(id, nombre, currentStatus) {
   }
 }
 
-function updateTechniciansUI(silent = false) {
+function updateTechniciansUI() {
   const select = document.getElementById('tecnico');
   const tbody = document.getElementById('technicians-table-body');
   const showInactive = document.getElementById('show-inactive-technicians')?.checked;
@@ -1394,7 +1396,7 @@ function updateTechniciansUI(silent = false) {
       `<option value="__NEW_TECH__" style="font-weight: bold; color: #2563eb;">➕ Registrar Nuevo Técnico...</option>`;
   }
 
-  if (!silent && tbody) {
+  if (tbody) {
     const listToRender = showInactive ? techniciansCache : techniciansCache.filter(t => (t.Estado || t['Estado'] || 'Activo') !== 'Inactivo');
     if (listToRender.length === 0) {
       tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-400">No hay técnicos registrados ${showInactive ? '' : 'activos'}.</td></tr>`;
@@ -1490,6 +1492,7 @@ function initEquipmentManagement() {
         e.target.value = '';
         if (modalEquipments) {
           modalEquipments.classList.remove('hidden');
+          updateEquipmentTypesUI();
           fetchEquipmentTypes(false);
         }
       }
@@ -1500,6 +1503,7 @@ function initEquipmentManagement() {
   if (btnViewEquipments && modalEquipments) {
     btnViewEquipments.addEventListener('click', () => {
       modalEquipments.classList.remove('hidden');
+      updateEquipmentTypesUI();
       fetchEquipmentTypes(false);
     });
   }
@@ -1507,6 +1511,7 @@ function initEquipmentManagement() {
   if (btnManage && modalEquipments) {
     btnManage.addEventListener('click', () => {
       modalEquipments.classList.remove('hidden');
+      updateEquipmentTypesUI();
       fetchEquipmentTypes(false);
     });
   }
@@ -1516,7 +1521,7 @@ function initEquipmentManagement() {
   }
 
   if (showInactiveEquipments) {
-    showInactiveEquipments.addEventListener('change', () => updateEquipmentTypesUI(false));
+    showInactiveEquipments.addEventListener('change', () => updateEquipmentTypesUI());
   }
 
   const btnCancelEquip = document.getElementById('btn-cancel-edit-equipment');
@@ -1576,7 +1581,7 @@ window.resetEquipmentEditForm = function() {
   if (cancelBtn) cancelBtn.classList.add('hidden');
 };
 
-function updateEquipmentTypesUI(silent = false) {
+function updateEquipmentTypesUI() {
   const select = document.getElementById('subtipoEquipo');
   const tbody = document.getElementById('equipments-table-body');
   const showInactive = document.getElementById('show-inactive-equipments')?.checked;
@@ -1592,7 +1597,7 @@ function updateEquipmentTypesUI(silent = false) {
       `<option value="__MANAGE_EQUIPMENT__" style="font-weight: bold; color: #2563eb;">➕ Gestionar Catálogo...</option>`;
   }
 
-  if (!silent && tbody) {
+  if (tbody) {
     const listToRender = showInactive ? equipmentTypesCache : equipmentTypesCache.filter(eq => (eq.Estado || eq['Estado'] || 'Activo') !== 'Inactivo');
     if (listToRender.length === 0) {
       tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">No hay categorías registradas ${showInactive ? '' : 'activas'}.</td></tr>`;
