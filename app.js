@@ -1087,9 +1087,13 @@ function initClientsAndTechniciansManagement() {
     showInactiveClients.addEventListener('change', () => updateClientsUI(false));
   }
 
+  const btnCancelClient = document.getElementById('btn-cancel-edit-client');
+  if (btnCancelClient) btnCancelClient.addEventListener('click', window.resetClientEditForm);
+
   if (formAddClient) {
     formAddClient.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const editId = document.getElementById('edit-client-id').value;
       const name = document.getElementById('new-client-name').value.trim();
       const location = document.getElementById('new-client-location').value.trim();
       const phone = document.getElementById('new-client-phone').value.trim();
@@ -1097,8 +1101,10 @@ function initClientsAndTechniciansManagement() {
 
       if (!name || !location) return;
 
+      const isEdit = Boolean(editId);
       const payload = {
-        action: 'add_cliente',
+        action: isEdit ? 'edit_cliente' : 'add_cliente',
+        id: editId,
         nombre: name,
         ubicacion: location,
         telefono: phone,
@@ -1111,7 +1117,7 @@ function initClientsAndTechniciansManagement() {
           mode: 'no-cors',
           body: JSON.stringify(payload)
         });
-        formAddClient.reset();
+        window.resetClientEditForm();
         setTimeout(() => fetchClients(false), 1200);
       } catch (err) {
         console.error('Error al guardar cliente:', err);
@@ -1134,17 +1140,23 @@ function initClientsAndTechniciansManagement() {
     showInactiveTechnicians.addEventListener('change', () => updateTechniciansUI(false));
   }
 
+  const btnCancelTech = document.getElementById('btn-cancel-edit-tech');
+  if (btnCancelTech) btnCancelTech.addEventListener('click', window.resetTechnicianEditForm);
+
   if (formAddTechnician) {
     formAddTechnician.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const editId = document.getElementById('edit-tech-id').value;
       const name = document.getElementById('new-tech-name').value.trim();
       const cedula = document.getElementById('new-tech-cedula').value.trim();
       const phone = document.getElementById('new-tech-phone').value.trim();
 
       if (!name || !cedula) return;
 
+      const isEdit = Boolean(editId);
       const payload = {
-        action: 'add_tecnico',
+        action: isEdit ? 'edit_tecnico' : 'add_tecnico',
+        id: editId,
         nombre: name,
         cedula: cedula,
         telefono: phone
@@ -1156,7 +1168,7 @@ function initClientsAndTechniciansManagement() {
           mode: 'no-cors',
           body: JSON.stringify(payload)
         });
-        formAddTechnician.reset();
+        window.resetTechnicianEditForm();
         setTimeout(() => fetchTechnicians(false), 1200);
       } catch (err) {
         console.error('Error al guardar técnico:', err);
@@ -1188,6 +1200,49 @@ function initClientsAndTechniciansManagement() {
   fetchTechnicians(true);
 }
 
+window.startEditClient = function(id, nombre, ubicacion, telefono, correo) {
+  document.getElementById('edit-client-id').value = id;
+  document.getElementById('new-client-name').value = nombre === '--' ? '' : nombre;
+  document.getElementById('new-client-location').value = ubicacion === '--' ? '' : ubicacion;
+  document.getElementById('new-client-phone').value = telefono === '--' ? '' : telefono;
+  document.getElementById('new-client-email').value = correo === '--' ? '' : correo;
+  
+  const submitBtn = document.getElementById('btn-submit-client');
+  const cancelBtn = document.getElementById('btn-cancel-edit-client');
+  if (submitBtn) submitBtn.textContent = '💾 Guardar Cambios';
+  if (cancelBtn) cancelBtn.classList.remove('hidden');
+};
+
+window.resetClientEditForm = function() {
+  document.getElementById('edit-client-id').value = '';
+  document.getElementById('form-add-client').reset();
+  const submitBtn = document.getElementById('btn-submit-client');
+  const cancelBtn = document.getElementById('btn-cancel-edit-client');
+  if (submitBtn) submitBtn.textContent = '➕ Registrar Cliente';
+  if (cancelBtn) cancelBtn.classList.add('hidden');
+};
+
+window.startEditTechnician = function(id, nombre, cedula, telefono) {
+  document.getElementById('edit-tech-id').value = id;
+  document.getElementById('new-tech-name').value = nombre === '--' ? '' : nombre;
+  document.getElementById('new-tech-cedula').value = cedula === '--' ? '' : cedula;
+  document.getElementById('new-tech-phone').value = telefono === '--' ? '' : telefono;
+
+  const submitBtn = document.getElementById('btn-submit-tech');
+  const cancelBtn = document.getElementById('btn-cancel-edit-tech');
+  if (submitBtn) submitBtn.textContent = '💾 Guardar Cambios';
+  if (cancelBtn) cancelBtn.classList.remove('hidden');
+};
+
+window.resetTechnicianEditForm = function() {
+  document.getElementById('edit-tech-id').value = '';
+  document.getElementById('form-add-technician').reset();
+  const submitBtn = document.getElementById('btn-submit-tech');
+  const cancelBtn = document.getElementById('btn-cancel-edit-tech');
+  if (submitBtn) submitBtn.textContent = '➕ Registrar Técnico';
+  if (cancelBtn) cancelBtn.classList.add('hidden');
+};
+
 function updateClientsUI(silent = false) {
   const select = document.getElementById('cliente');
   const tbody = document.getElementById('clients-table-body');
@@ -1209,7 +1264,7 @@ function updateClientsUI(silent = false) {
   if (!silent && tbody) {
     const listToRender = showInactive ? clientsCache : clientsCache.filter(c => (c.Estado || c['Estado'] || 'Activo') !== 'Inactivo');
     if (listToRender.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-400">No hay clientes registrados ${showInactive ? '' : 'activos'}.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-400">No hay clientes registrados ${showInactive ? '' : 'activos'}.</td></tr>`;
       return;
     }
     tbody.innerHTML = listToRender.map(c => {
@@ -1217,6 +1272,7 @@ function updateClientsUI(silent = false) {
       const nombre = c['Nombre / Empresa'] || c.nombre || '--';
       const ubicacion = c['Ubicación / Dirección'] || c.ubicacion || '--';
       const telefono = c['Teléfono'] || c.telefono || '--';
+      const correo = c['Correo'] || c.correo || '--';
       const estado = c.Estado || c['Estado'] || 'Activo';
       const isInactive = estado === 'Inactivo';
 
@@ -1227,9 +1283,14 @@ function updateClientsUI(silent = false) {
           <td class="py-2 px-3 text-slate-600">${telefono}</td>
           <td class="py-2 px-3 font-semibold ${isInactive ? 'text-rose-600' : 'text-emerald-600'}">${estado}</td>
           <td class="py-2 px-3 text-center">
-            <button type="button" onclick="toggleClientSoftDelete('${id}', '${nombre}', '${estado}')" class="px-2.5 py-1 text-[11px] font-semibold rounded ${isInactive ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'} transition">
-              ${isInactive ? '🔄 Reactivar' : '🗑️ Desactivar'}
-            </button>
+            <div class="flex items-center justify-center gap-1">
+              <button type="button" onclick="startEditClient('${id}', '${nombre.replace(/'/g, "\\'")}', '${ubicacion.replace(/'/g, "\\'")}', '${telefono.replace(/'/g, "\\'")}', '${correo.replace(/'/g, "\\'")}')" class="px-2 py-1 text-[11px] font-semibold rounded bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition">
+                ✏️ Editar
+              </button>
+              <button type="button" onclick="toggleClientSoftDelete('${id}', '${nombre.replace(/'/g, "\\'")}', '${estado}')" class="px-2 py-1 text-[11px] font-semibold rounded ${isInactive ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'} transition">
+                ${isInactive ? '🔄 Reactivar' : '🗑️ Desactivar'}
+              </button>
+            </div>
           </td>
         </tr>
       `;
@@ -1298,9 +1359,14 @@ function updateTechniciansUI(silent = false) {
           <td class="py-2 px-3 text-slate-600">${telefono}</td>
           <td class="py-2 px-3 font-semibold ${isInactive ? 'text-rose-600' : 'text-emerald-600'}">${estado}</td>
           <td class="py-2 px-3 text-center">
-            <button type="button" onclick="toggleTechnicianSoftDelete('${id}', '${nombre}', '${estado}')" class="px-2.5 py-1 text-[11px] font-semibold rounded ${isInactive ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'} transition">
-              ${isInactive ? '🔄 Reactivar' : '🗑️ Desactivar'}
-            </button>
+            <div class="flex items-center justify-center gap-1">
+              <button type="button" onclick="startEditTechnician('${id}', '${nombre.replace(/'/g, "\\'")}', '${cedula.replace(/'/g, "\\'")}', '${telefono.replace(/'/g, "\\'")}')" class="px-2 py-1 text-[11px] font-semibold rounded bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition">
+                ✏️ Editar
+              </button>
+              <button type="button" onclick="toggleTechnicianSoftDelete('${id}', '${nombre.replace(/'/g, "\\'")}', '${estado}')" class="px-2 py-1 text-[11px] font-semibold rounded ${isInactive ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'} transition">
+                ${isInactive ? '🔄 Reactivar' : '🗑️ Desactivar'}
+              </button>
+            </div>
           </td>
         </tr>
       `;
@@ -1397,16 +1463,22 @@ function initEquipmentManagement() {
     showInactiveEquipments.addEventListener('change', () => updateEquipmentTypesUI(false));
   }
 
+  const btnCancelEquip = document.getElementById('btn-cancel-edit-equipment');
+  if (btnCancelEquip) btnCancelEquip.addEventListener('click', window.resetEquipmentEditForm);
+
   if (formAddEquipment) {
     formAddEquipment.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const editId = document.getElementById('edit-equipment-id').value;
       const name = document.getElementById('new-equipment-name').value.trim();
       const desc = document.getElementById('new-equipment-desc').value.trim();
 
       if (!name) return;
 
+      const isEdit = Boolean(editId);
       const payload = {
-        action: 'add_equipo',
+        action: isEdit ? 'edit_equipo' : 'add_equipo',
+        id: editId,
         nombre: name,
         descripcion: desc
       };
@@ -1417,16 +1489,36 @@ function initEquipmentManagement() {
           mode: 'no-cors',
           body: JSON.stringify(payload)
         });
-        formAddEquipment.reset();
+        window.resetEquipmentEditForm();
         setTimeout(() => fetchEquipmentTypes(false), 1200);
       } catch (err) {
-        console.error('Error al agregar tipo de equipo:', err);
+        console.error('Error al guardar tipo de equipo:', err);
       }
     });
   }
 
   fetchEquipmentTypes(true);
 }
+
+window.startEditEquipment = function(id, nombre, desc) {
+  document.getElementById('edit-equipment-id').value = id;
+  document.getElementById('new-equipment-name').value = nombre === '--' ? '' : nombre;
+  document.getElementById('new-equipment-desc').value = desc === '--' ? '' : desc;
+
+  const submitBtn = document.getElementById('btn-submit-equipment');
+  const cancelBtn = document.getElementById('btn-cancel-edit-equipment');
+  if (submitBtn) submitBtn.textContent = '💾 Guardar Cambios';
+  if (cancelBtn) cancelBtn.classList.remove('hidden');
+};
+
+window.resetEquipmentEditForm = function() {
+  document.getElementById('edit-equipment-id').value = '';
+  document.getElementById('form-add-equipment-type').reset();
+  const submitBtn = document.getElementById('btn-submit-equipment');
+  const cancelBtn = document.getElementById('btn-cancel-edit-equipment');
+  if (submitBtn) submitBtn.textContent = '➕ Agregar al Catálogo';
+  if (cancelBtn) cancelBtn.classList.add('hidden');
+};
 
 function updateEquipmentTypesUI(silent = false) {
   const select = document.getElementById('subtipoEquipo');
@@ -1447,7 +1539,7 @@ function updateEquipmentTypesUI(silent = false) {
   if (!silent && tbody) {
     const listToRender = showInactive ? equipmentTypesCache : equipmentTypesCache.filter(eq => (eq.Estado || eq['Estado'] || 'Activo') !== 'Inactivo');
     if (listToRender.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-400">No hay categorías registradas ${showInactive ? '' : 'activas'}.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">No hay categorías registradas ${showInactive ? '' : 'activas'}.</td></tr>`;
       return;
     }
     tbody.innerHTML = listToRender.map(eq => {
@@ -1459,14 +1551,18 @@ function updateEquipmentTypesUI(silent = false) {
 
       return `
         <tr class="hover:bg-slate-50 border-b border-slate-100 ${isInactive ? 'bg-slate-50 opacity-60' : ''}">
-          <td class="py-2 px-3 font-bold text-blue-600">${id}</td>
           <td class="py-2 px-3 font-semibold text-slate-800">${nombre}</td>
           <td class="py-2 px-3 text-slate-600">${desc}</td>
           <td class="py-2 px-3 font-semibold ${isInactive ? 'text-rose-600' : 'text-emerald-600'}">${estado}</td>
           <td class="py-2 px-3 text-center">
-            <button type="button" onclick="toggleEquipmentSoftDelete('${id}', '${nombre}', '${estado}')" class="px-2.5 py-1 text-[11px] font-semibold rounded ${isInactive ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'} transition">
-              ${isInactive ? '🔄 Reactivar' : '🗑️ Desactivar'}
-            </button>
+            <div class="flex items-center justify-center gap-1">
+              <button type="button" onclick="startEditEquipment('${id}', '${nombre.replace(/'/g, "\\'")}', '${desc.replace(/'/g, "\\'")}')" class="px-2 py-1 text-[11px] font-semibold rounded bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition">
+                ✏️ Editar
+              </button>
+              <button type="button" onclick="toggleEquipmentSoftDelete('${id}', '${nombre.replace(/'/g, "\\'")}', '${estado}')" class="px-2 py-1 text-[11px] font-semibold rounded ${isInactive ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'} transition">
+                ${isInactive ? '🔄 Reactivar' : '🗑️ Desactivar'}
+              </button>
+            </div>
           </td>
         </tr>
       `;

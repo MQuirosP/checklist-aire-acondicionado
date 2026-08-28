@@ -886,12 +886,14 @@
       </div>
       <div class="p-4 bg-slate-50 border-b border-slate-200">
         <form id="form-add-client" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+          <input type="hidden" id="edit-client-id" value="">
           <input type="text" id="new-client-name" placeholder="Nombre / Empresa *" required class="px-3 py-2 border border-slate-300 rounded-lg">
           <input type="text" id="new-client-location" placeholder="Ubicación / Dirección *" required class="px-3 py-2 border border-slate-300 rounded-lg">
           <input type="text" id="new-client-phone" placeholder="Teléfono" class="px-3 py-2 border border-slate-300 rounded-lg">
           <input type="email" id="new-client-email" placeholder="Correo electrónico" class="px-3 py-2 border border-slate-300 rounded-lg">
-          <div class="sm:col-span-2 text-right">
-            <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition shadow-sm">
+          <div class="sm:col-span-2 flex items-center justify-end gap-2">
+            <button type="button" id="btn-cancel-edit-client" class="px-3 py-2 text-slate-500 hover:text-slate-700 text-xs hidden">Cancelar edición</button>
+            <button type="submit" id="btn-submit-client" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition shadow-sm">
               ➕ Registrar Cliente
             </button>
           </div>
@@ -905,7 +907,7 @@
               <th class="py-2 px-3">Ubicación</th>
               <th class="py-2 px-3">Teléfono</th>
               <th class="py-2 px-3">Estado</th>
-              <th class="py-2 px-3 text-center">Acción (Soft-Delete)</th>
+              <th class="py-2 px-3 text-center">Acciones</th>
             </tr>
           </thead>
           <tbody id="clients-table-body" class="divide-y divide-slate-200">
@@ -931,11 +933,13 @@
       </div>
       <div class="p-4 bg-slate-50 border-b border-slate-200">
         <form id="form-add-technician" class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+          <input type="hidden" id="edit-tech-id" value="">
           <input type="text" id="new-tech-name" placeholder="Nombre completo *" required class="px-3 py-2 border border-slate-300 rounded-lg">
           <input type="text" id="new-tech-cedula" placeholder="Cédula / ID *" required class="px-3 py-2 border border-slate-300 rounded-lg">
           <input type="text" id="new-tech-phone" placeholder="Teléfono" class="px-3 py-2 border border-slate-300 rounded-lg">
-          <div class="sm:col-span-3 text-right">
-            <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition shadow-sm">
+          <div class="sm:col-span-3 flex items-center justify-end gap-2">
+            <button type="button" id="btn-cancel-edit-tech" class="px-3 py-2 text-slate-500 hover:text-slate-700 text-xs hidden">Cancelar edición</button>
+            <button type="submit" id="btn-submit-tech" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition shadow-sm">
               ➕ Registrar Técnico
             </button>
           </div>
@@ -949,7 +953,7 @@
               <th class="py-2 px-3">Cédula / ID</th>
               <th class="py-2 px-3">Teléfono</th>
               <th class="py-2 px-3">Estado</th>
-              <th class="py-2 px-3 text-center">Acción (Soft-Delete)</th>
+              <th class="py-2 px-3 text-center">Acciones</th>
             </tr>
           </thead>
           <tbody id="technicians-table-body" class="divide-y divide-slate-200">
@@ -975,10 +979,12 @@
       </div>
       <div class="p-4 bg-slate-50 border-b border-slate-200">
         <form id="form-add-equipment-type" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+          <input type="hidden" id="edit-equipment-id" value="">
           <input type="text" id="new-equipment-name" placeholder="Nombre Categoría (ej. Máquina de Hielo) *" required class="px-3 py-2 border border-slate-300 rounded-lg">
           <input type="text" id="new-equipment-desc" placeholder="Descripción / Ejemplo" class="px-3 py-2 border border-slate-300 rounded-lg">
-          <div class="sm:col-span-2 text-right">
-            <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition shadow-sm">
+          <div class="sm:col-span-2 flex items-center justify-end gap-2">
+            <button type="button" id="btn-cancel-edit-equipment" class="px-3 py-2 text-slate-500 hover:text-slate-700 text-xs hidden">Cancelar edición</button>
+            <button type="submit" id="btn-submit-equipment" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition shadow-sm">
               ➕ Agregar al Catálogo
             </button>
           </div>
@@ -1004,6 +1010,6 @@
 
   <!-- Iframe oculto para procesamiento de envíos sin bloqueos de CORS -->
   <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-  <script src="app.js?v=28.0"></script>
+  <script src="app.js?v=29.0"></script>
 </body>
 </html>

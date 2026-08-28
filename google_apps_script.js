@@ -41,10 +41,30 @@ function doPost(e) {
         for (var i = 1; i < rows.length; i++) {
           var rowId = (rows[i][0] || "").toString().trim();
           var rowName = (rows[i][1] || "").toString().trim();
-          if (rowId === data.id || rowName === data.nombre) {
+          if (rowId === data.id || rowName === data.nombre || rowName === data.id) {
             var newStatus = data.estado || (rows[i][5] === "Inactivo" ? "Activo" : "Inactivo");
             clientSheet.getRange(i + 1, 6).setValue(newStatus);
             return ContentService.createTextOutput(JSON.stringify({ "result": "success", "id": rowId, "estado": newStatus })).setMimeType(ContentService.MimeType.JSON);
+          }
+        }
+      }
+      return ContentService.createTextOutput(JSON.stringify({ "result": "error", "error": "Cliente no encontrado" })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 2.1 Editar datos de cliente
+    if (data.action === 'edit_cliente') {
+      var clientSheet = ss.getSheetByName('Clientes');
+      if (clientSheet) {
+        var rows = clientSheet.getDataRange().getValues();
+        for (var i = 1; i < rows.length; i++) {
+          var rowId = (rows[i][0] || "").toString().trim();
+          var rowName = (rows[i][1] || "").toString().trim();
+          if (rowId === data.id || rowName === data.id || rowName === data.nombreOld) {
+            if (data.nombre) clientSheet.getRange(i + 1, 2).setValue(data.nombre);
+            if (data.ubicacion !== undefined) clientSheet.getRange(i + 1, 3).setValue(data.ubicacion);
+            if (data.telefono !== undefined) clientSheet.getRange(i + 1, 4).setValue(data.telefono);
+            if (data.correo !== undefined) clientSheet.getRange(i + 1, 5).setValue(data.correo);
+            return ContentService.createTextOutput(JSON.stringify({ "result": "success", "id": rowId })).setMimeType(ContentService.MimeType.JSON);
           }
         }
       }
@@ -72,10 +92,29 @@ function doPost(e) {
         for (var i = 1; i < rows.length; i++) {
           var rowId = (rows[i][0] || "").toString().trim();
           var rowName = (rows[i][1] || "").toString().trim();
-          if (rowId === data.id || rowName === data.nombre) {
+          if (rowId === data.id || rowName === data.nombre || rowName === data.id) {
             var newStatus = data.estado || (rows[i][4] === "Inactivo" ? "Activo" : "Inactivo");
             tecSheet.getRange(i + 1, 5).setValue(newStatus);
             return ContentService.createTextOutput(JSON.stringify({ "result": "success", "id": rowId, "estado": newStatus })).setMimeType(ContentService.MimeType.JSON);
+          }
+        }
+      }
+      return ContentService.createTextOutput(JSON.stringify({ "result": "error", "error": "Técnico no encontrado" })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 4.1 Editar datos de técnico
+    if (data.action === 'edit_tecnico') {
+      var tecSheet = ss.getSheetByName('Técnicos');
+      if (tecSheet) {
+        var rows = tecSheet.getDataRange().getValues();
+        for (var i = 1; i < rows.length; i++) {
+          var rowId = (rows[i][0] || "").toString().trim();
+          var rowName = (rows[i][1] || "").toString().trim();
+          if (rowId === data.id || rowName === data.id || rowName === data.nombreOld) {
+            if (data.nombre) tecSheet.getRange(i + 1, 2).setValue(data.nombre);
+            if (data.cedula !== undefined) tecSheet.getRange(i + 1, 3).setValue(data.cedula);
+            if (data.telefono !== undefined) tecSheet.getRange(i + 1, 4).setValue(data.telefono);
+            return ContentService.createTextOutput(JSON.stringify({ "result": "success", "id": rowId })).setMimeType(ContentService.MimeType.JSON);
           }
         }
       }
@@ -98,7 +137,8 @@ function doPost(e) {
         var rows = eqSheet.getDataRange().getValues();
         for (var i = 1; i < rows.length; i++) {
           var rowId = (rows[i][0] || "").toString().trim();
-          if (rowId === data.id) {
+          var rowName = (rows[i][1] || "").toString().trim();
+          if (rowId === data.id || rowName === data.id || rowName === data.nombreOld) {
             if (data.nombre) eqSheet.getRange(i + 1, 2).setValue(data.nombre);
             if (data.descripcion !== undefined) eqSheet.getRange(i + 1, 3).setValue(data.descripcion);
             return ContentService.createTextOutput(JSON.stringify({ "result": "success", "id": rowId })).setMimeType(ContentService.MimeType.JSON);
