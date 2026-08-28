@@ -30,3 +30,14 @@
   Los envíos a Google Apps Script deben realizarse mediante el formulario HTML oculto apuntando a `hidden_iframe`. Nunca cambies el mecanismo de envío a `fetch(POST)` sin probar compatibilidad CORS.
 - **Sincronización Anti-Caché**:
   Toda consulta GET a Google Apps Script debe incluir `_t=${Date.now()}` y `{ cache: 'no-store' }`.
+
+---
+
+## 4. Alcance Estricto de Cambios y Cero Improvisación
+
+- **ALCANCE ESTRICTO A LO SOLICITADO**:
+  Cada solicitud del usuario debe tratarse de forma quirúrgica. Queda estrictamente prohibido refactorizar, modificar, "optimizar" o alterar funciones, archivos, flujos de datos o estilos que no hayan sido pedidos explícitamente.
+- **PROHIBIDO REALIZAR MEJORAS UNILATERALES O UNIMPLED IMPROVISACIONES**:
+  No agregues funciones de respaldo ("fallback"), limpiadores, reordenamiento de columnas, lógica secundaria ni cambies comportamientos existentes sin solicitud previa y autorización explícita.
+- **PROTEGER CÓDIGO FUNCIONAL ("CÓDIGO CONGELADO")**:
+  Cualquier componente, script o función que ya esté funcionando correctamente se considera **CONGELADO** y no se debe tocar ni reescribir.
