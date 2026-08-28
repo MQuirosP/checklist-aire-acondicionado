@@ -40,6 +40,32 @@ function initDate() {
   if (btnToday) btnToday.addEventListener('click', setToday);
 }
 
+function formatDateForInput(raw) {
+  if (!raw) return '';
+  const str = String(raw).trim();
+  if (str.includes('T')) {
+    return str.split('T')[0];
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+    return str;
+  }
+  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(str)) {
+    const parts = str.split('/');
+    const d = parts[0].padStart(2, '0');
+    const m = parts[1].padStart(2, '0');
+    const y = parts[2];
+    return `${y}-${m}-${d}`;
+  }
+  const parsed = new Date(str);
+  if (!isNaN(parsed.getTime())) {
+    const y = parsed.getFullYear();
+    const m = String(parsed.getMonth() + 1).padStart(2, '0');
+    const d = String(parsed.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+  return '';
+}
+
 /**
  * 2. Cálculo dinámico de Delta T (Temperatura Retorno - Temperatura Inyección)
  */
@@ -136,6 +162,7 @@ function initSignaturePads() {
 
     function startDrawing(e) {
       isDrawing = true;
+      canvas.dataset.isDrawn = 'true';
       const pos = getPos(e);
       ctx.beginPath();
       ctx.moveTo(pos.x, pos.y);
@@ -144,6 +171,7 @@ function initSignaturePads() {
 
     function draw(e) {
       if (!isDrawing) return;
+      canvas.dataset.isDrawn = 'true';
       const pos = getPos(e);
       ctx.lineTo(pos.x, pos.y);
       ctx.stroke();
@@ -176,6 +204,7 @@ function initSignaturePads() {
       const canvas = document.getElementById(targetId);
       if (canvas) {
         delete canvas.dataset.existingDataUrl;
+        delete canvas.dataset.isDrawn;
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         triggerDraftSave();
@@ -1006,7 +1035,8 @@ function loadRecordIntoForm(record) {
     }
   };
 
-  setVal('fecha', record['Fecha Inspección']);
+  const rawFecha = record['Fecha Inspección'] || record['Fecha / Hora Registro'];
+  setVal('fecha', formatDateForInput(rawFecha));
   setVal('ot', record['N° Orden / OT']);
   setSelectVal('tipoMantenimiento', record['Tipo de Mantenimiento'] || 'Preventivo');
   setSelectVal('cliente', record['Cliente / Ubicación']);
