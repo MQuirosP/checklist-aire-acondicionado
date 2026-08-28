@@ -1080,39 +1080,131 @@ let techniciansCache = [];
 let equipmentTypesCache = [];
 
 async function fetchClients(silent = false) {
+  const tbody = document.getElementById('clients-table-body');
+  if (!silent && tbody && clientsCache.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-blue-600 font-semibold animate-pulse">⏳ Cargando clientes desde Google Sheets...</td></tr>`;
+  }
   try {
     const fetchUrl = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + 'action=clientes&_t=' + Date.now();
     const res = await fetch(fetchUrl, { cache: 'no-store' });
     const data = await res.json();
-    clientsCache = Array.isArray(data) ? data : [];
-    updateClientsUI(silent);
+    const loaded = Array.isArray(data) ? data : [];
+    
+    if (loaded.length > 0) {
+      clientsCache = loaded;
+    } else if (historyDataCache && historyDataCache.length > 0) {
+      const extracted = new Map();
+      historyDataCache.forEach(r => {
+        const full = (r['Cliente / Ubicación'] || '').trim();
+        if (full) {
+          const parts = full.split(' - ');
+          const nombre = parts[0].trim();
+          const ubicacion = parts.slice(1).join(' - ').trim() || 'Extraído de Historial';
+          if (!extracted.has(nombre)) {
+            extracted.set(nombre, {
+              'ID': 'CLI-AUTO',
+              'Nombre / Empresa': nombre,
+              'Ubicación / Dirección': ubicacion,
+              'Teléfono': '--',
+              'Estado': 'Activo'
+            });
+          }
+        }
+      });
+      clientsCache = Array.from(extracted.values());
+    } else {
+      clientsCache = [];
+    }
   } catch (err) {
     console.error('Error al cargar clientes desde Google Sheets:', err);
+    if (historyDataCache && historyDataCache.length > 0) {
+      const extracted = new Map();
+      historyDataCache.forEach(r => {
+        const full = (r['Cliente / Ubicación'] || '').trim();
+        if (full) {
+          const parts = full.split(' - ');
+          const nombre = parts[0].trim();
+          const ubicacion = parts.slice(1).join(' - ').trim() || 'Extraído de Historial';
+          if (!extracted.has(nombre)) {
+            extracted.set(nombre, {
+              'ID': 'CLI-AUTO',
+              'Nombre / Empresa': nombre,
+              'Ubicación / Dirección': ubicacion,
+              'Teléfono': '--',
+              'Estado': 'Activo'
+            });
+          }
+        }
+      });
+      clientsCache = Array.from(extracted.values());
+    }
   }
+  updateClientsUI(silent);
 }
 
 async function fetchTechnicians(silent = false) {
+  const tbody = document.getElementById('technicians-table-body');
+  if (!silent && tbody && techniciansCache.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-blue-600 font-semibold animate-pulse">⏳ Cargando técnicos desde Google Sheets...</td></tr>`;
+  }
   try {
     const fetchUrl = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + 'action=tecnicos&_t=' + Date.now();
     const res = await fetch(fetchUrl, { cache: 'no-store' });
     const data = await res.json();
-    techniciansCache = Array.isArray(data) ? data : [];
-    updateTechniciansUI(silent);
+    const loaded = Array.isArray(data) ? data : [];
+
+    if (loaded.length > 0) {
+      techniciansCache = loaded;
+    } else if (historyDataCache && historyDataCache.length > 0) {
+      const extracted = new Set();
+      historyDataCache.forEach(r => {
+        const nombre = (r['Técnico Responsable'] || '').trim();
+        if (nombre) extracted.add(nombre);
+      });
+      techniciansCache = Array.from(extracted).map((nombre, i) => ({
+        'ID': `TEC-${i + 1}`,
+        'Nombre del Técnico': nombre,
+        'Cédula / ID': '--',
+        'Teléfono': '--',
+        'Estado': 'Activo'
+      }));
+    } else {
+      techniciansCache = [];
+    }
   } catch (err) {
     console.error('Error al cargar técnicos desde Google Sheets:', err);
+    if (historyDataCache && historyDataCache.length > 0) {
+      const extracted = new Set();
+      historyDataCache.forEach(r => {
+        const nombre = (r['Técnico Responsable'] || '').trim();
+        if (nombre) extracted.add(nombre);
+      });
+      techniciansCache = Array.from(extracted).map((nombre, i) => ({
+        'ID': `TEC-${i + 1}`,
+        'Nombre del Técnico': nombre,
+        'Cédula / ID': '--',
+        'Teléfono': '--',
+        'Estado': 'Activo'
+      }));
+    }
   }
+  updateTechniciansUI(silent);
 }
 
 async function fetchEquipmentTypes(silent = false) {
+  const tbody = document.getElementById('equipments-table-body');
+  if (!silent && tbody && equipmentTypesCache.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-blue-600 font-semibold animate-pulse">⏳ Cargando catálogo desde Google Sheets...</td></tr>`;
+  }
   try {
     const fetchUrl = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + 'action=equipos&_t=' + Date.now();
     const res = await fetch(fetchUrl, { cache: 'no-store' });
     const data = await res.json();
     equipmentTypesCache = Array.isArray(data) ? data : [];
-    updateEquipmentTypesUI(silent);
   } catch (err) {
     console.error('Error al cargar catálogo de equipos desde Google Sheets:', err);
   }
+  updateEquipmentTypesUI(silent);
 }
 
 function initClientsAndTechniciansManagement() {
