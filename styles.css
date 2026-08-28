@@ -61,11 +61,18 @@
   border-color: #94a3b8;
 }
 
-/* Reglas de impresión limpias para exportación a PDF */
+/* Reglas de impresión limpias para exportación a PDF (Ajustado a 1 hoja) */
 @media print {
+  @page {
+    size: letter portrait;
+    margin: 6mm 8mm;
+  }
+
   body {
     background: #ffffff !important;
     color: #000000 !important;
+    font-size: 10px !important;
+    line-height: 1.2 !important;
   }
 
   header, 
@@ -75,6 +82,7 @@
   #modal-history, 
   #modal-clients, 
   #modal-technicians,
+  #modal-equipment-types,
   iframe {
     display: none !important;
   }
@@ -92,6 +100,8 @@
     backdrop-filter: none !important;
     padding: 0 !important;
     margin: 0 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 
   body.printing-detail #modal-record-detail > div {
@@ -99,6 +109,26 @@
     max-height: none !important;
     box-shadow: none !important;
     border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  body.printing-detail #detail-modal-body {
+    padding: 0 !important;
+    gap: 6px !important;
+    overflow: visible !important;
+  }
+
+  body.printing-detail #detail-modal-body > div {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+    border-radius: 6px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  body.printing-detail img {
+    max-height: 40px !important;
   }
 
   body.printing-detail #btn-close-detail,

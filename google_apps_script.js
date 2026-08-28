@@ -130,7 +130,7 @@ function doPost(e) {
 
     if (sheet.getLastRow() === 0) {
       var headers = [
-        "Fecha / Hora Registro", "Fecha Inspección", "N° Orden / OT", "Cliente / Ubicación", "Técnico Responsable",
+        "Fecha / Hora Registro", "Fecha Inspección", "N° Orden / OT", "Tipo de Mantenimiento", "Cliente / Ubicación", "Técnico Responsable",
         "Tipo de Unidad", "Subtipo / Categoría Equipo", "Marca / Modelo", "ID / Tag Equipo", "Refrigerante",
         "Evap: Gabinete Externo", "Evap: Gabinete Obs", "Evap: Filtros Aire", "Evap: Filtros Obs",
         "Evap: Serpentín Evaporador", "Evap: Serpentín Obs", "Evap: Bandeja Condensados / Biocidas", "Evap: Bandeja Obs",
@@ -173,7 +173,7 @@ function doPost(e) {
     }
 
     var row = [
-      timestamp, data.fecha || "", data.ot || "", data.cliente || "", data.tecnico || "",
+      timestamp, data.fecha || "", data.ot || "", data.tipoMantenimiento || "Preventivo", data.cliente || "", data.tecnico || "",
       data.tipoUnidad || "", data.subtipoEquipo || "", data.marcaModelo || "", data.idTag || "", data.refrigerante || "",
       data.evap_gabinete || "", data.evap_gabinete_obs || "", data.evap_filtros || "", data.evap_filtros_obs || "",
       data.evap_serpentin || "", data.evap_serpentin_obs || "", data.evap_bandeja || "", data.evap_bandeja_obs || "",

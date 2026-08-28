@@ -759,56 +759,92 @@ function openRecordDetail(record) {
 
   const getVal = (key) => record[key] || '--';
 
+  // Helper para renderizar pill de inspección
+  const renderItemPill = (label, key) => {
+    const val = record[key];
+    if (!val) return '';
+    let colorClass = 'bg-slate-100 text-slate-700 border-slate-300';
+    if (val === 'B') colorClass = 'bg-emerald-100 text-emerald-800 border-emerald-300';
+    if (val === 'R') colorClass = 'bg-amber-100 text-amber-800 border-amber-300';
+    if (val === 'M') colorClass = 'bg-rose-100 text-rose-800 border-rose-300';
+    if (val === 'N/A') colorClass = 'bg-slate-100 text-slate-600 border-slate-200';
+    return `<div class="flex items-center justify-between p-1.5 bg-slate-50 border rounded-md text-[11px]">
+      <span class="text-slate-600 truncate mr-1">${label}</span>
+      <span class="px-1.5 py-0.5 rounded text-[10px] font-bold border ${colorClass}">${val}</span>
+    </div>`;
+  };
+
+  const tipoMant = getVal('Tipo de Mantenimiento') !== '--' ? getVal('Tipo de Mantenimiento') : 'Preventivo';
+
   container.innerHTML = `
     <!-- Header Summary Card -->
-    <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-2">
-      <div class="flex flex-wrap justify-between items-center border-b border-slate-200 pb-2 gap-2">
-        <span class="text-sm font-bold text-blue-600">Orden / OT: ${getVal('N° Orden / OT')}</span>
-        <span class="text-xs text-slate-500">Fecha Inspección: ${getVal('Fecha Inspección')}</span>
+    <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl space-y-1.5">
+      <div class="flex flex-wrap justify-between items-center border-b border-slate-200 pb-1.5 gap-2">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold text-blue-600">Orden / OT: ${getVal('N° Orden / OT')}</span>
+          <span class="px-2 py-0.5 text-[10px] font-bold rounded-full ${tipoMant === 'Correctivo' ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-blue-100 text-blue-800 border border-blue-300'}">${tipoMant}</span>
+        </div>
+        <span class="text-xs text-slate-500 font-medium">Fecha: ${getVal('Fecha Inspección')}</span>
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pt-1 text-xs">
-        <div><span class="text-slate-400">Cliente / Ubicación:</span> <strong class="text-slate-700 block font-semibold">${getVal('Cliente / Ubicación')}</strong></div>
-        <div><span class="text-slate-400">Técnico Responsable:</span> <strong class="text-slate-700 block font-semibold">${getVal('Técnico Responsable')}</strong></div>
-        <div><span class="text-slate-400">Equipo:</span> <strong class="text-slate-700 block font-semibold">${getVal('Tipo de Unidad')} ${getVal('Marca / Modelo')}</strong></div>
-        <div><span class="text-slate-400">ID / Tag:</span> <strong class="text-slate-700 block font-semibold">${getVal('ID / Tag Equipo')}</strong></div>
-        <div><span class="text-slate-400">Refrigerante:</span> <strong class="text-slate-700 block font-semibold">${getVal('Refrigerante')}</strong></div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs">
+        <div><span class="text-slate-400 block text-[10px]">Cliente / Ubicación:</span> <strong class="text-slate-800 font-semibold truncate block">${getVal('Cliente / Ubicación')}</strong></div>
+        <div><span class="text-slate-400 block text-[10px]">Técnico Responsable:</span> <strong class="text-slate-800 font-semibold truncate block">${getVal('Técnico Responsable')}</strong></div>
+        <div><span class="text-slate-400 block text-[10px]">Equipo / Marca:</span> <strong class="text-slate-800 font-semibold truncate block">${getVal('Tipo de Unidad')} ${getVal('Marca / Modelo')}</strong></div>
+        <div><span class="text-slate-400 block text-[10px]">Tag / Refrigerante:</span> <strong class="text-slate-800 font-semibold truncate block">${getVal('ID / Tag Equipo')} (${getVal('Refrigerante')})</strong></div>
+      </div>
+    </div>
+
+    <!-- Puntos Revisados / Inspeccionados -->
+    <div class="border border-slate-200 rounded-xl p-3 bg-white shadow-sm">
+      <h4 class="font-bold text-slate-800 text-xs mb-2 border-b border-slate-100 pb-1 flex items-center gap-1.5">
+        ✅ Puntos Inspeccionados y Revisados
+      </h4>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5">
+        ${renderItemPill('Evap: Gabinete', 'Evap: Gabinete Externo')}
+        ${renderItemPill('Evap: Filtros', 'Evap: Filtros de Aire')}
+        ${renderItemPill('Evap: Serpentín', 'Evap: Serpentín / Panal')}
+        ${renderItemPill('Evap: Bandeja', 'Evap: Bandeja de Condensado')}
+        ${renderItemPill('Evap: Turbina', 'Evap: Turbina / Blower')}
+        ${renderItemPill('Cond: Gabinete', 'Cond: Gabinete Exteriort')}
+        ${renderItemPill('Cond: Serpentín', 'Cond: Serpentín / Panal')}
+        ${renderItemPill('Cond: Aspas', 'Cond: Aspas / Moto-ventilador')}
+        ${renderItemPill('Elec: Bornes', 'Elec: Ajuste de Bornes')}
+        ${renderItemPill('Elec: Capacitores', 'Elec: Capacitores')}
+        ${renderItemPill('Elec: Contactor', 'Elec: Contactor / Relés')}
+        ${renderItemPill('Desagüe: Drenaje', 'Elec: Limpieza de Drenaje')}
       </div>
     </div>
 
     <!-- Section 4: Operational Measurements Summary -->
-    <div class="border border-slate-200 rounded-xl p-4 bg-white shadow-sm">
-      <h4 class="font-bold text-slate-800 text-xs mb-3 border-b border-slate-100 pb-1.5 flex items-center gap-1.5">
-        📊 Mediciones Técnicas y Operativas
+    <div class="border border-slate-200 rounded-xl p-3 bg-white shadow-sm">
+      <h4 class="font-bold text-slate-800 text-xs mb-2 border-b border-slate-100 pb-1 flex items-center gap-1.5">
+        📊 Mediciones Técnicas
       </h4>
-      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
-        <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100"><span class="text-slate-400 block text-[10px]">Voltaje VAC:</span> <strong class="text-slate-800">${getVal('Med: Voltaje (V AC)')} V</strong></div>
-        <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100"><span class="text-slate-400 block text-[10px]">Corriente Compresor:</span> <strong class="text-slate-800">${getVal('Med: Corriente Compresor (A)')} A</strong></div>
-        <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100"><span class="text-slate-400 block text-[10px]">Corriente Ventilador:</span> <strong class="text-slate-800">${getVal('Med: Corriente Motor Ext (A)')} A</strong></div>
-        <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100"><span class="text-slate-400 block text-[10px]">Presión Baja:</span> <strong class="text-slate-800">${getVal('Med: Presión Baja (PSI)')} PSI</strong></div>
-        <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100"><span class="text-slate-400 block text-[10px]">Presión Alta:</span> <strong class="text-slate-800">${getVal('Med: Presión Alta (PSI)')} PSI</strong></div>
-        <div class="bg-emerald-50 p-2.5 rounded-lg border border-emerald-200"><span class="text-emerald-700 block text-[10px] font-semibold">Diferencial ΔT:</span> <strong class="text-emerald-800 text-sm">${getVal('Med: Delta T (°C)')} °C</strong></div>
-      </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3 pt-2 border-t border-slate-100 text-xs">
-        <div><span class="text-slate-400">Superheat / Subcooling:</span> <span class="font-medium text-slate-700">${getVal('Med: Superheat / Subcooling')}</span></div>
-        <div><span class="text-slate-400">Control Remoto:</span> <span class="font-medium text-slate-700">${getVal('Med: Control Remoto Estado')}</span></div>
+      <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 text-xs text-center">
+        <div class="bg-slate-50 p-1.5 rounded border border-slate-100"><span class="text-slate-400 block text-[9px]">Voltaje:</span> <strong class="text-slate-800 text-[11px]">${getVal('Med: Voltaje (V AC)')} V</strong></div>
+        <div class="bg-slate-50 p-1.5 rounded border border-slate-100"><span class="text-slate-400 block text-[9px]">Corr. Compr:</span> <strong class="text-slate-800 text-[11px]">${getVal('Med: Corriente Compresor (A)')} A</strong></div>
+        <div class="bg-slate-50 p-1.5 rounded border border-slate-100"><span class="text-slate-400 block text-[9px]">Corr. Vent:</span> <strong class="text-slate-800 text-[11px]">${getVal('Med: Corriente Motor Ext (A)')} A</strong></div>
+        <div class="bg-slate-50 p-1.5 rounded border border-slate-100"><span class="text-slate-400 block text-[9px]">Presión Baja:</span> <strong class="text-slate-800 text-[11px]">${getVal('Med: Presión Baja (PSI)')} PSI</strong></div>
+        <div class="bg-slate-50 p-1.5 rounded border border-slate-100"><span class="text-slate-400 block text-[9px]">Presión Alta:</span> <strong class="text-slate-800 text-[11px]">${getVal('Med: Presión Alta (PSI)')} PSI</strong></div>
+        <div class="bg-emerald-50 p-1.5 rounded border border-emerald-200"><span class="text-emerald-700 block text-[9px] font-semibold">ΔT:</span> <strong class="text-emerald-800 text-[11px]">${getVal('Med: Delta T (°C)')} °C</strong></div>
       </div>
     </div>
 
     <!-- Section 5: Observaciones Finales -->
-    <div class="border border-slate-200 rounded-xl p-4 bg-white shadow-sm">
-      <h4 class="font-bold text-slate-800 text-xs mb-2 flex items-center gap-1">📝 Diagnóstico y Observaciones Finales</h4>
-      <p class="bg-slate-50 p-3 rounded-lg text-xs text-slate-700 whitespace-pre-wrap leading-relaxed border border-slate-200">${getVal('Diagnóstico y Observaciones Finales')}</p>
+    <div class="border border-slate-200 rounded-xl p-3 bg-white shadow-sm">
+      <h4 class="font-bold text-slate-800 text-xs mb-1 flex items-center gap-1">📝 Observaciones y Trabajo Realizado</h4>
+      <p class="bg-slate-50 p-2 rounded text-[11px] text-slate-700 whitespace-pre-wrap leading-tight border border-slate-200">${getVal('Diagnóstico y Observaciones Finales')}</p>
     </div>
 
     <!-- Signatures Preview -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-      <div class="border border-slate-200 rounded-xl p-3 bg-slate-50 text-center">
-        <span class="text-[11px] font-semibold text-slate-600 block mb-1.5">Firma Técnico: ${getVal('Nombre Técnico')}</span>
-        ${record['Firma Técnico (DataURL)'] ? `<img src="${record['Firma Técnico (DataURL)']}" class="h-20 mx-auto object-contain bg-white rounded-lg border border-slate-300 p-1" alt="Firma Técnico">` : '<span class="text-slate-400 italic text-[11px]">Sin firma registrada</span>'}
+    <div class="grid grid-cols-2 gap-3 pt-1">
+      <div class="border border-slate-200 rounded-xl p-2 bg-slate-50 text-center">
+        <span class="text-[10px] font-semibold text-slate-600 block mb-1">Firma Técnico: ${getVal('Nombre Técnico')}</span>
+        ${record['Firma Técnico (DataURL)'] ? `<img src="${record['Firma Técnico (DataURL)']}" class="h-12 mx-auto object-contain bg-white rounded border border-slate-300 p-0.5" alt="Firma Técnico">` : '<span class="text-slate-400 italic text-[10px]">Sin firma</span>'}
       </div>
-      <div class="border border-slate-200 rounded-xl p-3 bg-slate-50 text-center">
-        <span class="text-[11px] font-semibold text-slate-600 block mb-1.5">Firma Cliente: ${getVal('Nombre Cliente')}</span>
-        ${record['Firma Cliente (DataURL)'] ? `<img src="${record['Firma Cliente (DataURL)']}" class="h-20 mx-auto object-contain bg-white rounded-lg border border-slate-300 p-1" alt="Firma Cliente">` : '<span class="text-slate-400 italic text-[11px]">Sin firma registrada</span>'}
+      <div class="border border-slate-200 rounded-xl p-2 bg-slate-50 text-center">
+        <span class="text-[10px] font-semibold text-slate-600 block mb-1">Firma Cliente: ${getVal('Nombre Cliente')}</span>
+        ${record['Firma Cliente (DataURL)'] ? `<img src="${record['Firma Cliente (DataURL)']}" class="h-12 mx-auto object-contain bg-white rounded border border-slate-300 p-0.5" alt="Firma Cliente">` : '<span class="text-slate-400 italic text-[10px]">Sin firma</span>'}
       </div>
     </div>
   `;
@@ -879,6 +915,7 @@ function loadRecordIntoForm(record) {
 
   setVal('fecha', record['Fecha Inspección']);
   setVal('ot', record['N° Orden / OT']);
+  setSelectVal('tipoMantenimiento', record['Tipo de Mantenimiento'] || 'Preventivo');
   setSelectVal('cliente', record['Cliente / Ubicación']);
   setSelectVal('tecnico', record['Técnico Responsable']);
   setSelectVal('tipoUnidad', record['Tipo de Unidad']);
@@ -1185,7 +1222,6 @@ function updateClientsUI(silent = false) {
 
       return `
         <tr class="hover:bg-slate-50 border-b border-slate-100 ${isInactive ? 'bg-slate-50 opacity-60' : ''}">
-          <td class="py-2 px-3 font-bold text-blue-600">${id}</td>
           <td class="py-2 px-3 font-semibold text-slate-800">${nombre}</td>
           <td class="py-2 px-3 text-slate-600">${ubicacion}</td>
           <td class="py-2 px-3 text-slate-600">${telefono}</td>
@@ -1244,7 +1280,7 @@ function updateTechniciansUI(silent = false) {
   if (!silent && tbody) {
     const listToRender = showInactive ? techniciansCache : techniciansCache.filter(t => (t.Estado || t['Estado'] || 'Activo') !== 'Inactivo');
     if (listToRender.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-400">No hay técnicos registrados ${showInactive ? '' : 'activos'}.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-400">No hay técnicos registrados ${showInactive ? '' : 'activos'}.</td></tr>`;
       return;
     }
     tbody.innerHTML = listToRender.map(t => {
@@ -1257,7 +1293,6 @@ function updateTechniciansUI(silent = false) {
 
       return `
         <tr class="hover:bg-slate-50 border-b border-slate-100 ${isInactive ? 'bg-slate-50 opacity-60' : ''}">
-          <td class="py-2 px-3 font-bold text-blue-600">${id}</td>
           <td class="py-2 px-3 font-semibold text-slate-800">${nombre}</td>
           <td class="py-2 px-3 text-slate-600">${cedula}</td>
           <td class="py-2 px-3 text-slate-600">${telefono}</td>
