@@ -251,6 +251,14 @@ function initMobileMenu() {
     });
   }
 
+  if (btnEquipments) {
+    btnEquipments.addEventListener('click', () => {
+      closeDropdown();
+      const desktopBtn = document.getElementById('btn-view-equipments');
+      if (desktopBtn) desktopBtn.click();
+    });
+  }
+
   if (btnHistory) {
     btnHistory.addEventListener('click', () => {
       closeDropdown();
@@ -1327,6 +1335,14 @@ function initEquipmentManagement() {
           fetchEquipmentTypes(false);
         }
       }
+    });
+  }
+
+  const btnViewEquipments = document.getElementById('btn-view-equipments');
+  if (btnViewEquipments && modalEquipments) {
+    btnViewEquipments.addEventListener('click', () => {
+      modalEquipments.classList.remove('hidden');
+      fetchEquipmentTypes(false);
     });
   }
 
