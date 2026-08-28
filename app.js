@@ -126,9 +126,11 @@ function initSignaturePads() {
       const rect = canvas.getBoundingClientRect();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const scaleX = rect.width ? canvas.width / rect.width : 1;
+      const scaleY = rect.height ? canvas.height / rect.height : 1;
       return {
-        x: clientX - rect.left,
-        y: clientY - rect.top
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY
       };
     }
 
@@ -173,6 +175,7 @@ function initSignaturePads() {
       const targetId = btn.getAttribute('data-target');
       const canvas = document.getElementById(targetId);
       if (canvas) {
+        delete canvas.dataset.existingDataUrl;
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         triggerDraftSave();
@@ -374,6 +377,7 @@ function resetFormComplete() {
   ['canvas-tecnico', 'canvas-cliente'].forEach(id => {
     const canvas = document.getElementById(id);
     if (canvas) {
+      delete canvas.dataset.existingDataUrl;
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
@@ -461,8 +465,16 @@ function initFormSubmission() {
     const canvasTecnico = document.getElementById('canvas-tecnico');
     const canvasCliente = document.getElementById('canvas-cliente');
 
-    setHiddenInput(form, 'firma_tecnico', (canvasTecnico && !isCanvasBlank(canvasTecnico)) ? canvasTecnico.toDataURL('image/png') : '');
-    setHiddenInput(form, 'firma_cliente', (canvasCliente && !isCanvasBlank(canvasCliente)) ? canvasCliente.toDataURL('image/png') : '');
+    const getFirmaValue = (canvas) => {
+      if (!canvas) return '';
+      if (!isCanvasBlank(canvas)) {
+        return canvas.toDataURL('image/png');
+      }
+      return canvas.dataset.existingDataUrl || '';
+    };
+
+    setHiddenInput(form, 'firma_tecnico', getFirmaValue(canvasTecnico));
+    setHiddenInput(form, 'firma_cliente', getFirmaValue(canvasCliente));
 
     // Configurar el formulario para enviar al iframe oculto (Garantiza 0 bloqueos de CORS)
     form.action = GOOGLE_SCRIPT_URL;
@@ -1084,6 +1096,7 @@ function loadRecordIntoForm(record) {
     if (!dataUrl || typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image')) return;
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
+    canvas.dataset.existingDataUrl = dataUrl;
     const ctx = canvas.getContext('2d');
     const img = new Image();
     img.onload = () => {
