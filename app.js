@@ -471,13 +471,14 @@ function initFormSubmission() {
     });
   }
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
     const otInput = document.getElementById('ot');
     const clienteInput = document.getElementById('cliente');
 
     // Validar Unicidad de OT antes de enviar
     if (isOtDuplicate) {
-      e.preventDefault();
       alert(`⚠️ ERROR DE UNICIDAD: La Orden de Trabajo / OT "${otInput.value}" ya existe en el sistema. Por favor genera o ingresa un número de OT único.`);
       otInput.focus();
       return;
@@ -485,7 +486,6 @@ function initFormSubmission() {
 
     // Validar URL de Google Script
     if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes('PEGA_AQUI_TU_URL')) {
-      e.preventDefault();
       alert('⚠️ ATENCIÓN: Debes configurar la URL de tu Google Apps Script en el archivo app.js (constante GOOGLE_SCRIPT_URL). Consulta el README.md para ver las instrucciones paso a paso.');
       return;
     }
@@ -496,19 +496,35 @@ function initFormSubmission() {
 
     const getFirmaValue = (canvas) => {
       if (!canvas) return '';
-      if (!isCanvasBlank(canvas)) {
-        return canvas.toDataURL('image/png');
+      if (canvas.dataset.isDrawn === 'true' || !isCanvasBlank(canvas)) {
+        try {
+          return canvas.toDataURL('image/png');
+        } catch (err) {
+          console.error('Error exportando canvas:', err);
+        }
       }
       return canvas.dataset.existingDataUrl || '';
     };
 
-    setHiddenInput(form, 'firma_tecnico', getFirmaValue(canvasTecnico));
-    setHiddenInput(form, 'firma_cliente', getFirmaValue(canvasCliente));
+    const firmaTechVal = getFirmaValue(canvasTecnico);
+    const firmaClientVal = getFirmaValue(canvasCliente);
 
-    // Configurar el formulario para enviar al iframe oculto (Garantiza 0 bloqueos de CORS)
-    form.action = GOOGLE_SCRIPT_URL;
-    form.method = 'POST';
-    form.target = 'hidden_iframe';
+    setHiddenInput(form, 'firma_tecnico', firmaTechVal);
+    setHiddenInput(form, 'firma_cliente', firmaClientVal);
+
+    // Recopilar todos los datos en un objeto JSON limpio
+    const formData = new FormData(form);
+    const payload = {};
+    formData.forEach((value, key) => {
+      payload[key] = value;
+    });
+
+    payload['firma_tecnico'] = firmaTechVal;
+    payload['firma_cliente'] = firmaClientVal;
+
+    form.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+      payload[radio.name] = radio.value;
+    });
 
     // Mostrar modal en estado de Carga
     modal.classList.remove('hidden');
@@ -516,34 +532,41 @@ function initFormSubmission() {
     modalSuccess.classList.add('hidden');
     modalError.classList.add('hidden');
 
-    let submitted = false;
-    const iframe = document.getElementById('hidden_iframe');
+    try {
+      // 1. Enviar payload como JSON via fetch (evita truncamiento de firmas base64 de 50KB)
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify(payload)
+      });
 
-    const handleSuccess = () => {
-      if (submitted) return;
-      submitted = true;
+      // 2. También enviar el formulario al iframe oculto como respaldo
+      form.action = GOOGLE_SCRIPT_URL;
+      form.method = 'POST';
+      form.target = 'hidden_iframe';
+      form.submit();
+
+      // Esperar brevemente para confirmación en Google Sheets y refrescar datos
+      setTimeout(async () => {
+        modalLoading.classList.add('hidden');
+        modalSuccess.classList.remove('hidden');
+
+        const summaryOt = document.getElementById('summary-ot');
+        const summaryCliente = document.getElementById('summary-cliente');
+        if (summaryOt) summaryOt.textContent = otInput ? (otInput.value || '--') : '--';
+        if (summaryCliente) summaryCliente.textContent = clienteInput ? (clienteInput.value || '--') : '--';
+
+        resetFormComplete();
+        await fetchHistoryData(true);
+      }, 1500);
+
+    } catch (err) {
+      console.error('Error al enviar registro:', err);
       modalLoading.classList.add('hidden');
-      modalSuccess.classList.remove('hidden');
-
-      // Actualizar resumen en el modal
-      const summaryOt = document.getElementById('summary-ot');
-      const summaryCliente = document.getElementById('summary-cliente');
-      if (summaryOt) summaryOt.textContent = otInput ? (otInput.value || '--') : '--';
-      if (summaryCliente) summaryCliente.textContent = clienteInput ? (clienteInput.value || '--') : '--';
-
-      // Limpiar formulario y borrador tras envío exitoso
-      resetFormComplete();
-
-      // Refrescar datos de historial en segundo plano
-      fetchHistoryData(true);
-    };
-
-    if (iframe) {
-      iframe.onload = handleSuccess;
+      modalError.classList.remove('hidden');
+      if (errorMessageText) errorMessageText.textContent = err.message || 'Error al conectar con Google Sheets.';
     }
-
-    // Timer de seguridad para mostrar éxito tras el procesamiento
-    setTimeout(handleSuccess, 3000);
   });
 }
 
