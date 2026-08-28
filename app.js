@@ -971,6 +971,14 @@ function loadRecordIntoForm(record) {
     if (radio) radio.checked = true;
   };
 
+  const setObsVal = (id, val) => {
+    if (!val || val === 'B' || val === 'R' || val === 'M' || val === 'N/A') {
+      setVal(id, '');
+    } else {
+      setVal(id, val);
+    }
+  };
+
   setVal('fecha', record['Fecha Inspección']);
   setVal('ot', record['N° Orden / OT']);
   setSelectVal('tipoMantenimiento', record['Tipo de Mantenimiento'] || 'Preventivo');
@@ -991,55 +999,55 @@ function loadRecordIntoForm(record) {
 
   // Sección 1: Evaporadora
   setRadio('evap_gabinete', record['Evap: Gabinete Externo']);
-  setVal('evap_gabinete_obs', record['Evap: Gabinete Obs']);
+  setObsVal('evap_gabinete_obs', record['Evap: Gabinete Obs']);
   setRadio('evap_filtros', record['Evap: Filtros Aire']);
-  setVal('evap_filtros_obs', record['Evap: Filtros Obs']);
+  setObsVal('evap_filtros_obs', record['Evap: Filtros Obs']);
   setRadio('evap_serpentin', record['Evap: Serpentín Evaporador']);
-  setVal('evap_serpentin_obs', record['Evap: Serpentín Obs']);
+  setObsVal('evap_serpentin_obs', record['Evap: Serpentín Obs']);
   setRadio('evap_bandeja', record['Evap: Bandeja Condensados / Biocidas']);
-  setVal('evap_bandeja_obs', record['Evap: Bandeja Obs']);
+  setObsVal('evap_bandeja_obs', record['Evap: Bandeja Obs']);
   setRadio('evap_drenaje', record['Evap: Drenaje Obstrucciones']);
-  setVal('evap_drenaje_obs', record['Evap: Drenaje Obs']);
+  setObsVal('evap_drenaje_obs', record['Evap: Drenaje Obs']);
   setRadio('evap_turbina', record['Evap: Turbina / Fan Tangencial']);
-  setVal('evap_turbina_obs', record['Evap: Turbina Obs']);
+  setObsVal('evap_turbina_obs', record['Evap: Turbina Obs']);
   setRadio('evap_motor', record['Evap: Motor Vent / Rodajes']);
-  setVal('evap_motor_obs', record['Evap: Motor Vent Obs']);
+  setObsVal('evap_motor_obs', record['Evap: Motor Vent Obs']);
   setRadio('evap_persianas', record['Evap: Persianas Swing / Motor paso']);
-  setVal('evap_persianas_obs', record['Evap: Persianas Obs']);
+  setObsVal('evap_persianas_obs', record['Evap: Persianas Obs']);
   setRadio('evap_conexiones', record['Evap: Conexiones Eléctricas / Termistores']);
-  setVal('evap_conexiones_obs', record['Evap: Conexiones Obs']);
+  setObsVal('evap_conexiones_obs', record['Evap: Conexiones Obs']);
 
   // Sección 2: Condensadora
   setRadio('cond_serpentin', record['Cond: Serpentín Condensador']);
-  setVal('cond_serpentin_obs', record['Cond: Serpentín Obs']);
+  setObsVal('cond_serpentin_obs', record['Cond: Serpentín Obs']);
   setRadio('cond_aletas', record['Cond: Aletas Aluminio']);
-  setVal('cond_aletas_obs', record['Cond: Aletas Obs']);
+  setObsVal('cond_aletas_obs', record['Cond: Aletas Obs']);
   setRadio('cond_aspas', record['Cond: Aspas Ventilador']);
-  setVal('cond_aspas_obs', record['Cond: Aspas Obs']);
+  setObsVal('cond_aspas_obs', record['Cond: Aspas Obs']);
   setRadio('cond_motor', record['Cond: Motor Vent / Rodamientos']);
-  setVal('cond_motor_obs', record['Cond: Motor Vent Obs']);
+  setObsVal('cond_motor_obs', record['Cond: Motor Vent Obs']);
   setRadio('cond_compresor', record['Cond: Compresor (Ruido/Amortiguadores)']);
-  setVal('cond_compresor_obs', record['Cond: Compresor Obs']);
+  setObsVal('cond_compresor_obs', record['Cond: Compresor Obs']);
   setRadio('cond_aislamiento', record['Cond: Aislamiento Térmico Tuberías']);
-  setVal('cond_aislamiento_obs', record['Cond: Aislamiento Obs']);
+  setObsVal('cond_aislamiento_obs', record['Cond: Aislamiento Obs']);
   setRadio('cond_fugas', record['Cond: Fugas Refrigerante / Aceite']);
-  setVal('cond_fugas_obs', record['Cond: Fugas Obs']);
+  setObsVal('cond_fugas_obs', record['Cond: Fugas Obs']);
   setRadio('cond_soportes', record['Cond: Soportes y Anclajes']);
-  setVal('cond_soportes_obs', record['Cond: Soportes Obs']);
+  setObsVal('cond_soportes_obs', record['Cond: Soportes Obs']);
 
   // Sección 3: Sistema Eléctrico
   setRadio('elec_bornes', record['Elec: Reajuste Bornes']);
-  setVal('elec_bornes_obs', record['Elec: Bornes Obs']);
+  setObsVal('elec_bornes_obs', record['Elec: Bornes Obs']);
   setRadio('elec_capacitores', record['Elec: Capacitores Medición']);
-  setVal('elec_cap_comp', record['Elec: Capacitor Comp (µF)']);
-  setVal('elec_cap_vent', record['Elec: Capacitor Vent (µF)']);
-  setVal('elec_capacitores_obs', record['Elec: Capacitores Obs']);
+  setObsVal('elec_cap_comp', record['Elec: Capacitor Comp (µF)']);
+  setObsVal('elec_cap_vent', record['Elec: Capacitor Vent (µF)']);
+  setObsVal('elec_capacitores_obs', record['Elec: Capacitores Obs']);
   setRadio('elec_tarjetas', record['Elec: Tarjetas PCB / Errores']);
-  setVal('elec_tarjetas_obs', record['Elec: Tarjetas Obs']);
+  setObsVal('elec_tarjetas_obs', record['Elec: Tarjetas Obs']);
   setRadio('elec_protecciones', record['Elec: Protecciones Eléctricas']);
-  setVal('elec_protecciones_obs', record['Elec: Protecciones Obs']);
+  setObsVal('elec_protecciones_obs', record['Elec: Protecciones Obs']);
   setRadio('elec_tierra', record['Elec: Conexión Tierra Física']);
-  setVal('elec_tierra_obs', record['Elec: Tierra Obs']);
+  setObsVal('elec_tierra_obs', record['Elec: Tierra Obs']);
 
   // Cargar mediciones
   setVal('med_voltaje', record['Med: Voltaje (V AC)']);
