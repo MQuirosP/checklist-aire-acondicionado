@@ -182,26 +182,36 @@ function initSignaturePads() {
  */
 const STORAGE_KEY = 'checklist_ac_draft';
 
+function updateDraftButtonState() {
+  const btnText = document.getElementById('btn-draft-text');
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (btnText) {
+    if (saved) {
+      btnText.innerHTML = '✓ Borrador guardado';
+    } else {
+      btnText.innerHTML = 'Guardar borrador';
+    }
+  }
+}
+
 function initDraftStorage() {
   const form = document.getElementById('checklist-form');
   const btnSaveDraft = document.getElementById('btn-save-draft');
-  const statusText = document.getElementById('draft-status');
 
   // Cargar borrador previo si existe
   loadDraft();
+  updateDraftButtonState();
 
   // Escuchar cambios en cualquier input para auto-guardar
-  form.addEventListener('input', triggerDraftSave);
-  form.addEventListener('change', triggerDraftSave);
+  if (form) {
+    form.addEventListener('input', triggerDraftSave);
+    form.addEventListener('change', triggerDraftSave);
+  }
 
   if (btnSaveDraft) {
     btnSaveDraft.addEventListener('click', () => {
       saveDraft();
-      if (statusText) {
-        statusText.textContent = '¡Borrador guardado!';
-        statusText.classList.remove('hidden');
-        setTimeout(() => { statusText.textContent = 'Guardado automáticamente'; }, 2000);
-      }
+      updateDraftButtonState();
     });
   }
 }
@@ -216,6 +226,7 @@ function triggerDraftSave() {
 
 function saveDraft() {
   const form = document.getElementById('checklist-form');
+  if (!form) return;
   const formData = new FormData(form);
   const data = {};
 
@@ -224,6 +235,7 @@ function saveDraft() {
   });
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  updateDraftButtonState();
 }
 
 function loadDraft() {
@@ -259,6 +271,7 @@ function resetFormComplete() {
   const form = document.getElementById('checklist-form');
   if (form) form.reset();
   localStorage.removeItem(STORAGE_KEY);
+  updateDraftButtonState();
 
   // Desmarcar explicitamente radios de inspeccion
   document.querySelectorAll('input[type="radio"]').forEach(radio => {
@@ -802,14 +815,17 @@ function loadRecordIntoForm(record) {
   setSelectVal('cliente', record['Cliente / Ubicación']);
   setSelectVal('tecnico', record['Técnico Responsable']);
   setSelectVal('tipoUnidad', record['Tipo de Unidad']);
+  const containerSubtipo = document.getElementById('container-subtipo-equipo');
+  const containerRefrigerante = document.getElementById('container-refrigerante');
   if (record['Tipo de Unidad'] === 'Otro') {
-    const containerSubtipo = document.getElementById('container-subtipo-equipo');
     if (containerSubtipo) containerSubtipo.classList.remove('hidden');
+    if (containerRefrigerante) containerRefrigerante.classList.add('hidden');
     setSelectVal('subtipoEquipo', record['Subtipo / Categoría Equipo']);
+  } else {
+    if (containerSubtipo) containerSubtipo.classList.add('hidden');
+    if (containerRefrigerante) containerRefrigerante.classList.remove('hidden');
+    setSelectVal('refrigerante', record['Refrigerante']);
   }
-  setVal('marcaModelo', record['Marca / Modelo']);
-  setVal('idTag', record['ID / Tag Equipo']);
-  setSelectVal('refrigerante', record['Refrigerante']);
 
   // Sección 1: Evaporadora
   setRadio('evap_gabinete', record['Evap: Gabinete Externo']);
@@ -1220,21 +1236,26 @@ async function toggleTechnicianSoftDelete(id, nombre, currentStatus) {
 function initEquipmentManagement() {
   const tipoUnidadSelect = document.getElementById('tipoUnidad');
   const containerSubtipo = document.getElementById('container-subtipo-equipo');
+  const containerRefrigerante = document.getElementById('container-refrigerante');
   const subtipoSelect = document.getElementById('subtipoEquipo');
+  const refrigeranteSelect = document.getElementById('refrigerante');
   const btnManage = document.getElementById('btn-manage-equipment-types');
   const modalEquipments = document.getElementById('modal-equipment-types');
   const btnCloseEquipments = document.getElementById('btn-close-equipment-types');
   const formAddEquipment = document.getElementById('form-add-equipment-type');
   const showInactiveEquipments = document.getElementById('show-inactive-equipments');
 
-  if (tipoUnidadSelect && containerSubtipo) {
+  if (tipoUnidadSelect) {
     tipoUnidadSelect.addEventListener('change', (e) => {
       if (e.target.value === 'Otro') {
-        containerSubtipo.classList.remove('hidden');
+        if (containerSubtipo) containerSubtipo.classList.remove('hidden');
+        if (containerRefrigerante) containerRefrigerante.classList.add('hidden');
+        if (refrigeranteSelect) refrigeranteSelect.value = '';
         fetchEquipmentTypes(true);
       } else {
-        containerSubtipo.classList.add('hidden');
+        if (containerSubtipo) containerSubtipo.classList.add('hidden');
         if (subtipoSelect) subtipoSelect.value = '';
+        if (containerRefrigerante) containerRefrigerante.classList.remove('hidden');
       }
     });
   }
@@ -1243,7 +1264,10 @@ function initEquipmentManagement() {
     subtipoSelect.addEventListener('change', (e) => {
       if (e.target.value === '__MANAGE_EQUIPMENT__') {
         e.target.value = '';
-        if (modalEquipments) modalEquipments.classList.remove('hidden');
+        if (modalEquipments) {
+          modalEquipments.classList.remove('hidden');
+          fetchEquipmentTypes(false);
+        }
       }
     });
   }
