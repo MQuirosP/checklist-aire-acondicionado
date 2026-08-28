@@ -592,45 +592,7 @@
                 </td>
                 <td class="py-3 px-3 text-slate-500">Según temperatura ambiente y refrigerante</td>
               </tr>
-              <!-- Row 6: Temp Inyeccion -->
-              <tr>
-                <td class="py-3 px-3 font-medium">Temperatura de inyección (Evaporador)</td>
-                <td class="py-3 px-3">
-                  <div class="flex items-center gap-1.5">
-                    <input type="number" step="0.1" id="med_temp_inyeccion" name="med_temp_inyeccion" placeholder="12" class="w-28 px-2.5 py-1 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500">
-                    <span class="text-slate-500 whitespace-nowrap font-medium">°C</span>
-                  </div>
-                </td>
-                <td class="py-3 px-3 text-slate-500">Salida de rejilla interior</td>
-              </tr>
-              <!-- Row 7: Temp Retorno & Delta T calculated -->
-              <tr>
-                <td class="py-3 px-3 font-medium">
-                  Temperatura de retorno (Evaporador)
-                  <div class="text-[11px] text-blue-600 font-bold mt-0.5" id="delta-t-badge">
-                    Diferencial ΔT: -- °C
-                  </div>
-                </td>
-                <td class="py-3 px-3">
-                  <div class="flex items-center gap-1.5">
-                    <input type="number" step="0.1" id="med_temp_retorno" name="med_temp_retorno" placeholder="22" class="w-28 px-2.5 py-1 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500">
-                    <span class="text-slate-500 whitespace-nowrap font-medium">°C</span>
-                  </div>
-                  <!-- Hidden field to store calculated Delta T value -->
-                  <input type="hidden" id="med_delta_t" name="med_delta_t" value="">
-                </td>
-                <td class="py-3 px-3 text-slate-500">
-                  <span class="font-medium text-slate-700">Diferencial ΔT ideal: 8°C a 12°C</span> (14°F-22°F)
-                </td>
-              </tr>
-              <!-- Row 8 -->
-              <tr>
-                <td class="py-3 px-3 font-medium">Superheat (Sobrecalentamiento) / Subcooling</td>
-                <td class="py-3 px-3">
-                  <input type="text" name="med_superheat" placeholder="Ej. SH: 6°C / SC: 5°C" class="w-48 px-2.5 py-1 border border-slate-300 rounded focus:ring-2 focus:ring-blue-500">
-                </td>
-                <td class="py-3 px-3 text-slate-500">Verificación de carga óptima de refrigerante</td>
-              </tr>
+
               <!-- Row 9 -->
               <tr>
                 <td class="py-3 px-3 font-medium">Prueba de control remoto y modos de operación</td>
@@ -951,6 +913,6 @@
 
   <!-- Iframe oculto para procesamiento de envíos sin bloqueos de CORS -->
   <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-  <script src="app.js?v=19.0"></script>
+  <script src="app.js?v=20.0"></script>
 </body>
 </html>
