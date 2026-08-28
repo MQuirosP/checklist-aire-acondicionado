@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initRecordDetailModal();
   initClientsAndTechniciansManagement();
   initEquipmentManagement();
+  initMobileMenu();
 });
 
 /**
@@ -184,14 +185,12 @@ const STORAGE_KEY = 'checklist_ac_draft';
 
 function updateDraftButtonState() {
   const btnText = document.getElementById('btn-draft-text');
+  const btnMobileText = document.getElementById('btn-mobile-draft-text');
   const saved = localStorage.getItem(STORAGE_KEY);
-  if (btnText) {
-    if (saved) {
-      btnText.innerHTML = '✓ Borrador guardado';
-    } else {
-      btnText.innerHTML = 'Guardar borrador';
-    }
-  }
+  const labelText = saved ? '✓ Borrador guardado' : 'Guardar borrador';
+  
+  if (btnText) btnText.innerHTML = labelText;
+  if (btnMobileText) btnMobileText.innerHTML = labelText;
 }
 
 function initDraftStorage() {
@@ -214,6 +213,62 @@ function initDraftStorage() {
       updateDraftButtonState();
     });
   }
+}
+
+function initMobileMenu() {
+  const btnMenu = document.getElementById('btn-mobile-menu');
+  const dropdown = document.getElementById('mobile-dropdown-menu');
+  const btnClients = document.getElementById('btn-mobile-clients');
+  const btnTechs = document.getElementById('btn-mobile-technicians');
+  const btnHistory = document.getElementById('btn-mobile-history');
+  const btnDraft = document.getElementById('btn-mobile-draft');
+
+  if (!btnMenu || !dropdown) return;
+
+  const closeDropdown = () => dropdown.classList.add('hidden');
+
+  btnMenu.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle('hidden');
+  });
+
+  if (btnClients) {
+    btnClients.addEventListener('click', () => {
+      closeDropdown();
+      const desktopBtn = document.getElementById('btn-view-clients');
+      if (desktopBtn) desktopBtn.click();
+    });
+  }
+
+  if (btnTechs) {
+    btnTechs.addEventListener('click', () => {
+      closeDropdown();
+      const desktopBtn = document.getElementById('btn-view-technicians');
+      if (desktopBtn) desktopBtn.click();
+    });
+  }
+
+  if (btnHistory) {
+    btnHistory.addEventListener('click', () => {
+      closeDropdown();
+      const desktopBtn = document.getElementById('btn-view-history');
+      if (desktopBtn) desktopBtn.click();
+    });
+  }
+
+  if (btnDraft) {
+    btnDraft.addEventListener('click', () => {
+      closeDropdown();
+      saveDraft();
+    });
+  }
+
+  // Cerrar menu al hacer clic fuera
+  document.addEventListener('click', (e) => {
+    if (!dropdown.contains(e.target) && !btnMenu.contains(e.target)) {
+      closeDropdown();
+    }
+  });
 }
 
 let saveTimeout = null;

@@ -18,7 +18,7 @@
 
   <!-- Sticky Header Bar -->
   <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
-    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
       <div class="flex items-center space-x-3">
         <div class="bg-blue-600 p-2 rounded-lg">
           <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -30,7 +30,9 @@
           <p class="text-xs text-slate-400">Aire Acondicionado</p>
         </div>
       </div>
-      <div class="flex items-center space-x-2 text-xs">
+
+      <!-- Desktop Header Actions -->
+      <div class="hidden sm:flex items-center space-x-2 text-xs">
         <button type="button" id="btn-view-clients" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition flex items-center gap-1">
           👥 Clientes
         </button>
@@ -39,7 +41,7 @@
         </button>
         <button type="button" id="btn-view-history" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition flex items-center gap-1.5 shadow-sm">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 022 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
           </svg>
           Ver Registros
         </button>
@@ -49,6 +51,23 @@
           </svg>
           <span id="btn-draft-text">Guardar borrador</span>
         </button>
+      </div>
+
+      <!-- Mobile Hamburger Dropdown Menu -->
+      <div class="relative sm:hidden">
+        <button type="button" id="btn-mobile-menu" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition flex items-center gap-1.5 text-xs font-semibold">
+          <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+          Menú ▾
+        </button>
+
+        <div id="mobile-dropdown-menu" class="absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-1.5 space-y-1 z-50 hidden">
+          <button type="button" id="btn-mobile-clients" class="w-full text-left px-3 py-2 text-slate-200 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">👥 Clientes</button>
+          <button type="button" id="btn-mobile-technicians" class="w-full text-left px-3 py-2 text-slate-200 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">👨‍🔧 Técnicos</button>
+          <button type="button" id="btn-mobile-history" class="w-full text-left px-3 py-2 text-blue-400 font-semibold hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">📋 Ver Registros</button>
+          <button type="button" id="btn-mobile-draft" class="w-full text-left px-3 py-2 text-emerald-400 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">📥 <span id="btn-mobile-draft-text">Guardar borrador</span></button>
+        </div>
       </div>
     </div>
   </header>
@@ -978,6 +997,6 @@
 
   <!-- Iframe oculto para procesamiento de envíos sin bloqueos de CORS -->
   <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-  <script src="app.js?v=22.0"></script>
+  <script src="app.js?v=23.0"></script>
 </body>
 </html>
