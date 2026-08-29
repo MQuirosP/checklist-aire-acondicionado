@@ -1944,13 +1944,11 @@ async function fetchClients(silent = false) {
     const fetchUrl = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + 'action=clientes&_t=' + Date.now();
     const res = await fetch(fetchUrl, { cache: 'no-store' });
     const text = await res.text();
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (e) {
-      console.error('Respuesta no válida para clientes desde Google Sheets:', text);
+    if (!text || text.trim().startsWith('<')) {
+      console.warn('Google Apps Script no devolvió un JSON de clientes válido (Página en redirección o actualización).');
       return;
     }
+    const data = JSON.parse(text);
     if (Array.isArray(data)) {
       clientsCache = data;
       updateClientsUI();
@@ -1969,13 +1967,11 @@ async function fetchTechnicians(silent = false) {
     const fetchUrl = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + 'action=tecnicos&_t=' + Date.now();
     const res = await fetch(fetchUrl, { cache: 'no-store' });
     const text = await res.text();
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (e) {
-      console.error('Respuesta no válida para técnicos desde Google Sheets:', text);
+    if (!text || text.trim().startsWith('<')) {
+      console.warn('Google Apps Script no devolvió un JSON de técnicos válido (Página en redirección o actualización).');
       return;
     }
+    const data = JSON.parse(text);
     if (Array.isArray(data)) {
       techniciansCache = data;
       updateTechniciansUI();
@@ -1994,13 +1990,11 @@ async function fetchEquipmentTypes(silent = false) {
     const fetchUrl = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + 'action=equipos&_t=' + Date.now();
     const res = await fetch(fetchUrl, { cache: 'no-store' });
     const text = await res.text();
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (e) {
-      console.error('Respuesta no válida para catálogo de equipos desde Google Sheets:', text);
+    if (!text || text.trim().startsWith('<')) {
+      console.warn('Google Apps Script no devolvió un JSON de equipos válido (Página en redirección o actualización).');
       return;
     }
+    const data = JSON.parse(text);
     if (Array.isArray(data)) {
       equipmentTypesCache = data;
       updateEquipmentTypesUI();
