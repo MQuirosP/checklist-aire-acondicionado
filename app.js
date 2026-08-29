@@ -365,28 +365,53 @@ function setupInitialForm() {
   });
 }
 
+function arrayBufferToBase64Url(buffer) {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+function base64UrlToArrayBuffer(base64url) {
+  let base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+  while (base64.length % 4) {
+    base64 += '=';
+  }
+  const binaryString = window.atob(base64);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
+
 function setupBiometrics() {
-  const btnBio = document.getElementById('btn-biometrics-login');
+  const btnBio = document.getElementById('btn-login-biometric');
+  const userSelect = document.getElementById('login-user-select');
+
   if (btnBio) {
     btnBio.addEventListener('click', async () => {
-      const select = document.getElementById('login-user-select');
-      if (!select || !select.value) {
-        alert('Por favor selecciona tu usuario en el desplegable primero.');
+      const userId = userSelect ? userSelect.value : null;
+      const opt = userSelect ? userSelect.options[userSelect.selectedIndex] : null;
+
+      if (!userId || !opt) {
+        alert('Por favor selecciona un usuario primero para autenticar con Huella / Face ID.');
         return;
       }
 
-      const opt = select.options[select.selectedIndex];
-      const userId = select.value;
       const userBioKey = `bio_credential_${userId}`;
-      const storedCredId = localStorage.getItem(userBioKey) || opt.dataset.bio;
+      const storedCredIdBase64 = localStorage.getItem(userBioKey) || opt.dataset.bio;
 
       if (!window.PublicKeyCredential) {
         alert('La autenticación biométrica (Huella/Face ID) no está disponible en este navegador o requiere conexión segura HTTPS.');
         return;
       }
 
-      if (!storedCredId) {
-        alert('👆 Tu Huella / Face ID aún no está vinculada a este dispositivo.\n\nIngresa primero con tu PIN de 4 dígitos y haz clic en "👆 Biometría" en la barra superior para activarla.');
+      if (!storedCredIdBase64) {
+        alert('👆 Tu Huella / Face ID aún no está vinculada a este dispositivo.\n\nIngresa primero con tu PIN de 4 dígitos y toca "👆 Vincular Biometría" en el menú para activarla.');
         return;
       }
 
@@ -395,15 +420,26 @@ function setupBiometrics() {
         const challenge = new Uint8Array(32);
         window.crypto.getRandomValues(challenge);
 
-        const getOptions = {
-          publicKey: {
-            challenge: challenge,
-            timeout: 60000,
-            userVerification: 'required'
-          }
+        const getPublicKeyOptions = {
+          challenge: challenge,
+          timeout: 60000,
+          userVerification: 'preferred'
         };
 
-        const credential = await navigator.credentials.get(getOptions);
+        if (storedCredIdBase64 && storedCredIdBase64.length > 5) {
+          try {
+            const rawIdBuffer = base64UrlToArrayBuffer(storedCredIdBase64);
+            getPublicKeyOptions.allowCredentials = [{
+              type: 'public-key',
+              id: rawIdBuffer,
+              transports: ['internal']
+            }];
+          } catch (e) {
+            console.warn('Error convirtiendo credencial local:', e);
+          }
+        }
+
+        const credential = await navigator.credentials.get({ publicKey: getPublicKeyOptions });
 
         if (credential) {
           const user = { id: userId, nombre: opt.dataset.name, rol: opt.dataset.role };
@@ -411,7 +447,7 @@ function setupBiometrics() {
         }
       } catch (err) {
         console.warn('Biometría cancelada o no verificada:', err);
-        alert('⚠️ No se pudo verificar la huella o la autenticación fue cancelada. Por favor ingresa con tu PIN de 4 dígitos.');
+        alert('⚠️ No se pudo verificar la huella en este dispositivo.\n\nSi vinculaste la biometría desde otro dispositivo (ej. laptop), ingresa aquí con tu PIN de 4 dígitos y toca "👆 Vincular Biometría" en el menú para registrar el sensor de este teléfono.');
       }
     });
   }
@@ -447,21 +483,23 @@ function setupBiometrics() {
           authenticatorSelection: {
             authenticatorAttachment: "platform",
             userVerification: "preferred",
-            requireResidentKey: false
+            residentKey: "required",
+            requireResidentKey: true
           }
         }
       });
 
       if (credential) {
+        const rawIdBase64 = arrayBufferToBase64Url(credential.rawId);
         const userBioKey = `bio_credential_${currentUser.id}`;
-        localStorage.setItem(userBioKey, credential.id);
+        localStorage.setItem(userBioKey, rawIdBase64);
 
         try {
           await fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
             mode: 'no-cors',
             headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ action: 'register_biometric', id: currentUser.id, biometria: credential.id })
+            body: JSON.stringify({ action: 'register_biometric', id: currentUser.id, biometria: rawIdBase64 })
           });
         } catch (e) {}
 
