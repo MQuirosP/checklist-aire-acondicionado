@@ -1062,6 +1062,20 @@ function loadRecordIntoForm(record) {
   const form = document.getElementById('checklist-form');
   if (!form || !record) return;
 
+  // Saneamiento inteligente de campos si la fila histórica en Google Sheets tiene desfasaje de 1 columna
+  let rec = Object.assign({}, record);
+  const rawTipoMant = (rec['Tipo de Mantenimiento'] || '').toString();
+  if (rawTipoMant.includes('Mario') || rawTipoMant.includes('Santa') || rawTipoMant.length > 18) {
+    rec['Refrigerante'] = rec['ID / Tag Equipo'] || rec['Refrigerante'] || '';
+    rec['ID / Tag Equipo'] = rec['Marca / Modelo'] || rec['ID / Tag Equipo'] || '';
+    rec['Marca / Modelo'] = rec['Subtipo / Categoría Equipo'] || rec['Marca / Modelo'] || '';
+    rec['Subtipo / Categoría Equipo'] = rec['Tipo de Unidad'] || rec['Subtipo / Categoría Equipo'] || '';
+    rec['Tipo de Unidad'] = rec['Técnico Responsable'] || rec['Tipo de Unidad'] || '';
+    rec['Técnico Responsable'] = rec['Cliente / Ubicación'] || rec['Técnico Responsable'] || '';
+    rec['Cliente / Ubicación'] = rec['Tipo de Mantenimiento'] || rec['Cliente / Ubicación'] || '';
+    rec['Tipo de Mantenimiento'] = 'Preventivo';
+  }
+
   const setSelectVal = (id, val) => {
     const el = document.getElementById(id);
     if (!el || !val) return;
@@ -1094,23 +1108,23 @@ function loadRecordIntoForm(record) {
     }
   };
 
-  const rawFecha = record['Fecha Inspección'] || record['Fecha / Hora Registro'];
+  const rawFecha = rec['Fecha Inspección'] || rec['Fecha / Hora Registro'];
   setVal('fecha', formatDateForInput(rawFecha));
-  setVal('ot', record['N° Orden / OT']);
-  setSelectVal('tipoMantenimiento', record['Tipo de Mantenimiento'] || 'Preventivo');
-  setSelectVal('cliente', record['Cliente / Ubicación']);
-  setSelectVal('tecnico', record['Técnico Responsable']);
-  setSelectVal('tipoUnidad', record['Tipo de Unidad']);
+  setVal('ot', rec['N° Orden / OT']);
+  setSelectVal('tipoMantenimiento', rec['Tipo de Mantenimiento'] || 'Preventivo');
+  setSelectVal('cliente', rec['Cliente / Ubicación']);
+  setSelectVal('tecnico', rec['Técnico Responsable']);
+  setSelectVal('tipoUnidad', rec['Tipo de Unidad']);
   const containerSubtipo = document.getElementById('container-subtipo-equipo');
   const containerRefrigerante = document.getElementById('container-refrigerante');
-  if (record['Tipo de Unidad'] === 'Otro') {
+  if (rec['Tipo de Unidad'] === 'Otro') {
     if (containerSubtipo) containerSubtipo.classList.remove('hidden');
     if (containerRefrigerante) containerRefrigerante.classList.add('hidden');
-    setSelectVal('subtipoEquipo', record['Subtipo / Categoría Equipo']);
+    setSelectVal('subtipoEquipo', rec['Subtipo / Categoría Equipo']);
   } else {
     if (containerSubtipo) containerSubtipo.classList.add('hidden');
     if (containerRefrigerante) containerRefrigerante.classList.remove('hidden');
-    setSelectVal('refrigerante', record['Refrigerante']);
+    setSelectVal('refrigerante', rec['Refrigerante']);
   }
 
   // Sección 1: Evaporadora
