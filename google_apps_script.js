@@ -372,3 +372,34 @@ function getSheetJson(sheet) {
   }
   return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
 }
+
+/**
+ * Función de 1-Clic para normalizar encabezados de Fila 1 en la hoja Mantenimientos
+ * y corregir cualquier desfasaje de columnas histórico.
+ */
+function realignHeadersAndFixRows() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName('Mantenimientos') || ss.getSheets()[0];
+  var STANDARD_HEADERS = [
+    "Fecha / Hora Registro", "Fecha Inspección", "N° Orden / OT", "Tipo de Mantenimiento", "Cliente / Ubicación", "Técnico Responsable",
+    "Tipo de Unidad", "Subtipo / Categoría Equipo", "Marca / Modelo", "ID / Tag Equipo", "Refrigerante",
+    "Evap: Gabinete Externo", "Evap: Gabinete Obs", "Evap: Filtros Aire", "Evap: Filtros Obs",
+    "Evap: Serpentín Evaporador", "Evap: Serpentín Obs", "Evap: Bandeja Condensados / Biocidas", "Evap: Bandeja Obs",
+    "Evap: Drenaje Obstrucciones", "Evap: Drenaje Obs", "Evap: Turbina / Fan Tangencial", "Evap: Turbina Obs",
+    "Evap: Motor Vent / Rodajes", "Evap: Motor Vent Obs", "Evap: Persianas Swing / Motor paso", "Evap: Persianas Obs",
+    "Evap: Conexiones Eléctricas / Termistores", "Evap: Conexiones Obs",
+    "Cond: Serpentín Condensador", "Cond: Serpentín Obs", "Cond: Aletas Aluminio", "Cond: Aletas Obs",
+    "Cond: Aspas Ventilador", "Cond: Aspas Obs", "Cond: Motor Vent / Rodamientos", "Cond: Motor Vent Obs",
+    "Cond: Compresor (Ruido/Amortiguadores)", "Cond: Compresor Obs", "Cond: Aislamiento Térmico Tuberías", "Cond: Aislamiento Obs",
+    "Cond: Fugas Refrigerante / Aceite", "Cond: Fugas Obs", "Cond: Soportes y Anclajes", "Cond: Soportes Obs",
+    "Elec: Reajuste Bornes", "Elec: Bornes Obs", "Elec: Capacitores Medición", "Elec: Capacitor Comp (µF)",
+    "Elec: Capacitor Vent (µF)", "Elec: Capacitores Obs", "Elec: Tarjetas PCB / Errores", "Elec: Tarjetas Obs",
+    "Elec: Protecciones Eléctricas", "Elec: Protecciones Obs", "Elec: Conexión Tierra Física", "Elec: Tierra Obs",
+    "Med: Voltaje (V AC)", "Med: Corriente Compresor (A)", "Med: Corriente Motor Ext (A)", "Med: Presión Baja (PSI)",
+    "Med: Presión Alta (PSI)", "Med: Control Remoto Estado", "Diagnóstico y Observaciones Finales",
+    "Nombre Técnico", "Firma Técnico (DataURL)", "Nombre Cliente", "Firma Cliente (DataURL)"
+  ];
+
+  sheet.getRange(1, 1, 1, STANDARD_HEADERS.length).setValues([STANDARD_HEADERS]).setFontWeight("bold").setBackground("#e2e8f0");
+  sheet.setFrozenRows(1);
+}

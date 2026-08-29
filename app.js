@@ -925,17 +925,32 @@ function openRecordDetail(record) {
 
   // Saneamiento de firmas en caso de registros con desplazamiento previo de columnas
   let rawTecNombre = record['Nombre Técnico'] || getVal('Técnico Responsable');
-  let rawTecFirma = record['Firma Técnico (DataURL)'] || '';
+  let rawTecFirma = record['Firma Técnico (DataURL)'] || record['Firma Técnico'] || '';
   if (rawTecNombre && rawTecNombre.startsWith('data:image')) {
     rawTecFirma = rawTecNombre;
     rawTecNombre = getVal('Técnico Responsable');
   }
 
   let rawCliNombre = record['Nombre Cliente'] || getVal('Cliente / Ubicación');
-  let rawCliFirma = record['Firma Cliente (DataURL)'] || '';
+  let rawCliFirma = record['Firma Cliente (DataURL)'] || record['Firma Cliente'] || '';
   if (rawCliNombre && rawCliNombre.startsWith('data:image')) {
     rawCliFirma = rawCliNombre;
     rawCliNombre = getVal('Cliente / Ubicación');
+  }
+
+  // Escaneo inteligente de cualquier DataURL desplazada en el registro
+  const dataUrls = [];
+  for (const k in record) {
+    const val = (record[k] || '').toString();
+    if (val.startsWith('data:image')) {
+      dataUrls.push({ key: k, val: val });
+    }
+  }
+
+  if (dataUrls.length > 0) {
+    if (!rawTecFirma && dataUrls[0]) rawTecFirma = dataUrls[0].val;
+    if (!rawCliFirma && dataUrls[1]) rawCliFirma = dataUrls[1].val;
+    if (!rawCliFirma && dataUrls[0] && dataUrls[0].key.toLowerCase().includes('cliente')) rawCliFirma = dataUrls[0].val;
   }
 
   const isEquipoOtro = (record['Tipo de Unidad'] || '').toString().trim() === 'Otro';
