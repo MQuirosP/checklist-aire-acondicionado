@@ -885,9 +885,30 @@ function openRecordDetail(record) {
     { label: 'Elec: Tierra Física', key: 'Elec: Conexión Tierra Física' }
   ];
 
+  const getItemValue = (item) => {
+    if (record[item.key] !== undefined && record[item.key] !== '') return record[item.key];
+    if (record[item.label] !== undefined && record[item.label] !== '') return record[item.label];
+    if (item.altKey && record[item.altKey] !== undefined && record[item.altKey] !== '') return record[item.altKey];
+
+    const clean = (s) => (s || '').toString().toLowerCase().replace(/[^a-z0-9]/g, '');
+    const targetKey = clean(item.key);
+    const targetLabel = clean(item.label);
+
+    for (const k in record) {
+      const normK = clean(k);
+      if (normK === targetKey || normK === targetLabel || (normK.length > 4 && targetKey.includes(normK)) || (normK.length > 4 && normK.includes(targetKey))) {
+        const v = (record[k] || '').toString().trim();
+        if (v === 'B' || v === 'R' || v === 'M' || v === 'N/A') {
+          return v;
+        }
+      }
+    }
+    return '--';
+  };
+
   // Helper para renderizar pill de inspección compacto de 1 sola línea (4 columnas)
   const renderItemPill = (item) => {
-    const val = record[item.key] || '--';
+    const val = getItemValue(item);
     let colorClass = 'bg-slate-100 text-slate-700 border-slate-300';
     if (val === 'B') colorClass = 'bg-emerald-100 text-emerald-800 border-emerald-300';
     if (val === 'R') colorClass = 'bg-amber-100 text-amber-800 border-amber-300';
