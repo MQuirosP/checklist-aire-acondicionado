@@ -39,9 +39,6 @@ function switchView(viewId) {
 
 function updateNavigationUI() {
   const btnHome = document.getElementById('btn-nav-home');
-  const badge = document.getElementById('user-profile-badge');
-  const nameEl = document.getElementById('user-display-name');
-  const roleEl = document.getElementById('user-display-role');
   const btnLogout = document.getElementById('btn-nav-logout');
   const desktopActions = document.getElementById('desktop-header-actions');
   const mobileMenuBtn = document.getElementById('btn-mobile-menu');
@@ -51,12 +48,6 @@ function updateNavigationUI() {
 
   if (currentUser) {
     if (btnHome) btnHome.classList.remove('hidden');
-    if (badge) {
-      badge.classList.remove('hidden');
-      badge.classList.add('flex');
-    }
-    if (nameEl) nameEl.textContent = currentUser.nombre;
-    if (roleEl) roleEl.textContent = currentUser.rol || 'Técnico';
     if (btnLogout) btnLogout.classList.remove('hidden');
     if (desktopActions) {
       desktopActions.classList.remove('hidden');
@@ -80,11 +71,6 @@ function updateNavigationUI() {
     }
   } else {
     if (btnHome) btnHome.classList.add('hidden');
-    if (badge) {
-      badge.classList.add('hidden');
-      badge.classList.remove('flex');
-    }
-    if (nameEl) nameEl.textContent = '--';
     if (btnLogout) btnLogout.classList.add('hidden');
     if (desktopActions) {
       desktopActions.classList.add('hidden');
