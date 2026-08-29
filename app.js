@@ -51,7 +51,10 @@ function updateNavigationUI() {
 
   if (currentUser) {
     if (btnHome) btnHome.classList.remove('hidden');
-    if (badge) badge.classList.remove('hidden');
+    if (badge) {
+      badge.classList.remove('hidden');
+      badge.classList.add('flex');
+    }
     if (nameEl) nameEl.textContent = currentUser.nombre;
     if (roleEl) roleEl.textContent = currentUser.rol || 'Técnico';
     if (btnLogout) btnLogout.classList.remove('hidden');
@@ -77,7 +80,11 @@ function updateNavigationUI() {
     }
   } else {
     if (btnHome) btnHome.classList.add('hidden');
-    if (badge) badge.classList.add('hidden');
+    if (badge) {
+      badge.classList.add('hidden');
+      badge.classList.remove('flex');
+    }
+    if (nameEl) nameEl.textContent = '--';
     if (btnLogout) btnLogout.classList.add('hidden');
     if (desktopActions) {
       desktopActions.classList.add('hidden');
