@@ -522,7 +522,10 @@ function initDashboardNavigation() {
   if (cardClients) {
     cardClients.addEventListener('click', () => {
       const modal = document.getElementById('modal-clients');
-      if (modal) modal.classList.remove('hidden');
+      if (modal) {
+        modal.classList.remove('hidden');
+        if (typeof fetchClients === 'function') fetchClients(false);
+      }
     });
   }
 
@@ -530,15 +533,22 @@ function initDashboardNavigation() {
   if (cardTechs) {
     cardTechs.addEventListener('click', () => {
       const modal = document.getElementById('modal-technicians');
-      if (modal) modal.classList.remove('hidden');
+      if (modal) {
+        modal.classList.remove('hidden');
+        if (typeof fetchTechnicians === 'function') fetchTechnicians(false);
+      }
     });
   }
 
   const cardEquip = document.getElementById('card-manage-equipment');
   if (cardEquip) {
     cardEquip.addEventListener('click', () => {
-      const modal = document.getElementById('modal-equipment');
-      if (modal) modal.classList.remove('hidden');
+      const modal = document.getElementById('modal-equipment-types');
+      if (modal) {
+        modal.classList.remove('hidden');
+        if (typeof updateEquipmentTypesUI === 'function') updateEquipmentTypesUI();
+        if (typeof fetchEquipmentTypes === 'function') fetchEquipmentTypes(false);
+      }
     });
   }
 
