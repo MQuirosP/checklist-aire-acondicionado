@@ -37,27 +37,25 @@
       <div class="flex items-center space-x-2 text-xs">
 
         <!-- Desktop Header Actions -->
-        <div id="desktop-header-actions" class="items-center space-x-1.5 hidden">
+        <!-- Desktop Header Actions (SOLO VISIBLE EN DESKTOP >= 768px) -->
+        <div id="desktop-header-actions" class="hidden md:flex items-center space-x-1.5">
           <button type="button" id="btn-view-clients" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition flex items-center gap-1">👥 Clientes</button>
           <button type="button" id="btn-view-technicians" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition flex items-center gap-1">👨‍🔧 Técnicos</button>
           <button type="button" id="btn-view-equipments" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition flex items-center gap-1">⚙️ Equipos</button>
           <button type="button" id="btn-view-users" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 rounded-md transition flex items-center gap-1 hidden">🔐 Usuarios</button>
           <button type="button" id="btn-register-biometric" class="px-2 py-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 rounded-md transition flex items-center gap-1 text-[11px]" title="Vincular Huella/Face ID en este dispositivo">👆 Biometría</button>
           <button type="button" id="btn-view-history" class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition flex items-center gap-1 shadow-sm">📋 Órdenes</button>
+          <button type="button" id="btn-nav-logout" class="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-medium rounded-md transition flex items-center gap-1 text-xs shadow-sm ml-1" title="Cerrar Sesión">🔒 Salir</button>
         </div>
 
-        <button type="button" id="btn-nav-logout" class="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-medium rounded-md transition flex items-center gap-1 text-xs shadow-sm hidden" title="Cerrar Sesión">
-          🔒 <span class="hidden sm:inline">Salir</span>
-        </button>
-
-        <!-- Mobile Hamburger Dropdown Menu -->
-        <div class="relative sm:hidden">
-          <button type="button" id="btn-mobile-menu" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg transition flex items-center justify-center" title="Menú">
+        <!-- Mobile Hamburger Dropdown Menu (SOLO VISIBLE EN MOVIL < 768px) -->
+        <div class="relative md:hidden">
+          <button type="button" id="btn-mobile-menu" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg transition flex items-center justify-center hidden" title="Menú">
             <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
             </svg>
           </button>
-          <div id="mobile-dropdown-menu" class="absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-1.5 space-y-1 z-50 hidden">
+          <div id="mobile-dropdown-menu" class="absolute right-0 mt-2 w-52 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-1.5 space-y-1 z-50 hidden">
             <button type="button" id="btn-mobile-nav-home" class="w-full text-left px-3 py-2 text-blue-400 font-semibold hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">🏠 Menú Principal</button>
             <button type="button" id="btn-mobile-clients" class="w-full text-left px-3 py-2 text-slate-200 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">👥 Clientes</button>
             <button type="button" id="btn-mobile-technicians" class="w-full text-left px-3 py-2 text-slate-200 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">👨‍🔧 Técnicos</button>
@@ -1285,6 +1283,6 @@
 
   <!-- Iframe oculto para procesamiento de envíos sin bloqueos de CORS -->
   <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-  <script src="app.js?v=64.0"></script>
+  <script src="app.js?v=65.0"></script>
 </body>
 </html>

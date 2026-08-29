@@ -39,8 +39,6 @@ function switchView(viewId) {
 
 function updateNavigationUI() {
   const btnHome = document.getElementById('btn-nav-home');
-  const btnLogout = document.getElementById('btn-nav-logout');
-  const desktopActions = document.getElementById('desktop-header-actions');
   const mobileMenuBtn = document.getElementById('btn-mobile-menu');
   const btnViewUsers = document.getElementById('btn-view-users');
   const btnMobileUsers = document.getElementById('btn-mobile-users');
@@ -48,11 +46,6 @@ function updateNavigationUI() {
 
   if (currentUser) {
     if (btnHome) btnHome.classList.remove('hidden');
-    if (btnLogout) btnLogout.classList.remove('hidden');
-    if (desktopActions) {
-      desktopActions.classList.remove('hidden');
-      desktopActions.classList.add('md:flex');
-    }
     if (mobileMenuBtn) mobileMenuBtn.classList.remove('hidden');
 
     const welcomeName = document.getElementById('dashboard-welcome-name');
@@ -71,11 +64,6 @@ function updateNavigationUI() {
     }
   } else {
     if (btnHome) btnHome.classList.add('hidden');
-    if (btnLogout) btnLogout.classList.add('hidden');
-    if (desktopActions) {
-      desktopActions.classList.add('hidden');
-      desktopActions.classList.remove('md:flex');
-    }
     if (mobileMenuBtn) mobileMenuBtn.classList.add('hidden');
     if (btnViewUsers) btnViewUsers.classList.add('hidden');
     if (btnMobileUsers) btnMobileUsers.classList.add('hidden');
@@ -2529,5 +2517,99 @@ async function toggleEquipmentSoftDelete(id, nombre, currentStatus) {
     setTimeout(() => fetchEquipmentTypes(false), 1200);
   } catch (err) {
     console.error('Error al cambiar estado de categoría de equipo:', err);
+  }
+}
+
+function initMobileMenu() {
+  const btnMobileMenu = document.getElementById('btn-mobile-menu');
+  const mobileMenu = document.getElementById('mobile-dropdown-menu');
+
+  if (btnMobileMenu && mobileMenu) {
+    btnMobileMenu.addEventListener('click', (e) => {
+      e.stopPropagation();
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!mobileMenu.contains(e.target) && !btnMobileMenu.contains(e.target)) {
+        mobileMenu.classList.add('hidden');
+      }
+    });
+  }
+
+  // Vincular botones del menú desplegable móvil
+  const mobileNavHome = document.getElementById('btn-mobile-nav-home');
+  const mobileClients = document.getElementById('btn-mobile-clients');
+  const mobileTechs = document.getElementById('btn-mobile-technicians');
+  const mobileEquip = document.getElementById('btn-mobile-equipments');
+  const mobileBiometric = document.getElementById('btn-mobile-biometric');
+  const mobileHistory = document.getElementById('btn-mobile-history');
+  const mobileLogout = document.getElementById('btn-mobile-logout');
+
+  if (mobileNavHome) {
+    mobileNavHome.addEventListener('click', () => {
+      if (mobileMenu) mobileMenu.classList.add('hidden');
+      switchView('view-dashboard');
+    });
+  }
+
+  if (mobileClients) {
+    mobileClients.addEventListener('click', () => {
+      if (mobileMenu) mobileMenu.classList.add('hidden');
+      const modal = document.getElementById('modal-clients');
+      if (modal) {
+        modal.classList.remove('hidden');
+        if (typeof fetchClients === 'function') fetchClients(false);
+      }
+    });
+  }
+
+  if (mobileTechs) {
+    mobileTechs.addEventListener('click', () => {
+      if (mobileMenu) mobileMenu.classList.add('hidden');
+      const modal = document.getElementById('modal-technicians');
+      if (modal) {
+        modal.classList.remove('hidden');
+        if (typeof fetchTechnicians === 'function') fetchTechnicians(false);
+      }
+    });
+  }
+
+  if (mobileEquip) {
+    mobileEquip.addEventListener('click', () => {
+      if (mobileMenu) mobileMenu.classList.add('hidden');
+      const modal = document.getElementById('modal-equipment-types');
+      if (modal) {
+        modal.classList.remove('hidden');
+        if (typeof updateEquipmentTypesUI === 'function') updateEquipmentTypesUI();
+        if (typeof fetchEquipmentTypes === 'function') fetchEquipmentTypes(false);
+      }
+    });
+  }
+
+  if (mobileBiometric) {
+    mobileBiometric.addEventListener('click', () => {
+      if (mobileMenu) mobileMenu.classList.add('hidden');
+      const btnRegBio = document.getElementById('btn-register-biometric');
+      if (btnRegBio) btnRegBio.click();
+    });
+  }
+
+  if (mobileHistory) {
+    mobileHistory.addEventListener('click', () => {
+      if (mobileMenu) mobileMenu.classList.add('hidden');
+      const modal = document.getElementById('modal-history');
+      if (modal) {
+        modal.classList.remove('hidden');
+        fetchHistoryData();
+      }
+    });
+  }
+
+  if (mobileLogout) {
+    mobileLogout.addEventListener('click', () => {
+      if (mobileMenu) mobileMenu.classList.add('hidden');
+      logoutUser();
+    });
   }
 }
