@@ -657,21 +657,42 @@ function initUserManagement() {
   }
 }
 
+window.startEditUser = function(id, nombre, pin, rol) {
+  const inputEditId = document.getElementById('user-edit-id');
+  const inputName = document.getElementById('user-name');
+  const inputPin = document.getElementById('user-pin');
+  const selectRole = document.getElementById('user-role');
+  const submitBtn = document.getElementById('btn-save-user');
+
+  if (inputEditId) inputEditId.value = id;
+  if (inputName) inputName.value = nombre;
+  if (inputPin) inputPin.value = pin;
+  if (selectRole) selectRole.value = rol || 'Técnico';
+  if (submitBtn) submitBtn.textContent = '✏️ Actualizar Usuario';
+
+  const form = document.getElementById('form-user');
+  if (form) form.scrollIntoView({ behavior: 'smooth' });
+};
+
 function renderUsersTable() {
   const tbody = document.getElementById('users-table-body');
   if (!tbody) return;
   tbody.innerHTML = '';
   usersDataCache.forEach((u, index) => {
+    const uId = String(u.ID || u.id || '');
     const uName = u['Nombre Usuario'] || u['Nombre'] || u['Nombre del Técnico'] || u['Usuario'] || u.nombre || u.ID || 'Usuario';
+    const uPin = String(u.PIN || u.pin || '1234');
+    const uRol = String(u.Rol || u.rol || 'Técnico');
     const tr = document.createElement('tr');
     tr.className = 'hover:bg-slate-50 transition border-b border-slate-100';
     tr.innerHTML = `
       <!-- Desktop Cells -->
       <td class="hidden sm:table-cell py-2 px-3 font-semibold text-slate-800">${uName}</td>
-      <td class="hidden sm:table-cell py-2 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${u.Rol === 'Administrador' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}">${u.Rol || 'Técnico'}</span></td>
-      <td class="hidden sm:table-cell py-2 px-3 font-mono">•••• (${u.PIN || '1234'})</td>
+      <td class="hidden sm:table-cell py-2 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${uRol === 'Administrador' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}">${uRol}</span></td>
+      <td class="hidden sm:table-cell py-2 px-3 font-mono">•••• (${uPin})</td>
       <td class="hidden sm:table-cell py-2 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${u.Estado === 'Inactivo' ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}">${u.Estado || 'Activo'}</span></td>
       <td class="hidden sm:table-cell py-2 px-3 text-center space-x-1">
+        <button type="button" onclick="startEditUser('${uId.replace(/'/g, "\\'")}', '${uName.replace(/'/g, "\\'")}', '${uPin.replace(/'/g, "\\'")}', '${uRol.replace(/'/g, "\\'")}')" class="px-2 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded font-semibold text-[10px] transition">✏️ Editar</button>
         <button type="button" class="btn-toggle-user px-2 py-1 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded font-medium text-[10px]" data-index="${index}">${u.Estado === 'Inactivo' ? 'Activar' : 'Desactivar'}</button>
       </td>
 
@@ -681,7 +702,7 @@ function renderUsersTable() {
           <summary class="flex items-center justify-between font-bold text-slate-800 cursor-pointer list-none select-none">
             <div class="flex items-center gap-1.5 text-xs">
               <span>👤 ${uName}</span>
-              <span class="px-1.5 py-0.5 rounded text-[9.5px] font-bold ${u.Rol === 'Administrador' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}">${u.Rol || 'Técnico'}</span>
+              <span class="px-1.5 py-0.5 rounded text-[9.5px] font-bold ${uRol === 'Administrador' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}">${uRol}</span>
             </div>
             <div class="flex items-center gap-2">
               <span class="text-xs font-semibold ${u.Estado === 'Inactivo' ? 'text-rose-600' : 'text-emerald-600'}">${u.Estado || 'Activo'}</span>
@@ -689,8 +710,9 @@ function renderUsersTable() {
             </div>
           </summary>
           <div class="mt-2.5 pt-2 border-t border-slate-100 text-xs space-y-2 text-slate-600">
-            <p><strong>PIN Actual:</strong> <span class="font-mono bg-slate-100 px-2 py-0.5 rounded">${u.PIN || '1234'}</span></p>
-            <div class="pt-1 flex items-center justify-end">
+            <p><strong>PIN Actual:</strong> <span class="font-mono bg-slate-100 px-2 py-0.5 rounded">${uPin}</span></p>
+            <div class="pt-1 flex items-center justify-end gap-2">
+              <button type="button" onclick="startEditUser('${uId.replace(/'/g, "\\'")}', '${uName.replace(/'/g, "\\'")}', '${uPin.replace(/'/g, "\\'")}', '${uRol.replace(/'/g, "\\'")}')" class="px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded font-semibold text-xs transition">✏️ Editar</button>
               <button type="button" class="btn-toggle-user px-3 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded font-semibold text-xs transition" data-index="${index}">${u.Estado === 'Inactivo' ? '🔄 Activar Usuario' : '🚫 Desactivar Usuario'}</button>
             </div>
           </div>
@@ -2336,9 +2358,43 @@ function updateTechniciansUI() {
   const tbody = document.getElementById('technicians-table-body');
   const showInactive = document.getElementById('show-inactive-technicians')?.checked;
 
+  // Unificar técnicos de la pestaña 'Técnicos' y usuarios registrados con rol 'Técnico'
+  let allTechsMap = new Map();
+
+  (techniciansCache || []).forEach(t => {
+    const name = (t['Nombre del Técnico'] || t.nombre || t.ID || '').toString().trim();
+    if (name) {
+      allTechsMap.set(name.toLowerCase(), {
+        ID: t.ID || t.id || 'TEC-' + (allTechsMap.size + 1),
+        'Nombre del Técnico': name,
+        'Cédula / ID': t['Cédula / ID'] || t.cedula || '--',
+        'Teléfono': t['Teléfono'] || t.telefono || '--',
+        Estado: t.Estado || t['Estado'] || 'Activo'
+      });
+    }
+  });
+
+  (usersDataCache || []).forEach(u => {
+    const role = (u.Rol || u.rol || 'Técnico').toString().trim();
+    if (role === 'Técnico') {
+      const name = (u['Nombre Usuario'] || u['Nombre del Técnico'] || u.nombre || '').toString().trim();
+      if (name && !allTechsMap.has(name.toLowerCase())) {
+        allTechsMap.set(name.toLowerCase(), {
+          ID: u.ID || u.id || 'USR-TEC-' + (allTechsMap.size + 1),
+          'Nombre del Técnico': name,
+          'Cédula / ID': '--',
+          'Teléfono': '--',
+          Estado: u.Estado || u.estado || 'Activo'
+        });
+      }
+    }
+  });
+
+  const mergedTechs = Array.from(allTechsMap.values());
+
   if (select) {
     const currentVal = select.value;
-    const activeTechs = techniciansCache.filter(t => (t.Estado || t['Estado'] || 'Activo') !== 'Inactivo');
+    const activeTechs = mergedTechs.filter(t => (t.Estado || t['Estado'] || 'Activo') !== 'Inactivo');
     select.innerHTML = `<option value="" disabled ${!currentVal ? 'selected' : ''}>Seleccionar...</option>` +
       activeTechs.map(t => {
         const nombre = t['Nombre del Técnico'] || t.nombre || '';
@@ -2348,7 +2404,7 @@ function updateTechniciansUI() {
   }
 
   if (tbody) {
-    const listToRender = showInactive ? techniciansCache : techniciansCache.filter(t => (t.Estado || t['Estado'] || 'Activo') !== 'Inactivo');
+    const listToRender = showInactive ? mergedTechs : mergedTechs.filter(t => (t.Estado || t['Estado'] || 'Activo') !== 'Inactivo');
     if (listToRender.length === 0) {
       tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-400">No hay técnicos registrados ${showInactive ? '' : 'activos'}.</td></tr>`;
       return;
