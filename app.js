@@ -279,23 +279,44 @@ function validateEnteredPin() {
 
 function setupInitialForm() {
   const form = document.getElementById('form-initial-setup');
+  const btnShowRegister = document.getElementById('btn-show-register');
+  const btnCancelRegister = document.getElementById('btn-cancel-register');
+  const pinContainer = document.getElementById('login-pin-container');
+
+  if (btnShowRegister) {
+    btnShowRegister.addEventListener('click', () => {
+      if (form) form.classList.remove('hidden');
+      if (pinContainer) pinContainer.classList.add('hidden');
+    });
+  }
+
+  if (btnCancelRegister) {
+    btnCancelRegister.addEventListener('click', () => {
+      if (form) form.classList.add('hidden');
+      if (pinContainer) pinContainer.classList.remove('hidden');
+    });
+  }
+
   if (!form) return;
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = document.getElementById('setup-name').value.trim();
     const pin = document.getElementById('setup-pin').value.trim();
+    const role = document.getElementById('setup-role') ? document.getElementById('setup-role').value : 'Administrador';
 
     if (!name || pin.length !== 4) {
       alert('Por favor ingresa tu nombre y un PIN de 4 dígitos.');
       return;
     }
 
+    const userId = "USR-" + Date.now().toString().slice(-4);
+
     const payload = {
       action: 'add_user',
-      id: 'USR-1',
+      id: userId,
       nombre: name,
       pin: pin,
-      rol: 'Administrador',
+      rol: role,
       estado: 'Activo'
     };
 
@@ -308,9 +329,9 @@ function setupInitialForm() {
       });
     } catch (err) {}
 
-    const adminUser = { id: 'USR-1', nombre: name, rol: 'Administrador' };
-    usersDataCache = [{ ID: 'USR-1', 'Nombre Usuario': name, PIN: pin, Rol: 'Administrador', Estado: 'Activo' }];
-    loginUser(adminUser);
+    const newUser = { id: userId, nombre: name, rol: role };
+    usersDataCache.push({ ID: userId, 'Nombre Usuario': name, PIN: pin, Rol: role, Estado: 'Activo' });
+    loginUser(newUser);
   });
 }
 

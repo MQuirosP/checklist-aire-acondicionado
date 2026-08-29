@@ -90,10 +90,10 @@
           <p id="login-subtitle" class="text-xs text-slate-500">Ingresa tu PIN de 4 dígitos para continuar</p>
         </div>
 
-        <!-- Modo Asistente Inicial (si no hay usuarios) -->
+        <!-- Modo Asistente de Registro / Configuración Inicial -->
         <form id="form-initial-setup" class="space-y-4 hidden">
-          <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800">
-            <strong>🌟 Configuración Inicial:</strong> No se detectaron usuarios. Crea la cuenta de Administrador Inicial.
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900">
+            <strong>📝 Registro de Usuario:</strong> Completa el formulario para crear tu usuario y PIN.
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Nombre Completo:</label>
@@ -103,8 +103,18 @@
             <label class="block text-xs font-semibold text-slate-700 mb-1">Definir PIN (4 Dígitos):</label>
             <input type="password" id="setup-pin" maxlength="4" placeholder="••••" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-center tracking-widest text-lg font-bold">
           </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Rol / Permisos:</label>
+            <select id="setup-role" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white font-medium">
+              <option value="Administrador" selected>Administrador</option>
+              <option value="Técnico">Técnico</option>
+            </select>
+          </div>
           <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition shadow-md">
-            🚀 Registrar Administrador e Iniciar
+            🚀 Crear Usuario e Iniciar Sesión
+          </button>
+          <button type="button" id="btn-cancel-register" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition">
+            Volver a Selección de PIN
           </button>
         </form>
 
@@ -114,7 +124,7 @@
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Seleccionar Usuario:</label>
             <select id="login-user-select" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white font-medium">
-              <option value="" disabled selected>Cargando usuarios...</option>
+              <option value="" disabled selected>Seleccionar Usuario...</option>
             </select>
           </div>
 
@@ -140,11 +150,14 @@
             <button type="button" id="btn-pin-backspace" class="py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl transition">⌫</button>
           </div>
 
-          <!-- Biometrics Button -->
-          <div class="pt-2 border-t border-slate-100">
+          <!-- Biometrics & Register Actions -->
+          <div class="pt-3 border-t border-slate-100 space-y-2">
             <button type="button" id="btn-biometrics-login" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold transition flex items-center justify-center gap-2 shadow-sm">
               <span>👆</span>
               <span>Ingresar con Huella / Face ID</span>
+            </button>
+            <button type="button" id="btn-show-register" class="w-full py-2 text-xs text-blue-600 hover:text-blue-800 font-bold underline text-center block">
+              ➕ ¿No tienes PIN? Crear nuevo usuario aquí
             </button>
           </div>
         </div>
@@ -1275,6 +1288,6 @@
 
   <!-- Iframe oculto para procesamiento de envíos sin bloqueos de CORS -->
   <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-  <script src="app.js?v=54.0"></script>
+  <script src="app.js?v=55.0"></script>
 </body>
 </html>
