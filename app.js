@@ -170,13 +170,21 @@ async function initAuthSystem() {
   const roleInput = document.getElementById('setup-role');
   const roleDisplay = document.getElementById('setup-role-display');
 
-  if (!users || users.length === 0) {
+  const hasAdmin = Array.isArray(users) && users.some(u => (u.Rol || '').toLowerCase().includes('admin'));
+
+  if (!users || users.length === 0 || !hasAdmin) {
     if (roleInput) roleInput.value = 'Administrador';
-    if (roleDisplay) roleDisplay.value = 'Administrador Inicial';
-    if (formSetup) formSetup.classList.remove('hidden');
-    if (pinContainer) pinContainer.classList.add('hidden');
-    if (loginTitle) loginTitle.textContent = 'Configuración Inicial';
-    if (loginSubtitle) loginSubtitle.textContent = 'Crea la cuenta de Administrador para comenzar';
+    if (roleDisplay) roleDisplay.value = 'Administrador (Primer Administrador)';
+    
+    if (!users || users.length === 0) {
+      if (formSetup) formSetup.classList.remove('hidden');
+      if (pinContainer) pinContainer.classList.add('hidden');
+      if (loginTitle) loginTitle.textContent = 'Configuración Inicial';
+      if (loginSubtitle) loginSubtitle.textContent = 'Crea la cuenta de Administrador para comenzar';
+    } else {
+      if (pinContainer) pinContainer.classList.remove('hidden');
+      populateUserSelect(users);
+    }
   } else {
     if (roleInput) roleInput.value = 'Técnico';
     if (roleDisplay) roleDisplay.value = 'Técnico (Estándar)';
@@ -304,6 +312,18 @@ function setupInitialForm() {
 
   if (btnShowRegister) {
     btnShowRegister.addEventListener('click', () => {
+      const hasAdmin = Array.isArray(usersDataCache) && usersDataCache.some(u => (u.Rol || '').toLowerCase().includes('admin'));
+      const roleInput = document.getElementById('setup-role');
+      const roleDisplay = document.getElementById('setup-role-display');
+
+      if (!hasAdmin) {
+        if (roleInput) roleInput.value = 'Administrador';
+        if (roleDisplay) roleDisplay.value = 'Administrador (Primer Administrador)';
+      } else {
+        if (roleInput) roleInput.value = 'Técnico';
+        if (roleDisplay) roleDisplay.value = 'Técnico (Estándar)';
+      }
+
       if (form) form.classList.remove('hidden');
       if (pinContainer) pinContainer.classList.add('hidden');
     });
