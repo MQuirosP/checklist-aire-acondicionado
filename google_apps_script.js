@@ -413,6 +413,12 @@ function initEquipmentSheetIfNeeded(sheet) {
       ["EQ-06", "Chiller Especial / Industrial", "Chiller de proceso industrial", "Activo", new Date(), "Sistema"]
     ];
     defaults.forEach(function(r) { sheet.appendRow(r); });
+  } else {
+    // Reparar celda F1 si está vacía
+    var valF1 = sheet.getRange(1, 6).getValue();
+    if (!valF1 || valF1.toString().trim() === "") {
+      sheet.getRange(1, 6).setValue("Creador").setFontWeight("bold").setBackground("#e2e8f0");
+    }
   }
 }
 
@@ -428,6 +434,15 @@ function getSheetJson(sheet) {
   var rows = sheet.getDataRange().getValues();
   if (rows.length < 2) return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
   var headers = rows[0];
+
+  // Parchear clave vacía en F1 de Catálogo de Equipos y Clientes si aplica
+  if (sheet.getName() === 'Catálogo de Equipos' && headers.length >= 6 && (!headers[5] || headers[5].toString().trim() === "")) {
+    headers[5] = "Creador";
+  }
+  if (sheet.getName() === 'Clientes' && headers.length >= 8 && (!headers[7] || headers[7].toString().trim() === "")) {
+    headers[7] = "Creador";
+  }
+
   var data = [];
   for (var i = 1; i < rows.length; i++) {
     var row = rows[i];
@@ -442,7 +457,8 @@ function getSheetJson(sheet) {
 
     var obj = {};
     for (var j = 0; j < headers.length; j++) {
-      obj[headers[j]] = row[j];
+      var headerName = headers[j] || (j === 5 && sheet.getName() === 'Catálogo de Equipos' ? 'Creador' : 'col_' + j);
+      obj[headerName] = row[j];
     }
     data.push(obj);
   }

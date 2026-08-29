@@ -1095,6 +1095,9 @@ function resetFormComplete() {
   localStorage.removeItem(STORAGE_KEY);
   updateDraftButtonState();
 
+  const banner = document.getElementById('edit-mode-banner');
+  if (banner) banner.classList.add('hidden');
+
   // Desmarcar explicitamente radios de inspeccion
   document.querySelectorAll('input[type="radio"]').forEach(radio => {
     radio.checked = false;
@@ -1249,6 +1252,26 @@ function initFormSubmission() {
     form.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
       payload[radio.name] = radio.value;
     });
+
+    // Auto-registrar equipo personalizado en el Catálogo de Equipos si no existía previamente
+    if (payload.tipoUnidad === 'Otro' && payload.subtipoEquipo && payload.subtipoEquipo !== '__MANAGE_EQUIPMENT__') {
+      const exists = (equipmentTypesCache || []).some(eq => (eq['Nombre Categoría'] || eq.nombre || '').toLowerCase() === payload.subtipoEquipo.toLowerCase());
+      if (!exists) {
+        try {
+          await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({
+              action: 'add_equipo',
+              nombre: payload.subtipoEquipo,
+              descripcion: 'Categoría registrada desde Orden ' + (payload.ot || ''),
+              creador: currentUser ? currentUser.nombre : 'Sistema'
+            })
+          });
+          setTimeout(() => fetchEquipmentTypes(true), 1000);
+        } catch (e) {}
+      }
+    }
 
     // Mostrar modal en estado de Carga
     modal.classList.remove('hidden');
@@ -1620,28 +1643,28 @@ function openRecordDetail(record) {
   const getVal = (key) => record[key] || '--';
 
   const allChecklistItems = [
-    { label: 'Evap: Gabinete Externo', key: 'Evap: Gabinete Externo' },
-    { label: 'Evap: Filtros de Aire', key: 'Evap: Filtros Aire' },
-    { label: 'Evap: Serpentín Evap.', key: 'Evap: Serpentín Evaporador' },
-    { label: 'Evap: Bandeja / Biocidas', key: 'Evap: Bandeja Condensados / Biocidas' },
-    { label: 'Evap: Limpieza Drenaje', key: 'Evap: Drenaje Obstrucciones' },
-    { label: 'Evap: Turbina / Fan', key: 'Evap: Turbina / Fan Tangencial' },
-    { label: 'Evap: Motor / Rodajes', key: 'Evap: Motor Vent / Rodajes' },
-    { label: 'Evap: Persianas Swing', key: 'Evap: Persianas Swing / Motor paso' },
-    { label: 'Evap: Conexiones Elec.', key: 'Evap: Conexiones Eléctricas / Termistores' },
-    { label: 'Cond: Serpentín Cond.', key: 'Cond: Serpentín Condensador' },
-    { label: 'Cond: Aletas Aluminio', key: 'Cond: Aletas Aluminio' },
-    { label: 'Cond: Aspas Ventilador', key: 'Cond: Aspas Ventilador' },
-    { label: 'Cond: Motor / Rodamientos', key: 'Cond: Motor Vent / Rodamientos' },
-    { label: 'Cond: Compresor (Ruido)', key: 'Cond: Compresor (Ruido/Amortiguadores)' },
-    { label: 'Cond: Aislamiento Térmico', key: 'Cond: Aislamiento Térmico Tuberías' },
-    { label: 'Cond: Fugas Ref./Aceite', key: 'Cond: Fugas Refrigerante / Aceite' },
-    { label: 'Cond: Soportes y Anclajes', key: 'Cond: Soportes y Anclajes' },
-    { label: 'Elec: Reajuste Bornes', key: 'Elec: Reajuste Bornes' },
-    { label: 'Elec: Capacitores', key: 'Elec: Capacitores Medición' },
-    { label: 'Elec: Tarjetas PCB / Err', key: 'Elec: Tarjetas PCB / Errores' },
-    { label: 'Elec: Protecciones Elec.', key: 'Elec: Protecciones Eléctricas' },
-    { label: 'Elec: Tierra Física', key: 'Elec: Conexión Tierra Física' }
+    { label: 'Evap: Gabinete Externo', key: 'Evap: Gabinete Externo', obsKey: 'Evap: Gabinete Obs' },
+    { label: 'Evap: Filtros de Aire', key: 'Evap: Filtros Aire', obsKey: 'Evap: Filtros Obs' },
+    { label: 'Evap: Serpentín Evap.', key: 'Evap: Serpentín Evaporador', obsKey: 'Evap: Serpentín Obs' },
+    { label: 'Evap: Bandeja / Biocidas', key: 'Evap: Bandeja Condensados / Biocidas', obsKey: 'Evap: Bandeja Obs' },
+    { label: 'Evap: Limpieza Drenaje', key: 'Evap: Drenaje Obstrucciones', obsKey: 'Evap: Drenaje Obs' },
+    { label: 'Evap: Turbina / Fan', key: 'Evap: Turbina / Fan Tangencial', obsKey: 'Evap: Turbina Obs' },
+    { label: 'Evap: Motor / Rodajes', key: 'Evap: Motor Vent / Rodajes', obsKey: 'Evap: Motor Vent Obs' },
+    { label: 'Evap: Persianas Swing', key: 'Evap: Persianas Swing / Motor paso', obsKey: 'Evap: Persianas Obs' },
+    { label: 'Evap: Conexiones Elec.', key: 'Evap: Conexiones Eléctricas / Termistores', obsKey: 'Evap: Conexiones Obs' },
+    { label: 'Cond: Serpentín Cond.', key: 'Cond: Serpentín Condensador', obsKey: 'Cond: Serpentín Obs' },
+    { label: 'Cond: Aletas Aluminio', key: 'Cond: Aletas Aluminio', obsKey: 'Cond: Aletas Obs' },
+    { label: 'Cond: Aspas Ventilador', key: 'Cond: Aspas Ventilador', obsKey: 'Cond: Aspas Obs' },
+    { label: 'Cond: Motor / Rodamientos', key: 'Cond: Motor Vent / Rodamientos', obsKey: 'Cond: Motor Vent Obs' },
+    { label: 'Cond: Compresor (Ruido)', key: 'Cond: Compresor (Ruido/Amortiguadores)', obsKey: 'Cond: Compresor Obs' },
+    { label: 'Cond: Aislamiento Térmico', key: 'Cond: Aislamiento Térmico Tuberías', obsKey: 'Cond: Aislamiento Obs' },
+    { label: 'Cond: Fugas Ref./Aceite', key: 'Cond: Fugas Refrigerante / Aceite', obsKey: 'Cond: Fugas Obs' },
+    { label: 'Cond: Soportes y Anclajes', key: 'Cond: Soportes y Anclajes', obsKey: 'Cond: Soportes Obs' },
+    { label: 'Elec: Reajuste Bornes', key: 'Elec: Reajuste Bornes', obsKey: 'Elec: Bornes Obs' },
+    { label: 'Elec: Capacitores', key: 'Elec: Capacitores Medición', obsKey: 'Elec: Capacitores Obs' },
+    { label: 'Elec: Tarjetas PCB / Err', key: 'Elec: Tarjetas PCB / Errores', obsKey: 'Elec: Tarjetas Obs' },
+    { label: 'Elec: Protecciones Elec.', key: 'Elec: Protecciones Eléctricas', obsKey: 'Elec: Protecciones Obs' },
+    { label: 'Elec: Tierra Física', key: 'Elec: Conexión Tierra Física', obsKey: 'Elec: Tierra Obs' }
   ];
 
   const getItemValue = (item) => {
@@ -1665,17 +1688,28 @@ function openRecordDetail(record) {
     return '--';
   };
 
+  const getItemObs = (item) => {
+    if (!item.obsKey) return '';
+    const val = (record[item.obsKey] || '').toString().trim();
+    if (!val || val === 'B' || val === 'R' || val === 'M' || val === 'N/A') return '';
+    return val;
+  };
+
   // Helper para renderizar pill de inspección compacto de 1 sola línea (4 columnas)
   const renderItemPill = (item) => {
     const val = getItemValue(item);
+    const obs = getItemObs(item);
     let colorClass = 'bg-slate-100 text-slate-700 border-slate-300';
     if (val === 'B') colorClass = 'bg-emerald-100 text-emerald-800 border-emerald-300';
     if (val === 'R') colorClass = 'bg-amber-100 text-amber-800 border-amber-300';
     if (val === 'M') colorClass = 'bg-rose-100 text-rose-800 border-rose-300';
     if (val === 'N/A') colorClass = 'bg-slate-100 text-slate-500 border-slate-200';
-    return `<div class="p-1 px-1.5 bg-slate-50 border border-slate-200 rounded text-[9.5px] flex items-center justify-between gap-1 leading-none">
-      <span class="text-slate-700 font-semibold truncate mr-0.5">${item.label}</span>
-      <span class="px-1.5 py-0.5 rounded text-[8.5px] font-bold border shrink-0 ${colorClass}">${val}</span>
+    return `<div class="p-1 px-1.5 bg-slate-50 border border-slate-200 rounded text-[9.5px] flex flex-col justify-between leading-none gap-0.5">
+      <div class="flex items-center justify-between gap-1 w-full">
+        <span class="text-slate-700 font-semibold truncate mr-0.5">${item.label}</span>
+        <span class="px-1.5 py-0.5 rounded text-[8.5px] font-bold border shrink-0 ${colorClass}">${val}</span>
+      </div>
+      ${obs ? `<div class="text-[8.5px] text-slate-600 font-normal italic truncate border-t border-slate-200/60 pt-0.5 mt-0.5">💬 ${obs}</div>` : ''}
     </div>`;
   };
 
@@ -1815,7 +1849,23 @@ function initRecordDetailModal() {
       if (modalHistory) modalHistory.classList.add('hidden');
     });
   }
+
+  const btnCancelEditMode = document.getElementById('btn-cancel-edit-mode');
+  if (btnCancelEditMode) {
+    btnCancelEditMode.addEventListener('click', window.exitEditMode);
+  }
 }
+
+window.exitEditMode = function() {
+  const banner = document.getElementById('edit-mode-banner');
+  if (banner) banner.classList.add('hidden');
+  const form = document.getElementById('checklist-form');
+  if (form) form.reset();
+  if (typeof clearDraft === 'function') clearDraft();
+  if (typeof generateUniqueOT === 'function') generateUniqueOT();
+  const badge = document.getElementById('ot-validation-badge');
+  if (badge) badge.className = 'block text-[11px] font-medium mt-1 hidden';
+};
 
 function loadRecordIntoForm(record) {
   const form = document.getElementById('checklist-form');
@@ -1874,6 +1924,11 @@ function loadRecordIntoForm(record) {
   setSelectVal('cliente', rec['Cliente / Ubicación']);
   setSelectVal('tecnico', rec['Técnico Responsable']);
   setSelectVal('tipoUnidad', rec['Tipo de Unidad']);
+
+  // Asignación explícita de Marca/Modelo e ID/Tag de Equipo (Garantiza restauración completa)
+  setVal('marcaModelo', rec['Marca / Modelo'] || record['Marca / Modelo'] || '');
+  setVal('idTag', rec['ID / Tag Equipo'] || record['ID / Tag Equipo'] || '');
+
   const containerSubtipo = document.getElementById('container-subtipo-equipo');
   const containerRefrigerante = document.getElementById('container-refrigerante');
   if (rec['Tipo de Unidad'] === 'Otro') {
@@ -1985,10 +2040,15 @@ function loadRecordIntoForm(record) {
     badge.textContent = '✏️ Modo Edición / Revisión activo';
   }
 
-  // Scroll suave al formulario
-  form.scrollIntoView({ behavior: 'smooth' });
+  // Activar vista de formulario e indicador visual
+  switchView('view-form');
+  const banner = document.getElementById('edit-mode-banner');
+  const otNameSpan = document.getElementById('edit-mode-ot-name');
+  if (banner) banner.classList.remove('hidden');
+  if (otNameSpan) otNameSpan.textContent = record['N° Orden / OT'] || 'OT Desconocida';
 
-  alert(`✏️ Se cargaron absolutamente todos los datos detallados de la Orden "${record['N° Orden / OT']}" en el formulario.`);
+  // Scroll suave al inicio de la vista
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 /**
@@ -2117,7 +2177,8 @@ function initClientsAndTechniciansManagement() {
         nombre: name,
         ubicacion: location,
         telefono: phone,
-        correo: email
+        correo: email,
+        creador: currentUser ? currentUser.nombre : 'Sistema'
       };
 
       try {
@@ -2258,9 +2319,17 @@ function updateClientsUI() {
   const tbody = document.getElementById('clients-table-body');
   const showInactive = document.getElementById('show-inactive-clients')?.checked;
 
+  const uName = currentUser ? (currentUser.nombre || '').toLowerCase().trim() : '';
+
+  const visibleClients = clientsCache.filter(c => {
+    if (!currentUser || currentUser.rol === 'Administrador') return true;
+    const creador = (c.Creador || c['Creador'] || c.creador || 'Sistema').toString().toLowerCase().trim();
+    return !creador || creador === 'sistema' || creador === 'base' || creador === uName;
+  });
+
   if (select) {
     const currentVal = select.value;
-    const activeClients = clientsCache.filter(c => (c.Estado || c['Estado'] || 'Activo') !== 'Inactivo');
+    const activeClients = visibleClients.filter(c => (c.Estado || c['Estado'] || 'Activo') !== 'Inactivo');
     select.innerHTML = `<option value="" disabled ${!currentVal ? 'selected' : ''}>Seleccionar...</option>` +
       activeClients.map(c => {
         const nombre = c['Nombre / Empresa'] || c.nombre || '';
@@ -2272,7 +2341,7 @@ function updateClientsUI() {
   }
 
   if (tbody) {
-    const listToRender = showInactive ? clientsCache : clientsCache.filter(c => (c.Estado || c['Estado'] || 'Activo') !== 'Inactivo');
+    const listToRender = showInactive ? visibleClients : visibleClients.filter(c => (c.Estado || c['Estado'] || 'Activo') !== 'Inactivo');
     if (listToRender.length === 0) {
       tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-400">No hay clientes registrados ${showInactive ? '' : 'activos'}.</td></tr>`;
       return;
@@ -2621,7 +2690,7 @@ function updateEquipmentTypesUI() {
   // - Base / Sistema: Visibles para todos los usuarios.
   // - Creados por Técnico: Visibles sólo para el Técnico creador (y Administrador).
   const visibleEquipments = equipmentTypesCache.filter(eq => {
-    const creador = (eq.Creador || eq['Creador'] || eq.creador || 'Sistema').toString().toLowerCase().trim();
+    const creador = (eq.Creador || eq['Creador'] || eq.creador || eq[''] || 'Sistema').toString().toLowerCase().trim();
     const isBase = !creador || creador === 'sistema' || creador === 'base';
 
     if (!currentUser || currentUser.rol === 'Administrador') {
@@ -2653,7 +2722,7 @@ function updateEquipmentTypesUI() {
       const nombre = String(eq['Nombre Categoría'] || eq.nombre || '--');
       const desc = String(eq['Descripción / Ejemplo'] || eq.descripcion || '--');
       const estado = String(eq.Estado || eq['Estado'] || 'Activo');
-      const creador = String(eq.Creador || eq['Creador'] || eq.creador || 'Sistema');
+      const creador = String(eq.Creador || eq['Creador'] || eq.creador || eq[''] || 'Sistema');
       const isBase = !creador || creador.toLowerCase().trim() === 'sistema' || creador.toLowerCase().trim() === 'base';
       const isInactive = estado === 'Inactivo';
 
