@@ -350,17 +350,108 @@ function setupInitialForm() {
 
 function setupBiometrics() {
   const btnBio = document.getElementById('btn-biometrics-login');
-  if (!btnBio) return;
-  btnBio.addEventListener('click', async () => {
-    const select = document.getElementById('login-user-select');
-    if (!select || !select.value) {
-      alert('Por favor selecciona tu usuario en el desplegable primero.');
+  if (btnBio) {
+    btnBio.addEventListener('click', async () => {
+      const select = document.getElementById('login-user-select');
+      if (!select || !select.value) {
+        alert('Por favor selecciona tu usuario en el desplegable primero.');
+        return;
+      }
+
+      const opt = select.options[select.selectedIndex];
+      const userId = select.value;
+      const userBioKey = `bio_credential_${userId}`;
+      const storedCredId = localStorage.getItem(userBioKey) || opt.dataset.bio;
+
+      if (!window.PublicKeyCredential) {
+        alert('La autenticación biométrica (Huella/Face ID) no está disponible en este navegador o requiere conexión segura HTTPS.');
+        return;
+      }
+
+      if (!storedCredId) {
+        alert('👆 Tu Huella / Face ID aún no está vinculada a este dispositivo.\n\nIngresa primero con tu PIN de 4 dígitos y haz clic en "👆 Biometría" en la barra superior para activarla.');
+        return;
+      }
+
+      // Ejecutar verificación biométrica real con WebAuthn API
+      try {
+        const challenge = new Uint8Array(32);
+        window.crypto.getRandomValues(challenge);
+
+        const credential = await navigator.credentials.get({
+          publicKey: {
+            challenge: challenge,
+            timeout: 60000,
+            userVerification: 'required'
+          }
+        });
+
+        if (credential) {
+          const user = { id: userId, nombre: opt.dataset.name, rol: opt.dataset.role };
+          loginUser(user);
+        }
+      } catch (err) {
+        console.warn('Biometría cancelada o no verificada:', err);
+        alert('⚠️ No se pudo verificar la huella o la autenticación fue cancelada. Por favor ingresa con tu PIN de 4 dígitos.');
+      }
+    });
+  }
+
+  // Vincular Biometría en la sesión activa
+  const btnRegBio = document.getElementById('btn-register-biometric');
+  const btnMobileRegBio = document.getElementById('btn-mobile-biometric');
+
+  const handleRegisterBio = async () => {
+    if (!currentUser) return;
+    if (!window.PublicKeyCredential) {
+      alert('La autenticación biométrica no está disponible en este navegador o requiere conexión HTTPS.');
       return;
     }
-    const opt = select.options[select.selectedIndex];
-    const user = { id: select.value, nombre: opt.dataset.name, rol: opt.dataset.role };
-    loginUser(user);
-  });
+
+    try {
+      const challenge = new Uint8Array(32);
+      window.crypto.getRandomValues(challenge);
+      const userIdBytes = new TextEncoder().encode(currentUser.id || 'usr');
+
+      const credential = await navigator.credentials.create({
+        publicKey: {
+          challenge: challenge,
+          rp: { name: "Checklist A/C" },
+          user: {
+            id: userIdBytes,
+            name: currentUser.nombre,
+            displayName: currentUser.nombre
+          },
+          pubKeyCredParams: [{ alg: -7, type: "public-key" }, { alg: -257, type: "public-key" }],
+          timeout: 60000,
+          attestation: "none",
+          authenticatorSelection: { userVerification: "preferred" }
+        }
+      });
+
+      if (credential) {
+        const userBioKey = `bio_credential_${currentUser.id}`;
+        localStorage.setItem(userBioKey, credential.id);
+
+        try {
+          await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ action: 'register_biometric', id: currentUser.id, biometria: credential.id })
+          });
+        } catch (e) {}
+
+        alert('✅ ¡Huella / Face ID vinculada exitosamente a este dispositivo! En tus próximas visitas podrás ingresar con 1 toque.');
+      }
+    } catch (err) {
+      console.warn('Error registrando biometría:', err);
+      alert('La vinculación biométrica fue cancelada o no es compatible.');
+    }
+  };
+
+  if (btnRegBio) btnRegBio.addEventListener('click', handleRegisterBio);
+  if (btnMobileRegBio) btnMobileRegBio.addEventListener('click', handleRegisterBio);
 }
 
 function initDashboardNavigation() {
