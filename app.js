@@ -39,6 +39,7 @@ function switchView(viewId) {
 
 function updateNavigationUI() {
   const btnHome = document.getElementById('btn-nav-home');
+  const desktopActions = document.getElementById('desktop-header-actions');
   const mobileMenuBtn = document.getElementById('btn-mobile-menu');
   const btnViewUsers = document.getElementById('btn-view-users');
   const btnMobileUsers = document.getElementById('btn-mobile-users');
@@ -46,6 +47,10 @@ function updateNavigationUI() {
 
   if (currentUser) {
     if (btnHome) btnHome.classList.remove('hidden');
+    if (desktopActions) {
+      desktopActions.classList.remove('hidden');
+      desktopActions.classList.add('md:flex');
+    }
     if (mobileMenuBtn) mobileMenuBtn.classList.remove('hidden');
 
     const welcomeName = document.getElementById('dashboard-welcome-name');
@@ -64,6 +69,10 @@ function updateNavigationUI() {
     }
   } else {
     if (btnHome) btnHome.classList.add('hidden');
+    if (desktopActions) {
+      desktopActions.classList.add('hidden');
+      desktopActions.classList.remove('md:flex');
+    }
     if (mobileMenuBtn) mobileMenuBtn.classList.add('hidden');
     if (btnViewUsers) btnViewUsers.classList.add('hidden');
     if (btnMobileUsers) btnMobileUsers.classList.add('hidden');
