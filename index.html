@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mantenimiento Preventivo - Aire Acondicionado</title>
-  <!-- Favicon SVG para evitar error 404 -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❄️</text></svg>">
+  <title>Tecnicheck Pro - Sistema de Mantenimiento Técnico</title>
+  <!-- Favicon SVG vectorial de Onda Dinámica Tecnicheck Pro -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36' fill='none'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%2338bdf8'/><stop offset='60%25' stop-color='%230284c7'/><stop offset='100%25' stop-color='%23f59e0b'/></linearGradient></defs><path d='M4 18C7 13 13 13 16 17C19 21 24 22 28 17' stroke='url(%23g)' stroke-width='2.5' stroke-linecap='round' opacity='0.65'/><path d='M8 19L15 26L31 8' stroke='url(%23g)' stroke-width='3.8' stroke-linecap='round' stroke-linejoin='round'/><path d='M11 11C14 8 19 8 23 11' stroke='%2338bdf8' stroke-width='2' stroke-linecap='round' opacity='0.8'/></svg>">
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google Fonts: Inter -->
@@ -26,9 +26,22 @@
           </svg>
           <span class="hidden sm:inline">Menú</span>
         </button>
-        <div>
-          <h1 class="text-sm sm:text-lg font-bold leading-tight flex items-center gap-2">
-            <span>Tecnicheck Pro</span>
+        <div class="flex items-center gap-2">
+          <svg class="w-6 h-6 sm:w-7 sm:h-7 shrink-0" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="tc-logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#38bdf8" />
+                <stop offset="60%" stop-color="#0284c7" />
+                <stop offset="100%" stop-color="#f59e0b" />
+              </linearGradient>
+            </defs>
+            <path d="M4 18C7 13 13 13 16 17C19 21 24 22 28 17" stroke="url(#tc-logo-grad)" stroke-width="2.5" stroke-linecap="round" opacity="0.65"/>
+            <path d="M8 19L15 26L31 8" stroke="url(#tc-logo-grad)" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M11 11C14 8 19 8 23 11" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+          </svg>
+          <h1 class="text-sm sm:text-lg font-bold leading-tight tracking-tight text-white flex items-center gap-1.5">
+            <span>Tecnicheck</span>
+            <span class="text-xs sm:text-sm font-extrabold text-blue-400 bg-blue-950/80 border border-blue-800/60 px-1.5 py-0.5 rounded-md">PRO</span>
           </h1>
         </div>
       </div>
@@ -1283,6 +1296,6 @@
 
   <!-- Iframe oculto para procesamiento de envíos sin bloqueos de CORS -->
   <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-  <script src="app.js?v=72.0"></script>
+  <script src="app.js?v=73.0"></script>
 </body>
 </html>
