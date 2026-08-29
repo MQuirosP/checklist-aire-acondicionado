@@ -126,7 +126,7 @@ function doPost(e) {
       var eqSheet = ss.getSheetByName('Catálogo de Equipos') || ss.insertSheet('Catálogo de Equipos');
       initEquipmentSheetIfNeeded(eqSheet);
       var eqId = "EQ-" + (eqSheet.getLastRow() > 0 ? eqSheet.getLastRow() : 1);
-      eqSheet.appendRow([eqId, data.nombre || "", data.descripcion || "", "Activo", new Date()]);
+      eqSheet.appendRow([eqId, data.nombre || "", data.descripcion || "", "Activo", new Date(), data.creador || "Sistema"]);
       return ContentService.createTextOutput(JSON.stringify({ "result": "success", "id": eqId })).setMimeType(ContentService.MimeType.JSON);
     }
 
@@ -399,18 +399,18 @@ function doGet(e) {
 
 function initEquipmentSheetIfNeeded(sheet) {
   if (sheet.getLastRow() === 0) {
-    sheet.appendRow(["ID", "Nombre Categoría", "Descripción / Ejemplo", "Estado", "Fecha Registro"]);
-    sheet.getRange(1, 1, 1, 5).setFontWeight("bold").setBackground("#e2e8f0");
+    sheet.appendRow(["ID", "Nombre Categoría", "Descripción / Ejemplo", "Estado", "Fecha Registro", "Creador"]);
+    sheet.getRange(1, 1, 1, 6).setFontWeight("bold").setBackground("#e2e8f0");
     sheet.setFrozenRows(1);
     
     // Categorías iniciales por defecto
     var defaults = [
-      ["EQ-01", "Electrodoméstico Doméstico", "Refrigeradora, Nevera, Lavadora", "Activo", new Date()],
-      ["EQ-02", "Vitrina Comercial", "Exhibidor comercial refrigerado", "Activo", new Date()],
-      ["EQ-03", "Cámara de Congelación", "Cámara fría / Walk-in freezer", "Activo", new Date()],
-      ["EQ-04", "Máquina de Hielo", "Fabricador de hielo industrial", "Activo", new Date()],
-      ["EQ-05", "Enfriador de Botellas", "Beverage cooler", "Activo", new Date()],
-      ["EQ-06", "Chiller Especial / Industrial", "Chiller de proceso industrial", "Activo", new Date()]
+      ["EQ-01", "Electrodoméstico Doméstico", "Refrigeradora, Nevera, Lavadora", "Activo", new Date(), "Sistema"],
+      ["EQ-02", "Vitrina Comercial", "Exhibidor comercial refrigerado", "Activo", new Date(), "Sistema"],
+      ["EQ-03", "Cámara de Congelación", "Cámara fría / Walk-in freezer", "Activo", new Date(), "Sistema"],
+      ["EQ-04", "Máquina de Hielo", "Fabricador de hielo industrial", "Activo", new Date(), "Sistema"],
+      ["EQ-05", "Enfriador de Botellas", "Beverage cooler", "Activo", new Date(), "Sistema"],
+      ["EQ-06", "Chiller Especial / Industrial", "Chiller de proceso industrial", "Activo", new Date(), "Sistema"]
     ];
     defaults.forEach(function(r) { sheet.appendRow(r); });
   }

@@ -2387,7 +2387,8 @@ function initEquipmentManagement() {
         action: isEdit ? 'edit_equipo' : 'add_equipo',
         id: editId,
         nombre: name,
-        descripcion: desc
+        descripcion: desc,
+        creador: currentUser ? currentUser.nombre : 'Sistema'
       };
 
       try {
@@ -2432,19 +2433,36 @@ function updateEquipmentTypesUI() {
   const tbody = document.getElementById('equipments-table-body');
   const showInactive = document.getElementById('show-inactive-equipments')?.checked;
 
+  const isTech = currentUser && currentUser.rol === 'Técnico';
+  const uName = currentUser ? (currentUser.nombre || '').toLowerCase().trim() : '';
+
+  // Filtrar equipos visibles según aislamiento por usuario:
+  // - Base / Sistema: Visibles para todos los usuarios.
+  // - Creados por Técnico: Visibles sólo para el Técnico creador (y Administrador).
+  const visibleEquipments = equipmentTypesCache.filter(eq => {
+    const creador = (eq.Creador || eq['Creador'] || eq.creador || 'Sistema').toString().toLowerCase().trim();
+    const isBase = !creador || creador === 'sistema' || creador === 'base';
+
+    if (!currentUser || currentUser.rol === 'Administrador') {
+      return true; // Administrador ve todo el catálogo
+    }
+
+    return isBase || creador === uName;
+  });
+
   if (select) {
     const currentVal = select.value;
-    const activeEquipments = equipmentTypesCache.filter(eq => (eq.Estado || eq['Estado'] || 'Activo') !== 'Inactivo');
+    const activeEquipments = visibleEquipments.filter(eq => (eq.Estado || eq['Estado'] || 'Activo') !== 'Inactivo');
     select.innerHTML = `<option value="" disabled ${!currentVal ? 'selected' : ''}>Seleccionar Subtipo...</option>` +
       activeEquipments.map(eq => {
         const nombre = eq['Nombre Categoría'] || eq.nombre || '';
         return `<option value="${nombre}" ${currentVal === nombre ? 'selected' : ''}>${nombre}</option>`;
       }).join('') +
-      `<option value="__MANAGE_EQUIPMENT__" style="font-weight: bold; color: #2563eb;">➕ Gestionar Catálogo...</option>`;
+      `<option value="__MANAGE_EQUIPMENT__" style="font-weight: bold; color: #2563eb;">➕ Agregar / Gestionar Catálogo...</option>`;
   }
 
   if (tbody) {
-    const listToRender = showInactive ? equipmentTypesCache : equipmentTypesCache.filter(eq => (eq.Estado || eq['Estado'] || 'Activo') !== 'Inactivo');
+    const listToRender = showInactive ? visibleEquipments : visibleEquipments.filter(eq => (eq.Estado || eq['Estado'] || 'Activo') !== 'Inactivo');
     if (listToRender.length === 0) {
       tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">No hay categorías registradas ${showInactive ? '' : 'activas'}.</td></tr>`;
       return;
@@ -2454,21 +2472,35 @@ function updateEquipmentTypesUI() {
       const nombre = String(eq['Nombre Categoría'] || eq.nombre || '--');
       const desc = String(eq['Descripción / Ejemplo'] || eq.descripcion || '--');
       const estado = String(eq.Estado || eq['Estado'] || 'Activo');
+      const creador = String(eq.Creador || eq['Creador'] || eq.creador || 'Sistema');
+      const isBase = !creador || creador.toLowerCase().trim() === 'sistema' || creador.toLowerCase().trim() === 'base';
       const isInactive = estado === 'Inactivo';
+
+      // Inmutabilidad: Si es equipo Base y el usuario es Técnico, NO puede editar ni desactivar.
+      const canEdit = !isTech || (!isBase && creador.toLowerCase().trim() === uName);
+
+      let actionButtons = '';
+      if (canEdit) {
+        actionButtons = `
+          <button type="button" onclick="startEditEquipment('${id.replace(/'/g, "\\'")}', '${nombre.replace(/'/g, "\\'")}', '${desc.replace(/'/g, "\\'")}')" class="px-2 py-1 text-[11px] font-semibold rounded bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition">
+            ✏️ Editar
+          </button>
+          <button type="button" onclick="toggleEquipmentSoftDelete('${id.replace(/'/g, "\\'")}', '${nombre.replace(/'/g, "\\'")}', '${estado}')" class="px-2 py-1 text-[11px] font-semibold rounded ${isInactive ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'} transition">
+            ${isInactive ? '🔄 Reactivar' : '🗑️ Desactivar'}
+          </button>
+        `;
+      } else {
+        actionButtons = `<span class="text-[10px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded border border-slate-200" title="Los equipos base solo los puede editar el Administrador">🔒 Base Inmutable</span>`;
+      }
 
       return `
         <tr class="hover:bg-slate-50 border-b border-slate-100 ${isInactive ? 'bg-slate-50 opacity-60' : ''}">
-          <td class="py-2 px-3 font-semibold text-slate-800">${nombre}</td>
+          <td class="py-2 px-3 font-semibold text-slate-800 flex items-center gap-1.5">${nombre} ${isBase ? '<span class="text-[9.5px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold">Base</span>' : '<span class="text-[9.5px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold">Personalizado</span>'}</td>
           <td class="py-2 px-3 text-slate-600">${desc}</td>
           <td class="py-2 px-3 font-semibold ${isInactive ? 'text-rose-600' : 'text-emerald-600'}">${estado}</td>
           <td class="py-2 px-3 text-center">
             <div class="flex items-center justify-center gap-1">
-              <button type="button" onclick="startEditEquipment('${id.replace(/'/g, "\\'")}', '${nombre.replace(/'/g, "\\'")}', '${desc.replace(/'/g, "\\'")}')" class="px-2 py-1 text-[11px] font-semibold rounded bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition">
-                ✏️ Editar
-              </button>
-              <button type="button" onclick="toggleEquipmentSoftDelete('${id.replace(/'/g, "\\'")}', '${nombre.replace(/'/g, "\\'")}', '${estado}')" class="px-2 py-1 text-[11px] font-semibold rounded ${isInactive ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'} transition">
-                ${isInactive ? '🔄 Reactivar' : '🗑️ Desactivar'}
-              </button>
+              ${actionButtons}
             </div>
           </td>
         </tr>
