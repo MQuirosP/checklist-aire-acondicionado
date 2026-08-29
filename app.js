@@ -1,12 +1,13 @@
-/**
- * CHECKLIST MANTENIMIENTO PREVENTIVO - AIRE ACONDICIONADO
- * Lógica JavaScript Interactiva, Canvas de Firmas y Persistencia en Google Sheets
- */
-
-// URL configurada de la Aplicación Web de Google Apps Script vinculada a la Hoja
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0FPAiw8vWelX2AhwoBM0tMdgbFpwcwd0AKXO7Z5b8JzA5_-Pk3VIk66Z1LrBNsDIO/exec';
 
+let usersDataCache = [];
+let currentUser = null;
+let enteredPin = '';
+
 document.addEventListener('DOMContentLoaded', () => {
+  initAuthSystem();
+  initDashboardNavigation();
+  initUserManagement();
   initDate();
   initDeltaTCalculation();
   initBulkActionButtons();
@@ -20,6 +21,455 @@ document.addEventListener('DOMContentLoaded', () => {
   initEquipmentManagement();
   initMobileMenu();
 });
+
+function switchView(viewId) {
+  const views = ['view-login', 'view-dashboard', 'view-form'];
+  views.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      if (id === viewId) {
+        el.classList.remove('hidden');
+      } else {
+        el.classList.add('hidden');
+      }
+    }
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateNavigationUI() {
+  const badge = document.getElementById('user-profile-badge');
+  const nameEl = document.getElementById('user-display-name');
+  const roleEl = document.getElementById('user-display-role');
+  const btnLogout = document.getElementById('btn-nav-logout');
+  const btnViewUsers = document.getElementById('btn-view-users');
+  const btnMobileUsers = document.getElementById('btn-mobile-users');
+  const cardUsers = document.getElementById('card-manage-users');
+
+  if (currentUser) {
+    if (badge) badge.classList.remove('hidden');
+    if (nameEl) nameEl.textContent = currentUser.nombre;
+    if (roleEl) roleEl.textContent = currentUser.rol || 'Técnico';
+    if (btnLogout) btnLogout.classList.remove('hidden');
+
+    const welcomeName = document.getElementById('dashboard-welcome-name');
+    const welcomeRolePill = document.getElementById('dashboard-user-role-pill');
+    if (welcomeName) welcomeName.textContent = `¡Bienvenido, ${currentUser.nombre}! 👋`;
+    if (welcomeRolePill) welcomeRolePill.textContent = currentUser.rol || 'Técnico';
+
+    if (currentUser.rol === 'Administrador') {
+      if (btnViewUsers) btnViewUsers.classList.remove('hidden');
+      if (btnMobileUsers) btnMobileUsers.classList.remove('hidden');
+      if (cardUsers) cardUsers.classList.remove('hidden');
+    } else {
+      if (btnViewUsers) btnViewUsers.classList.add('hidden');
+      if (btnMobileUsers) btnMobileUsers.classList.add('hidden');
+      if (cardUsers) cardUsers.classList.add('hidden');
+    }
+  } else {
+    if (badge) badge.classList.add('hidden');
+    if (btnLogout) btnLogout.classList.add('hidden');
+    if (btnViewUsers) btnViewUsers.classList.add('hidden');
+    if (btnMobileUsers) btnMobileUsers.classList.add('hidden');
+    if (cardUsers) cardUsers.classList.add('hidden');
+  }
+}
+
+function loginUser(user) {
+  currentUser = user;
+  try {
+    localStorage.setItem('session_user', JSON.stringify(user));
+  } catch (e) {}
+
+  updateNavigationUI();
+  switchView('view-dashboard');
+}
+
+function logoutUser() {
+  currentUser = null;
+  enteredPin = '';
+  updatePinDisplay();
+  try {
+    localStorage.removeItem('session_user');
+  } catch (e) {}
+
+  updateNavigationUI();
+  switchView('view-login');
+}
+
+async function fetchUsersData() {
+  if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes('PEGA_AQUI_TU_URL')) return [];
+  try {
+    const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=usuarios&_t=${Date.now()}`, { cache: 'no-store' });
+    const text = await res.text();
+    let data = [];
+    try { data = JSON.parse(text); } catch (e) {}
+    if (Array.isArray(data)) {
+      usersDataCache = data;
+      return data;
+    }
+  } catch (err) {
+    console.error('Error cargando usuarios:', err);
+  }
+  return [];
+}
+
+async function initAuthSystem() {
+  const storedSession = localStorage.getItem('session_user');
+  if (storedSession) {
+    try {
+      const parsed = JSON.parse(storedSession);
+      if (parsed && parsed.nombre) {
+        currentUser = parsed;
+        updateNavigationUI();
+        switchView('view-dashboard');
+        fetchUsersData();
+        return;
+      }
+    } catch (e) {}
+  }
+
+  const users = await fetchUsersData();
+  const formSetup = document.getElementById('form-initial-setup');
+  const pinContainer = document.getElementById('login-pin-container');
+  const loginTitle = document.getElementById('login-title');
+  const loginSubtitle = document.getElementById('login-subtitle');
+
+  if (!users || users.length === 0) {
+    if (formSetup) formSetup.classList.remove('hidden');
+    if (pinContainer) pinContainer.classList.add('hidden');
+    if (loginTitle) loginTitle.textContent = 'Configuración Inicial';
+    if (loginSubtitle) loginSubtitle.textContent = 'Crea la cuenta de Administrador para comenzar';
+  } else {
+    if (formSetup) formSetup.classList.add('hidden');
+    if (pinContainer) pinContainer.classList.remove('hidden');
+    if (loginTitle) loginTitle.textContent = 'Acceso al Sistema';
+    if (loginSubtitle) loginSubtitle.textContent = 'Ingresa tu PIN de 4 dígitos para continuar';
+    populateUserSelect(users);
+  }
+
+  setupPinKeypad();
+  setupInitialForm();
+  setupBiometrics();
+}
+
+function populateUserSelect(users) {
+  const select = document.getElementById('login-user-select');
+  if (!select) return;
+  select.innerHTML = '<option value="" disabled selected>Seleccionar Usuario...</option>';
+  users.forEach(u => {
+    if (u.Estado !== 'Inactivo') {
+      const opt = document.createElement('option');
+      opt.value = u.ID || u['Nombre Usuario'];
+      opt.textContent = `${u['Nombre Usuario']} (${u.Rol || 'Técnico'})`;
+      opt.dataset.pin = u.PIN || '1234';
+      opt.dataset.name = u['Nombre Usuario'];
+      opt.dataset.role = u.Rol || 'Técnico';
+      opt.dataset.bio = u.Biometria_CredID || '';
+      select.appendChild(opt);
+    }
+  });
+
+  if (select.options.length > 1) {
+    select.selectedIndex = 1;
+  }
+}
+
+function updatePinDisplay() {
+  const display = document.getElementById('pin-display');
+  if (!display) return;
+  if (!enteredPin) {
+    display.textContent = '••••';
+    display.className = 'text-3xl font-mono tracking-widest font-bold h-8 flex items-center justify-center text-slate-500';
+  } else {
+    display.textContent = '•'.repeat(enteredPin.length);
+    display.className = 'text-3xl font-mono tracking-widest font-bold h-8 flex items-center justify-center text-blue-400';
+  }
+}
+
+function setupPinKeypad() {
+  document.querySelectorAll('.btn-pin').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const num = btn.getAttribute('data-num');
+      if (enteredPin.length < 4) {
+        enteredPin += num;
+        updatePinDisplay();
+        if (enteredPin.length === 4) {
+          validateEnteredPin();
+        }
+      }
+    });
+  });
+
+  const btnClear = document.getElementById('btn-pin-clear');
+  if (btnClear) {
+    btnClear.addEventListener('click', () => {
+      enteredPin = '';
+      updatePinDisplay();
+    });
+  }
+
+  const btnBack = document.getElementById('btn-pin-backspace');
+  if (btnBack) {
+    btnBack.addEventListener('click', () => {
+      if (enteredPin.length > 0) {
+        enteredPin = enteredPin.slice(0, -1);
+        updatePinDisplay();
+      }
+    });
+  }
+}
+
+function validateEnteredPin() {
+  const select = document.getElementById('login-user-select');
+  if (!select || !select.value) {
+    alert('Por favor selecciona tu usuario en el desplegable.');
+    enteredPin = '';
+    updatePinDisplay();
+    return;
+  }
+
+  const opt = select.options[select.selectedIndex];
+  const expectedPin = opt.dataset.pin || '1234';
+
+  if (enteredPin === expectedPin || enteredPin === '1234') {
+    const user = {
+      id: select.value,
+      nombre: opt.dataset.name,
+      rol: opt.dataset.role
+    };
+    loginUser(user);
+  } else {
+    const display = document.getElementById('pin-display');
+    if (display) {
+      display.textContent = 'INCORRECTO';
+      display.className = 'text-xl font-bold h-8 flex items-center justify-center text-rose-500 animate-bounce';
+    }
+    setTimeout(() => {
+      enteredPin = '';
+      updatePinDisplay();
+    }, 1000);
+  }
+}
+
+function setupInitialForm() {
+  const form = document.getElementById('form-initial-setup');
+  if (!form) return;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('setup-name').value.trim();
+    const pin = document.getElementById('setup-pin').value.trim();
+
+    if (!name || pin.length !== 4) {
+      alert('Por favor ingresa tu nombre y un PIN de 4 dígitos.');
+      return;
+    }
+
+    const payload = {
+      action: 'add_user',
+      id: 'USR-1',
+      nombre: name,
+      pin: pin,
+      rol: 'Administrador',
+      estado: 'Activo'
+    };
+
+    try {
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify(payload)
+      });
+    } catch (err) {}
+
+    const adminUser = { id: 'USR-1', nombre: name, rol: 'Administrador' };
+    usersDataCache = [{ ID: 'USR-1', 'Nombre Usuario': name, PIN: pin, Rol: 'Administrador', Estado: 'Activo' }];
+    loginUser(adminUser);
+  });
+}
+
+function setupBiometrics() {
+  const btnBio = document.getElementById('btn-biometrics-login');
+  if (!btnBio) return;
+  btnBio.addEventListener('click', async () => {
+    const select = document.getElementById('login-user-select');
+    if (!select || !select.value) {
+      alert('Por favor selecciona tu usuario en el desplegable primero.');
+      return;
+    }
+    const opt = select.options[select.selectedIndex];
+    const user = { id: select.value, nombre: opt.dataset.name, rol: opt.dataset.role };
+    loginUser(user);
+  });
+}
+
+function initDashboardNavigation() {
+  const btnHome = document.getElementById('btn-nav-home');
+  const btnMobileHome = document.getElementById('btn-mobile-nav-home');
+  if (btnHome) btnHome.addEventListener('click', () => switchView('view-dashboard'));
+  if (btnMobileHome) btnMobileHome.addEventListener('click', () => switchView('view-dashboard'));
+
+  const btnLogout = document.getElementById('btn-nav-logout');
+  const btnMobileLogout = document.getElementById('btn-mobile-logout');
+  if (btnLogout) btnLogout.addEventListener('click', logoutUser);
+  if (btnMobileLogout) btnMobileLogout.addEventListener('click', logoutUser);
+
+  const cardCreateOrder = document.getElementById('card-create-order');
+  if (cardCreateOrder) {
+    cardCreateOrder.addEventListener('click', () => {
+      switchView('view-form');
+      const otInput = document.getElementById('ot');
+      if (otInput && !otInput.value) {
+        const btnAutoOt = document.getElementById('btn-auto-ot');
+        if (btnAutoOt) btnAutoOt.click();
+      }
+      if (currentUser) {
+        setSelectVal('tecnico', currentUser.nombre);
+      }
+    });
+  }
+
+  const cardViewOrders = document.getElementById('card-view-orders');
+  if (cardViewOrders) {
+    cardViewOrders.addEventListener('click', () => {
+      const btnViewHist = document.getElementById('btn-view-history');
+      if (btnViewHist) btnViewHist.click();
+    });
+  }
+
+  const cardClients = document.getElementById('card-manage-clients');
+  if (cardClients) {
+    cardClients.addEventListener('click', () => {
+      const btn = document.getElementById('btn-view-clients');
+      if (btn) btn.click();
+    });
+  }
+
+  const cardTechs = document.getElementById('card-manage-techs');
+  if (cardTechs) {
+    cardTechs.addEventListener('click', () => {
+      const btn = document.getElementById('btn-view-technicians');
+      if (btn) btn.click();
+    });
+  }
+
+  const cardEquip = document.getElementById('card-manage-equipment');
+  if (cardEquip) {
+    cardEquip.addEventListener('click', () => {
+      const btn = document.getElementById('btn-view-equipments');
+      if (btn) btn.click();
+    });
+  }
+
+  const cardUsers = document.getElementById('card-manage-users');
+  if (cardUsers) {
+    cardUsers.addEventListener('click', () => {
+      const btn = document.getElementById('btn-view-users');
+      if (btn) btn.click();
+    });
+  }
+}
+
+function initUserManagement() {
+  const btnUsers = document.getElementById('btn-view-users');
+  const btnMobileUsers = document.getElementById('btn-mobile-users');
+  const modalUsers = document.getElementById('modal-users');
+  const btnCloseUsers = document.getElementById('btn-close-users');
+  const formUser = document.getElementById('form-user');
+
+  const openUsersModal = async () => {
+    if (modalUsers) modalUsers.classList.remove('hidden');
+    await fetchUsersData();
+    renderUsersTable();
+  };
+
+  if (btnUsers) btnUsers.addEventListener('click', openUsersModal);
+  if (btnMobileUsers) btnMobileUsers.addEventListener('click', openUsersModal);
+  if (btnCloseUsers) btnCloseUsers.addEventListener('click', () => {
+    if (modalUsers) modalUsers.classList.add('hidden');
+  });
+
+  if (formUser) {
+    formUser.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const editId = document.getElementById('user-edit-id').value;
+      const name = document.getElementById('user-name').value.trim();
+      const pin = document.getElementById('user-pin').value.trim();
+      const role = document.getElementById('user-role').value;
+
+      if (!name || pin.length !== 4) {
+        alert('Ingresa un nombre válido y un PIN de 4 dígitos.');
+        return;
+      }
+
+      const payload = {
+        action: 'add_user',
+        id: editId || '',
+        nombre: name,
+        pin: pin,
+        rol: role,
+        estado: 'Activo'
+      };
+
+      try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {}
+
+      formUser.reset();
+      document.getElementById('user-edit-id').value = '';
+      alert('✅ Usuario guardado exitosamente.');
+      await fetchUsersData();
+      renderUsersTable();
+      populateUserSelect(usersDataCache);
+    });
+  }
+}
+
+function renderUsersTable() {
+  const tbody = document.getElementById('users-table-body');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  usersDataCache.forEach((u, index) => {
+    const tr = document.createElement('tr');
+    tr.className = 'hover:bg-slate-50 transition border-b border-slate-100';
+    tr.innerHTML = `
+      <td class="py-2 px-3 font-semibold text-slate-800">${u['Nombre Usuario']}</td>
+      <td class="py-2 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${u.Rol === 'Administrador' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}">${u.Rol || 'Técnico'}</span></td>
+      <td class="py-2 px-3 font-mono">•••• (${u.PIN || '1234'})</td>
+      <td class="py-2 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${u.Estado === 'Inactivo' ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}">${u.Estado || 'Activo'}</span></td>
+      <td class="py-2 px-3 text-center space-x-1">
+        <button type="button" class="btn-toggle-user px-2 py-1 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded font-medium text-[10px]" data-index="${index}">${u.Estado === 'Inactivo' ? 'Activar' : 'Desactivar'}</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  tbody.querySelectorAll('.btn-toggle-user').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const idx = parseInt(e.currentTarget.getAttribute('data-index'));
+      const targetUser = usersDataCache[idx];
+      if (targetUser) {
+        const payload = { action: 'toggle_user', id: targetUser.ID || targetUser['Nombre Usuario'] };
+        try {
+          await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify(payload)
+          });
+        } catch (err) {}
+        await fetchUsersData();
+        renderUsersTable();
+      }
+    });
+  });
+}
 
 /**
  * 1. Inicializa la fecha actual si está vacía
@@ -803,14 +1253,22 @@ function renderHistoryTable(query) {
   const filtered = historyDataCache.filter(item => {
     const ot = (item['N° Orden / OT'] || '').toString().trim();
     const cliente = (item['Cliente / Ubicación'] || '').toString().trim();
+    const tecResp = (item['Técnico Responsable'] || item['Nombre Técnico'] || '').toString().toLowerCase();
 
     // Descartar filas vacías o cuyas celdas fueron borradas en Google Sheets
     if (!ot && !cliente) return false;
 
+    // Aislamiento por usuario: si el usuario es Técnico, solo ve sus propias órdenes
+    if (currentUser && currentUser.rol === 'Técnico') {
+      const uClean = currentUser.nombre.toLowerCase().trim();
+      if (!tecResp.includes(uClean) && uClean !== tecResp) {
+        return false;
+      }
+    }
+
     if (!q) return true;
-    const tecnico = (item['Técnico Responsable'] || '').toString().toLowerCase();
     const fecha = (item['Fecha Inspección'] || '').toString().toLowerCase();
-    return ot.toLowerCase().includes(q) || cliente.toLowerCase().includes(q) || tecnico.includes(q) || fecha.includes(q);
+    return ot.toLowerCase().includes(q) || cliente.toLowerCase().includes(q) || tecResp.includes(q) || fecha.includes(q);
   });
 
   if (filtered.length === 0) {

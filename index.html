@@ -20,55 +20,55 @@
   <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
     <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
       <div class="flex items-center space-x-3">
-        <div class="bg-blue-600 p-2 rounded-lg">
-          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+        <button type="button" id="btn-nav-home" class="bg-blue-600 hover:bg-blue-500 p-2 rounded-lg transition flex items-center gap-1.5 shadow-sm text-xs font-bold" title="Menú Principal">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 00-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
           </svg>
-        </div>
+          <span class="hidden sm:inline">Menú</span>
+        </button>
         <div>
-          <h1 class="text-lg font-bold leading-tight">Hoja de Mantenimiento</h1>
+          <h1 class="text-sm sm:text-lg font-bold leading-tight flex items-center gap-2">
+            <span>Hoja de Mantenimiento</span>
+          </h1>
         </div>
       </div>
 
-      <!-- Desktop Header Actions -->
-      <div class="hidden sm:flex items-center space-x-2 text-xs">
-        <button type="button" id="btn-view-clients" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition flex items-center gap-1">
-          👥 Clientes
-        </button>
-        <button type="button" id="btn-view-technicians" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition flex items-center gap-1">
-          👨‍🔧 Técnicos
-        </button>
-        <button type="button" id="btn-view-equipments" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition flex items-center gap-1">
-          ⚙️ Catálogo Equipos
-        </button>
-        <button type="button" id="btn-view-history" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition flex items-center gap-1.5 shadow-sm">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-          </svg>
-          Ver Registros
-        </button>
-        <button type="button" id="btn-save-draft" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition flex items-center gap-1.5">
-          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
-          </svg>
-          <span id="btn-draft-text">Guardar borrador</span>
-        </button>
-      </div>
+      <!-- User Profile & Global Nav -->
+      <div class="flex items-center space-x-2 text-xs">
+        <div id="user-profile-badge" class="hidden sm:flex items-center gap-2 px-2.5 py-1 bg-slate-800 border border-slate-700 rounded-lg">
+          <span id="user-display-name" class="font-bold text-slate-200">--</span>
+          <span id="user-display-role" class="px-1.5 py-0.5 text-[9.5px] font-bold rounded bg-blue-600 text-white">Técnico</span>
+        </div>
 
-      <!-- Mobile Hamburger Dropdown Menu -->
-      <div class="relative sm:hidden">
-        <button type="button" id="btn-mobile-menu" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg transition flex items-center justify-center" title="Menú">
-          <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-          </svg>
+        <!-- Desktop Header Actions -->
+        <div class="hidden md:flex items-center space-x-1.5">
+          <button type="button" id="btn-view-clients" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition flex items-center gap-1">👥 Clientes</button>
+          <button type="button" id="btn-view-technicians" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition flex items-center gap-1">👨‍🔧 Técnicos</button>
+          <button type="button" id="btn-view-equipments" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition flex items-center gap-1">⚙️ Equipos</button>
+          <button type="button" id="btn-view-users" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 rounded-md transition flex items-center gap-1 hidden">🔐 Usuarios</button>
+          <button type="button" id="btn-view-history" class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition flex items-center gap-1 shadow-sm">📋 Órdenes</button>
+        </div>
+
+        <button type="button" id="btn-nav-logout" class="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-medium rounded-md transition flex items-center gap-1 text-xs shadow-sm hidden" title="Cerrar Sesión">
+          🔒 <span class="hidden sm:inline">Salir</span>
         </button>
 
-        <div id="mobile-dropdown-menu" class="absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-1.5 space-y-1 z-50 hidden">
-          <button type="button" id="btn-mobile-clients" class="w-full text-left px-3 py-2 text-slate-200 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">👥 Clientes</button>
-          <button type="button" id="btn-mobile-technicians" class="w-full text-left px-3 py-2 text-slate-200 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">👨‍🔧 Técnicos</button>
-          <button type="button" id="btn-mobile-equipments" class="w-full text-left px-3 py-2 text-slate-200 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">⚙️ Catálogo Equipos</button>
-          <button type="button" id="btn-mobile-history" class="w-full text-left px-3 py-2 text-blue-400 font-semibold hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">📋 Ver Registros</button>
-          <button type="button" id="btn-mobile-draft" class="w-full text-left px-3 py-2 text-emerald-400 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">📥 <span id="btn-mobile-draft-text">Guardar borrador</span></button>
+        <!-- Mobile Hamburger Dropdown Menu -->
+        <div class="relative sm:hidden">
+          <button type="button" id="btn-mobile-menu" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg transition flex items-center justify-center" title="Menú">
+            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+          </button>
+          <div id="mobile-dropdown-menu" class="absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-1.5 space-y-1 z-50 hidden">
+            <button type="button" id="btn-mobile-nav-home" class="w-full text-left px-3 py-2 text-blue-400 font-semibold hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">🏠 Menú Principal</button>
+            <button type="button" id="btn-mobile-clients" class="w-full text-left px-3 py-2 text-slate-200 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">👥 Clientes</button>
+            <button type="button" id="btn-mobile-technicians" class="w-full text-left px-3 py-2 text-slate-200 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">👨‍🔧 Técnicos</button>
+            <button type="button" id="btn-mobile-equipments" class="w-full text-left px-3 py-2 text-slate-200 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">⚙️ Catálogo Equipos</button>
+            <button type="button" id="btn-mobile-users" class="w-full text-left px-3 py-2 text-amber-300 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2 hidden">🔐 Gestión Usuarios</button>
+            <button type="button" id="btn-mobile-history" class="w-full text-left px-3 py-2 text-blue-400 font-semibold hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">📋 Ver Registros</button>
+            <button type="button" id="btn-mobile-logout" class="w-full text-left px-3 py-2 text-rose-400 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2 border-t border-slate-800 mt-1">🔒 Cerrar Sesión</button>
+          </div>
         </div>
       </div>
     </div>
@@ -76,8 +76,217 @@
 
   <main class="max-w-5xl mx-auto px-4 pt-6">
 
-    <!-- Form Main Container -->
-    <form id="checklist-form" class="space-y-6">
+    <!-- 1. VISTA DE LOGIN / CONFIGURACIÓN INICIAL (#view-login) -->
+    <div id="view-login" class="max-w-md mx-auto py-8">
+      <!-- Card Login -->
+      <div class="bg-white rounded-2xl shadow-xl border border-slate-200 p-6 space-y-6">
+        <div class="text-center space-y-1">
+          <div class="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center mx-auto shadow-md mb-3">
+            <svg class="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+            </svg>
+          </div>
+          <h2 id="login-title" class="text-xl font-bold text-slate-800">Acceso al Sistema</h2>
+          <p id="login-subtitle" class="text-xs text-slate-500">Ingresa tu PIN de 4 dígitos para continuar</p>
+        </div>
+
+        <!-- Modo Asistente Inicial (si no hay usuarios) -->
+        <form id="form-initial-setup" class="space-y-4 hidden">
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800">
+            <strong>🌟 Configuración Inicial:</strong> No se detectaron usuarios. Crea la cuenta de Administrador Inicial.
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Nombre Completo:</label>
+            <input type="text" id="setup-name" placeholder="Ej. Mario Quirós" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Definir PIN (4 Dígitos):</label>
+            <input type="password" id="setup-pin" maxlength="4" placeholder="••••" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-center tracking-widest text-lg font-bold">
+          </div>
+          <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition shadow-md">
+            🚀 Registrar Administrador e Iniciar
+          </button>
+        </form>
+
+        <!-- Modo Teclado PIN (Ingreso Normal) -->
+        <div id="login-pin-container" class="space-y-5">
+          <!-- User Selector Dropdown -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Seleccionar Usuario:</label>
+            <select id="login-user-select" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white font-medium">
+              <option value="" disabled selected>Cargando usuarios...</option>
+            </select>
+          </div>
+
+          <!-- Keypad Display -->
+          <div class="bg-slate-900 text-white rounded-xl p-3 text-center">
+            <div class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">PIN de Seguridad</div>
+            <div id="pin-display" class="text-3xl font-mono tracking-widest font-bold h-8 flex items-center justify-center text-blue-400">••••</div>
+          </div>
+
+          <!-- Keypad Grid -->
+          <div class="grid grid-cols-3 gap-2 max-w-[260px] mx-auto">
+            <button type="button" class="btn-pin py-3 bg-slate-100 hover:bg-slate-200 active:bg-blue-100 text-slate-800 font-bold text-lg rounded-xl transition" data-num="1">1</button>
+            <button type="button" class="btn-pin py-3 bg-slate-100 hover:bg-slate-200 active:bg-blue-100 text-slate-800 font-bold text-lg rounded-xl transition" data-num="2">2</button>
+            <button type="button" class="btn-pin py-3 bg-slate-100 hover:bg-slate-200 active:bg-blue-100 text-slate-800 font-bold text-lg rounded-xl transition" data-num="3">3</button>
+            <button type="button" class="btn-pin py-3 bg-slate-100 hover:bg-slate-200 active:bg-blue-100 text-slate-800 font-bold text-lg rounded-xl transition" data-num="4">4</button>
+            <button type="button" class="btn-pin py-3 bg-slate-100 hover:bg-slate-200 active:bg-blue-100 text-slate-800 font-bold text-lg rounded-xl transition" data-num="5">5</button>
+            <button type="button" class="btn-pin py-3 bg-slate-100 hover:bg-slate-200 active:bg-blue-100 text-slate-800 font-bold text-lg rounded-xl transition" data-num="6">6</button>
+            <button type="button" class="btn-pin py-3 bg-slate-100 hover:bg-slate-200 active:bg-blue-100 text-slate-800 font-bold text-lg rounded-xl transition" data-num="7">7</button>
+            <button type="button" class="btn-pin py-3 bg-slate-100 hover:bg-slate-200 active:bg-blue-100 text-slate-800 font-bold text-lg rounded-xl transition" data-num="8">8</button>
+            <button type="button" class="btn-pin py-3 bg-slate-100 hover:bg-slate-200 active:bg-blue-100 text-slate-800 font-bold text-lg rounded-xl transition" data-num="9">9</button>
+            <button type="button" id="btn-pin-clear" class="py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl transition">C</button>
+            <button type="button" class="btn-pin py-3 bg-slate-100 hover:bg-slate-200 active:bg-blue-100 text-slate-800 font-bold text-lg rounded-xl transition" data-num="0">0</button>
+            <button type="button" id="btn-pin-backspace" class="py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl transition">⌫</button>
+          </div>
+
+          <!-- Biometrics Button -->
+          <div class="pt-2 border-t border-slate-100">
+            <button type="button" id="btn-biometrics-login" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold transition flex items-center justify-center gap-2 shadow-sm">
+              <span>👆</span>
+              <span>Ingresar con Huella / Face ID</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. DASHBOARD PRINCIPAL DE CARDS (#view-dashboard) -->
+    <div id="view-dashboard" class="space-y-6 hidden">
+      <!-- Welcome Header -->
+      <div class="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 rounded-2xl p-6 text-white shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <span class="text-xs text-blue-300 font-semibold uppercase tracking-wider">Menú Principal</span>
+          <h2 id="dashboard-welcome-name" class="text-2xl font-bold">¡Bienvenido! 👋</h2>
+          <p class="text-xs text-slate-300 mt-1">Selecciona una opción para gestionar mantenimientos y catálogos.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="dashboard-user-role-pill" class="px-3 py-1 bg-blue-600 text-white rounded-full text-xs font-bold shadow-sm">Técnico</span>
+        </div>
+      </div>
+
+      <!-- Cards Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        
+        <!-- Card 1: Crear Orden -->
+        <div id="card-create-order" class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition duration-200 cursor-pointer group flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-800 text-base group-hover:text-blue-600 transition">➕ Crear Orden</h3>
+              <p class="text-xs text-slate-500 mt-1">Nueva inspección y reporte de mantenimiento preventivo/correctivo A/C.</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-blue-600 font-semibold">
+            <span>Iniciar Orden</span>
+            <span>➔</span>
+          </div>
+        </div>
+
+        <!-- Card 2: Ver Órdenes -->
+        <div id="card-view-orders" class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition duration-200 cursor-pointer group flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-800 text-base group-hover:text-emerald-600 transition">📋 Ver Órdenes</h3>
+              <p class="text-xs text-slate-500 mt-1">Consulta de historial, edición, firmas y exportación a PDF.</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-emerald-600 font-semibold">
+            <span>Ver Historial</span>
+            <span>➔</span>
+          </div>
+        </div>
+
+        <!-- Card 3: Clientes -->
+        <div id="card-manage-clients" class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition duration-200 cursor-pointer group flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-800 text-base group-hover:text-amber-600 transition">👥 Clientes</h3>
+              <p class="text-xs text-slate-500 mt-1">Directorio de empresas, clientes y direcciones de ubicación.</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-amber-600 font-semibold">
+            <span>Gestionar Clientes</span>
+            <span>➔</span>
+          </div>
+        </div>
+
+        <!-- Card 4: Técnicos -->
+        <div id="card-manage-techs" class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition duration-200 cursor-pointer group flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 012-2h2a2 2 0 012 2v1m-6 0h6"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-800 text-base group-hover:text-purple-600 transition">🛠️ Técnicos</h3>
+              <p class="text-xs text-slate-500 mt-1">Lista de personal técnico responsable para asignación de órdenes.</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-purple-600 font-semibold">
+            <span>Ver Técnicos</span>
+            <span>➔</span>
+          </div>
+        </div>
+
+        <!-- Card 5: Equipos -->
+        <div id="card-manage-equipment" class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition duration-200 cursor-pointer group flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="w-12 h-12 bg-cyan-100 text-cyan-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-800 text-base group-hover:text-cyan-600 transition">❄️ Equipos</h3>
+              <p class="text-xs text-slate-500 mt-1">Catálogo de tipos de unidades A/C y refrigeración comercial.</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-cyan-600 font-semibold">
+            <span>Catálogo Equipos</span>
+            <span>➔</span>
+          </div>
+        </div>
+
+        <!-- Card 6: Usuarios (Solo Administrador) -->
+        <div id="card-manage-users" class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition duration-200 cursor-pointer group flex flex-col justify-between hidden">
+          <div class="space-y-3">
+            <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-800 text-base group-hover:text-indigo-600 transition">🔐 Usuarios & Accesos</h3>
+              <p class="text-xs text-slate-500 mt-1">Gestión de PINs, roles (Admin/Técnico) y permisos de acceso.</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-indigo-600 font-semibold">
+            <span>Administrar Accesos</span>
+            <span>➔</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 3. VISTA DEL FORMULARIO DE MANTENIMIENTO (#view-form) -->
+    <div id="view-form" class="space-y-6 hidden">
 
       <!-- DATOS GENERALES -->
       <section class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -717,6 +926,7 @@
       </div>
 
     </form>
+    </div> <!-- /#view-form -->
   </main>
 
   <!-- MODAL DE PROCESANDO / EXITO / ERROR -->
@@ -1008,8 +1218,63 @@
     </div>
   </div>
 
+  <!-- MODAL GESTIÓN DE USUARIOS Y PERMISOS (SOLO ADMIN) -->
+  <div id="modal-users" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] shadow-2xl flex flex-col overflow-hidden">
+      <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+        <h3 class="text-base font-semibold flex items-center gap-2">
+          🔐 Gestión de Usuarios, PINs y Permisos
+        </h3>
+        <button type="button" id="btn-close-users" class="text-slate-400 hover:text-white text-xl font-bold p-1">✕</button>
+      </div>
+
+      <div class="p-4 bg-slate-50 border-b border-slate-200">
+        <form id="form-user" class="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
+          <input type="hidden" id="user-edit-id">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-700 mb-1">Nombre Completo:</label>
+            <input type="text" id="user-name" placeholder="Ej. Juan Pérez" required class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs bg-white">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-700 mb-1">PIN (4 Dígitos):</label>
+            <input type="password" id="user-pin" maxlength="4" placeholder="••••" required class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs bg-white text-center font-mono">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-700 mb-1">Rol:</label>
+            <select id="user-role" required class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs bg-white">
+              <option value="Técnico" selected>Técnico</option>
+              <option value="Administrador">Administrador</option>
+            </select>
+          </div>
+          <div>
+            <button type="submit" id="btn-save-user" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-xs transition shadow-sm">
+              💾 Guardar Usuario
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="p-4 overflow-y-auto flex-1">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-100 font-semibold text-slate-700 border-b border-slate-200">
+            <tr>
+              <th class="py-2 px-3">Nombre</th>
+              <th class="py-2 px-3">Rol</th>
+              <th class="py-2 px-3">PIN</th>
+              <th class="py-2 px-3">Estado</th>
+              <th class="py-2 px-3 text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="users-table-body" class="divide-y divide-slate-200">
+            <!-- JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- Iframe oculto para procesamiento de envíos sin bloqueos de CORS -->
   <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-  <script src="app.js?v=51.0"></script>
+  <script src="app.js?v=52.0"></script>
 </body>
 </html>

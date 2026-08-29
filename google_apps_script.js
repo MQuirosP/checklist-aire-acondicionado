@@ -165,6 +165,69 @@ function doPost(e) {
       return ContentService.createTextOutput(JSON.stringify({ "result": "error", "error": "Equipo no encontrado" })).setMimeType(ContentService.MimeType.JSON);
     }
 
+    // 7. Guardar o actualizar Usuario (action === 'add_user')
+    if (data.action === 'add_user') {
+      var userSheet = ss.getSheetByName('Usuarios') || ss.insertSheet('Usuarios');
+      initUserSheetIfNeeded(userSheet);
+      var userId = data.id || ("USR-" + (userSheet.getLastRow() > 0 ? userSheet.getLastRow() : 1));
+      
+      var rows = userSheet.getDataRange().getValues();
+      var existingRowIndex = -1;
+      for (var u = 1; u < rows.length; u++) {
+        if ((rows[u][0] || "").toString().trim() === userId || (rows[u][1] || "").toString().trim().toLowerCase() === (data.nombre || "").toString().trim().toLowerCase()) {
+          existingRowIndex = u + 1;
+          break;
+        }
+      }
+
+      if (existingRowIndex !== -1) {
+        if (data.nombre) userSheet.getRange(existingRowIndex, 2).setValue(data.nombre);
+        if (data.pin) userSheet.getRange(existingRowIndex, 3).setValue(data.pin);
+        if (data.rol) userSheet.getRange(existingRowIndex, 4).setValue(data.rol);
+        if (data.biometria) userSheet.getRange(existingRowIndex, 5).setValue(data.biometria);
+        if (data.estado) userSheet.getRange(existingRowIndex, 6).setValue(data.estado);
+        return ContentService.createTextOutput(JSON.stringify({ "result": "success", "id": userId, "updated": true })).setMimeType(ContentService.MimeType.JSON);
+      } else {
+        userSheet.appendRow([userId, data.nombre || "", data.pin || "1234", data.rol || "Técnico", data.biometria || "", "Activo", new Date()]);
+        return ContentService.createTextOutput(JSON.stringify({ "result": "success", "id": userId, "created": true })).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
+    // 7.1 Soft-delete / Toggle estado de usuario
+    if (data.action === 'toggle_user') {
+      var userSheet = ss.getSheetByName('Usuarios');
+      if (userSheet) {
+        var rows = userSheet.getDataRange().getValues();
+        for (var i = 1; i < rows.length; i++) {
+          var rowId = (rows[i][0] || "").toString().trim();
+          var rowName = (rows[i][1] || "").toString().trim();
+          if (rowId === data.id || rowName === data.id || rowName === data.nombre) {
+            var newStatus = data.estado || (rows[i][5] === "Inactivo" ? "Activo" : "Inactivo");
+            userSheet.getRange(i + 1, 6).setValue(newStatus);
+            return ContentService.createTextOutput(JSON.stringify({ "result": "success", "id": rowId, "estado": newStatus })).setMimeType(ContentService.MimeType.JSON);
+          }
+        }
+      }
+      return ContentService.createTextOutput(JSON.stringify({ "result": "error", "error": "Usuario no encontrado" })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 7.2 Registrar Credencial Biométrica (WebAuthn)
+    if (data.action === 'register_biometric') {
+      var userSheet = ss.getSheetByName('Usuarios');
+      if (userSheet) {
+        var rows = userSheet.getDataRange().getValues();
+        for (var i = 1; i < rows.length; i++) {
+          var rowId = (rows[i][0] || "").toString().trim();
+          var rowName = (rows[i][1] || "").toString().trim();
+          if (rowId === data.id || rowName === data.nombre || rowName === data.id) {
+            userSheet.getRange(i + 1, 5).setValue(data.biometria || "");
+            return ContentService.createTextOutput(JSON.stringify({ "result": "success", "id": rowId })).setMimeType(ContentService.MimeType.JSON);
+          }
+        }
+      }
+      return ContentService.createTextOutput(JSON.stringify({ "result": "error", "error": "Usuario no encontrado" })).setMimeType(ContentService.MimeType.JSON);
+    }
+
     // 8. Por defecto: Guardar Mantenimiento en la pestaña Mantenimientos
     var sheet = ss.getSheetByName('Mantenimientos') || ss.getSheets()[0];
 
@@ -319,6 +382,11 @@ function doGet(e) {
       initEquipmentSheetIfNeeded(sheet);
       return getSheetJson(sheet);
     }
+    if (action === 'usuarios') {
+      var sheet = ss.getSheetByName('Usuarios') || ss.insertSheet('Usuarios');
+      initUserSheetIfNeeded(sheet);
+      return getSheetJson(sheet);
+    }
 
     // Por defecto: mantenimientos
     var sheet = ss.getSheetByName('Mantenimientos') || ss.getSheets()[0];
@@ -345,6 +413,14 @@ function initEquipmentSheetIfNeeded(sheet) {
       ["EQ-06", "Chiller Especial / Industrial", "Chiller de proceso industrial", "Activo", new Date()]
     ];
     defaults.forEach(function(r) { sheet.appendRow(r); });
+  }
+}
+
+function initUserSheetIfNeeded(sheet) {
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(["ID", "Nombre Usuario", "PIN", "Rol", "Biometria_CredID", "Estado", "Fecha Registro"]);
+    sheet.getRange(1, 1, 1, 7).setFontWeight("bold").setBackground("#e2e8f0");
+    sheet.setFrozenRows(1);
   }
 }
 
