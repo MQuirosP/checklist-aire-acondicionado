@@ -510,40 +510,46 @@ function initDashboardNavigation() {
   const cardViewOrders = document.getElementById('card-view-orders');
   if (cardViewOrders) {
     cardViewOrders.addEventListener('click', () => {
-      const btnViewHist = document.getElementById('btn-view-history');
-      if (btnViewHist) btnViewHist.click();
+      const modal = document.getElementById('modal-history');
+      if (modal) {
+        modal.classList.remove('hidden');
+        fetchHistoryData();
+      }
     });
   }
 
   const cardClients = document.getElementById('card-manage-clients');
   if (cardClients) {
     cardClients.addEventListener('click', () => {
-      const btn = document.getElementById('btn-view-clients');
-      if (btn) btn.click();
+      const modal = document.getElementById('modal-clients');
+      if (modal) modal.classList.remove('hidden');
     });
   }
 
   const cardTechs = document.getElementById('card-manage-techs');
   if (cardTechs) {
     cardTechs.addEventListener('click', () => {
-      const btn = document.getElementById('btn-view-technicians');
-      if (btn) btn.click();
+      const modal = document.getElementById('modal-technicians');
+      if (modal) modal.classList.remove('hidden');
     });
   }
 
   const cardEquip = document.getElementById('card-manage-equipment');
   if (cardEquip) {
     cardEquip.addEventListener('click', () => {
-      const btn = document.getElementById('btn-view-equipments');
-      if (btn) btn.click();
+      const modal = document.getElementById('modal-equipment');
+      if (modal) modal.classList.remove('hidden');
     });
   }
 
   const cardUsers = document.getElementById('card-manage-users');
   if (cardUsers) {
     cardUsers.addEventListener('click', () => {
-      const btn = document.getElementById('btn-view-users');
-      if (btn) btn.click();
+      const modal = document.getElementById('modal-users');
+      if (modal) {
+        modal.classList.remove('hidden');
+        fetchUsersData().then(() => renderUsersTable());
+      }
     });
   }
 }
@@ -972,6 +978,7 @@ function loadDraft() {
   try {
     const data = JSON.parse(saved);
     const form = document.getElementById('checklist-form');
+    if (!form || !form.elements) return;
 
     Object.keys(data).forEach(key => {
       const field = form.elements[key];
@@ -1049,6 +1056,7 @@ function resetFormComplete() {
  */
 function initFormSubmission() {
   const form = document.getElementById('checklist-form');
+  if (!form) return;
   const modal = document.getElementById('modal-status');
   const modalLoading = document.getElementById('modal-loading');
   const modalSuccess = document.getElementById('modal-success');
