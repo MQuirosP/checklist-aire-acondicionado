@@ -48,8 +48,8 @@ function updateNavigationUI() {
   if (currentUser) {
     if (btnHome) btnHome.classList.remove('hidden');
     if (desktopActions) {
-      desktopActions.classList.remove('hidden');
-      desktopActions.classList.add('md:flex');
+      desktopActions.classList.add('hidden', 'md:flex');
+      desktopActions.classList.remove('flex');
     }
     if (mobileMenuBtn) mobileMenuBtn.classList.remove('hidden');
 
@@ -71,7 +71,7 @@ function updateNavigationUI() {
     if (btnHome) btnHome.classList.add('hidden');
     if (desktopActions) {
       desktopActions.classList.add('hidden');
-      desktopActions.classList.remove('md:flex');
+      desktopActions.classList.remove('md:flex', 'flex');
     }
     if (mobileMenuBtn) mobileMenuBtn.classList.add('hidden');
     if (btnViewUsers) btnViewUsers.classList.add('hidden');
