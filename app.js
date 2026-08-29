@@ -22,6 +22,33 @@ document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
 });
 
+function isUserAdmin(user) {
+  if (!user || !user.rol) return false;
+  const r = String(user.rol).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  return r.includes('admin');
+}
+
+function isUserTech(user) {
+  if (!user) return false;
+  return !isUserAdmin(user);
+}
+
+function matchTechnicianName(strA, strB) {
+  if (!strA || !strB) return false;
+  const normA = String(strA).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  const normB = String(strB).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+  if (normA === normB) return true;
+  if (normA.includes(normB) || normB.includes(normA)) return true;
+
+  const tokensA = normA.split(/\s+/).filter(t => t.length > 2);
+  const tokensB = normB.split(/\s+/).filter(t => t.length > 2);
+  if (tokensA.length === 0 || tokensB.length === 0) return false;
+
+  const matches = tokensB.filter(t => tokensA.includes(t));
+  return matches.length >= 1;
+}
+
 function switchView(viewId) {
   const views = ['view-login', 'view-dashboard', 'view-form'];
   views.forEach(id => {
@@ -58,7 +85,7 @@ function updateNavigationUI() {
     if (welcomeName) welcomeName.textContent = `¡Bienvenido, ${currentUser.nombre}! 👋`;
     if (welcomeRolePill) welcomeRolePill.textContent = currentUser.rol || 'Técnico';
 
-    if (currentUser.rol === 'Administrador') {
+    if (isUserAdmin(currentUser)) {
       if (btnViewUsers) btnViewUsers.classList.remove('hidden');
       if (btnMobileUsers) btnMobileUsers.classList.remove('hidden');
       if (cardUsers) cardUsers.classList.remove('hidden');
@@ -84,6 +111,9 @@ function loginUser(user) {
   currentUser = user;
   try {
     localStorage.setItem('session_user', JSON.stringify(user));
+    if (user && user.id) {
+      localStorage.setItem('last_login_user_id', user.id);
+    }
   } catch (e) {}
 
   updateNavigationUI();
@@ -217,21 +247,78 @@ function populateUserSelect(users) {
     }
   });
 
-  if (select.options.length > 1) {
+  const lastUserId = localStorage.getItem('last_login_user_id');
+  if (lastUserId) {
+    for (let i = 0; i < select.options.length; i++) {
+      if (select.options[i].value === lastUserId) {
+        select.selectedIndex = i;
+        break;
+      }
+    }
+  } else if (select.options.length > 1) {
     select.selectedIndex = 1;
   }
 
-  // Escuchar cambio de usuario para resetear el PIN ingresado inmediatamente
+  // Escuchar cambio de usuario para resetear PIN y guardar preferencia
   if (!select.dataset.hasChangeListener) {
     select.dataset.hasChangeListener = 'true';
     select.addEventListener('change', () => {
       enteredPin = '';
       updatePinDisplay();
+      if (select.value) {
+        try { localStorage.setItem('last_login_user_id', select.value); } catch (e) {}
+        checkAutoBiometrics(select.value);
+      }
     });
   }
 
   enteredPin = '';
   updatePinDisplay();
+
+  if (select.value) {
+    checkAutoBiometrics(select.value);
+  }
+}
+
+async function checkAutoBiometrics(userId) {
+  if (!window.PublicKeyCredential || !userId) return;
+  const userBioKey = `bio_credential_${userId}`;
+  const select = document.getElementById('login-user-select');
+  const opt = select ? Array.from(select.options).find(o => o.value === userId) : null;
+  const storedCredIdBase64 = localStorage.getItem(userBioKey) || (opt ? opt.dataset.bio : '');
+
+  if (!storedCredIdBase64) return;
+
+  setTimeout(async () => {
+    try {
+      const challenge = new Uint8Array(32);
+      window.crypto.getRandomValues(challenge);
+      const credential = await navigator.credentials.get({
+        publicKey: {
+          challenge: challenge,
+          allowCredentials: [{
+            id: base64UrlToArrayBuffer(storedCredIdBase64),
+            type: 'public-key'
+          }],
+          timeout: 30000,
+          userVerification: 'preferred'
+        }
+      });
+
+      if (credential && select) {
+        const currentSelectedOpt = select.options[select.selectedIndex];
+        if (currentSelectedOpt && currentSelectedOpt.value === userId) {
+          loginUser({
+            id: userId,
+            nombre: currentSelectedOpt.dataset.name,
+            rol: currentSelectedOpt.dataset.role
+          });
+        }
+      }
+    } catch (err) {
+      console.log('Autenticación biométrica automática no completada, usando PIN.');
+    }
+  }, 400);
 }
 
 function updatePinDisplay() {
@@ -1160,6 +1247,8 @@ function resetFormComplete() {
     otInput.classList.remove('border-rose-500', 'border-emerald-500');
   }
 
+  toggleEquipmentTypeSections('');
+
   const containerSubtipo = document.getElementById('container-subtipo-equipo');
   if (containerSubtipo) containerSubtipo.classList.add('hidden');
   const subtipoSelect = document.getElementById('subtipoEquipo');
@@ -1593,9 +1682,8 @@ function renderHistoryTable(query) {
     if (!ot && !cliente) return false;
 
     // Aislamiento por usuario: si el usuario es Técnico, solo ve sus propias órdenes
-    if (currentUser && currentUser.rol === 'Técnico') {
-      const uClean = currentUser.nombre.toLowerCase().trim();
-      if (!tecResp.includes(uClean) && uClean !== tecResp) {
+    if (currentUser && isUserTech(currentUser)) {
+      if (!matchTechnicianName(tecResp, currentUser.nombre)) {
         return false;
       }
     }
@@ -1966,15 +2054,11 @@ function loadRecordIntoForm(record) {
   setVal('marcaModelo', rec['Marca / Modelo'] || record['Marca / Modelo'] || '');
   setVal('idTag', rec['ID / Tag Equipo'] || record['ID / Tag Equipo'] || '');
 
-  const containerSubtipo = document.getElementById('container-subtipo-equipo');
-  const containerRefrigerante = document.getElementById('container-refrigerante');
-  if (rec['Tipo de Unidad'] === 'Otro') {
-    if (containerSubtipo) containerSubtipo.classList.remove('hidden');
-    if (containerRefrigerante) containerRefrigerante.classList.add('hidden');
+  const tipoUnidadVal = rec['Tipo de Unidad'] || record['Tipo de Unidad'] || '';
+  toggleEquipmentTypeSections(tipoUnidadVal);
+  if (tipoUnidadVal === 'Otro') {
     setSelectVal('subtipoEquipo', rec['Subtipo / Categoría Equipo']);
   } else {
-    if (containerSubtipo) containerSubtipo.classList.add('hidden');
-    if (containerRefrigerante) containerRefrigerante.classList.remove('hidden');
     setSelectVal('refrigerante', rec['Refrigerante']);
   }
 
@@ -2592,6 +2676,38 @@ async function toggleTechnicianSoftDelete(id, nombre, currentStatus) {
 /**
  * 10. Gestión del Catálogo de Equipos "Otros" (Soft-Delete + Google Sheets)
  */
+function toggleEquipmentTypeSections(val) {
+  const containerSubtipo = document.getElementById('container-subtipo-equipo');
+  const containerRefrigerante = document.getElementById('container-refrigerante');
+  const subtipoSelect = document.getElementById('subtipoEquipo');
+  const refrigeranteSelect = document.getElementById('refrigerante');
+  const sEvap = document.getElementById('section-evaporadora');
+  const sCond = document.getElementById('section-condensadora');
+  const sElec = document.getElementById('section-electrico');
+  const sMed = document.getElementById('section-mediciones');
+
+  const isOtro = (val || '').toString().trim() === 'Otro';
+
+  if (isOtro) {
+    if (containerSubtipo) containerSubtipo.classList.remove('hidden');
+    if (containerRefrigerante) containerRefrigerante.classList.add('hidden');
+    if (refrigeranteSelect) refrigeranteSelect.value = '';
+    if (sEvap) sEvap.classList.add('hidden');
+    if (sCond) sCond.classList.add('hidden');
+    if (sElec) sElec.classList.add('hidden');
+    if (sMed) sMed.classList.add('hidden');
+    if (typeof fetchEquipmentTypes === 'function') fetchEquipmentTypes(true);
+  } else {
+    if (containerSubtipo) containerSubtipo.classList.add('hidden');
+    if (subtipoSelect) subtipoSelect.value = '';
+    if (containerRefrigerante) containerRefrigerante.classList.remove('hidden');
+    if (sEvap) sEvap.classList.remove('hidden');
+    if (sCond) sCond.classList.remove('hidden');
+    if (sElec) sElec.classList.remove('hidden');
+    if (sMed) sMed.classList.remove('hidden');
+  }
+}
+
 function initEquipmentManagement() {
   const tipoUnidadSelect = document.getElementById('tipoUnidad');
   const containerSubtipo = document.getElementById('container-subtipo-equipo');
@@ -2606,16 +2722,7 @@ function initEquipmentManagement() {
 
   if (tipoUnidadSelect) {
     tipoUnidadSelect.addEventListener('change', (e) => {
-      if (e.target.value === 'Otro') {
-        if (containerSubtipo) containerSubtipo.classList.remove('hidden');
-        if (containerRefrigerante) containerRefrigerante.classList.add('hidden');
-        if (refrigeranteSelect) refrigeranteSelect.value = '';
-        fetchEquipmentTypes(true);
-      } else {
-        if (containerSubtipo) containerSubtipo.classList.add('hidden');
-        if (subtipoSelect) subtipoSelect.value = '';
-        if (containerRefrigerante) containerRefrigerante.classList.remove('hidden');
-      }
+      toggleEquipmentTypeSections(e.target.value);
     });
   }
 
