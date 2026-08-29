@@ -159,12 +159,17 @@ function populateUserSelect(users) {
   select.innerHTML = '<option value="" disabled selected>Seleccionar Usuario...</option>';
   users.forEach(u => {
     if (u.Estado !== 'Inactivo') {
+      const uName = u['Nombre Usuario'] || u['Nombre'] || u['Nombre del Técnico'] || u['Usuario'] || u.nombre || u.ID || 'Usuario';
+      const uRole = u.Rol || u['Rol'] || 'Técnico';
+      const uPin = u.PIN || u['PIN'] || '1234';
+      const uId = u.ID || u['ID'] || uName;
+
       const opt = document.createElement('option');
-      opt.value = u.ID || u['Nombre Usuario'];
-      opt.textContent = `${u['Nombre Usuario']} (${u.Rol || 'Técnico'})`;
-      opt.dataset.pin = u.PIN || '1234';
-      opt.dataset.name = u['Nombre Usuario'];
-      opt.dataset.role = u.Rol || 'Técnico';
+      opt.value = uId;
+      opt.textContent = `${uName} (${uRole})`;
+      opt.dataset.pin = uPin;
+      opt.dataset.name = uName;
+      opt.dataset.role = uRole;
       opt.dataset.bio = u.Biometria_CredID || '';
       select.appendChild(opt);
     }
@@ -436,10 +441,11 @@ function renderUsersTable() {
   if (!tbody) return;
   tbody.innerHTML = '';
   usersDataCache.forEach((u, index) => {
+    const uName = u['Nombre Usuario'] || u['Nombre'] || u['Nombre del Técnico'] || u['Usuario'] || u.nombre || u.ID || 'Usuario';
     const tr = document.createElement('tr');
     tr.className = 'hover:bg-slate-50 transition border-b border-slate-100';
     tr.innerHTML = `
-      <td class="py-2 px-3 font-semibold text-slate-800">${u['Nombre Usuario']}</td>
+      <td class="py-2 px-3 font-semibold text-slate-800">${uName}</td>
       <td class="py-2 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${u.Rol === 'Administrador' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}">${u.Rol || 'Técnico'}</span></td>
       <td class="py-2 px-3 font-mono">•••• (${u.PIN || '1234'})</td>
       <td class="py-2 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${u.Estado === 'Inactivo' ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}">${u.Estado || 'Activo'}</span></td>
