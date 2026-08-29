@@ -108,8 +108,20 @@ function logoutUser() {
     localStorage.removeItem('session_user');
   } catch (e) {}
 
+  const formSetup = document.getElementById('form-initial-setup');
+  if (formSetup) {
+    formSetup.reset();
+    formSetup.classList.add('hidden');
+  }
+
+  const pinContainer = document.getElementById('login-pin-container');
+  if (pinContainer) {
+    pinContainer.classList.remove('hidden');
+  }
+
   updateNavigationUI();
   switchView('view-login');
+  fetchUsersData().then(users => populateUserSelect(users));
 }
 
 async function fetchUsersData() {
@@ -329,6 +341,7 @@ function setupInitialForm() {
       });
     } catch (err) {}
 
+    form.reset();
     const newUser = { id: userId, nombre: name, rol: role };
     usersDataCache.push({ ID: userId, 'Nombre Usuario': name, PIN: pin, Rol: role, Estado: 'Activo' });
     loginUser(newUser);
