@@ -479,7 +479,7 @@ function initFormSubmission() {
 
     // Validar Unicidad de OT antes de enviar
     if (isOtDuplicate) {
-      alert(`⚠️ ERROR DE UNICIDAD: La Orden de Trabajo / OT "${otInput.value}" ya existe en el sistema. Por favor genera o ingresa un número de OT único.`);
+      alert(`⚠️ ERROR DE UNICIDAD: La Orden "${otInput.value}" ya existe en el sistema. Por favor genera o ingresa un número de Orden único.`);
       otInput.focus();
       return;
     }
@@ -759,13 +759,13 @@ function checkOTUniqueness() {
   if (found) {
     isOtDuplicate = true;
     badge.className = 'block text-[11px] font-medium mt-1 text-rose-600 font-semibold';
-    badge.textContent = '⚠️ Esta OT ya fue registrada previamente';
+    badge.textContent = '⚠️ Esta Orden ya fue registrada previamente';
     otInput.classList.add('border-rose-500');
     otInput.classList.remove('border-emerald-500');
   } else {
     isOtDuplicate = false;
     badge.className = 'block text-[11px] font-medium mt-1 text-emerald-600 font-semibold';
-    badge.textContent = '✓ N° de Orden / OT disponible';
+    badge.textContent = '✓ N° de Orden disponible';
     otInput.classList.add('border-emerald-500');
     otInput.classList.remove('border-rose-500');
   }
@@ -973,7 +973,7 @@ function openRecordDetail(record) {
     <div class="bg-slate-50 border border-slate-200 p-2 rounded-xl space-y-1">
       <div class="flex flex-wrap justify-between items-center border-b border-slate-200 pb-1 gap-2">
         <div class="flex items-center gap-2">
-          <span class="text-xs font-bold text-blue-600">Orden / OT: ${getVal('N° Orden / OT')}</span>
+          <span class="text-xs font-bold text-blue-600">Orden: ${getVal('N° Orden / OT')}</span>
           <span class="px-2 py-0.5 text-[10px] font-bold rounded-full ${tipoMant === 'Correctivo' ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-blue-100 text-blue-800 border border-blue-300'}">${tipoMant}</span>
         </div>
         <span class="text-xs text-slate-500 font-medium">Fecha: ${fechaVal}</span>
