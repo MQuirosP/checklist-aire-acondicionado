@@ -389,7 +389,7 @@ function base64UrlToArrayBuffer(base64url) {
 }
 
 function setupBiometrics() {
-  const btnBio = document.getElementById('btn-login-biometric');
+  const btnBio = document.getElementById('btn-biometrics-login') || document.getElementById('btn-login-biometric');
   const userSelect = document.getElementById('login-user-select');
 
   if (btnBio) {
