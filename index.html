@@ -20,7 +20,7 @@
   <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
     <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
       <div class="flex items-center space-x-3">
-        <button type="button" id="btn-nav-home" class="bg-blue-600 hover:bg-blue-500 p-2 rounded-lg transition flex items-center gap-1.5 shadow-sm text-xs font-bold" title="Menú Principal">
+        <button type="button" id="btn-nav-home" class="bg-blue-600 hover:bg-blue-500 p-2 rounded-lg transition flex items-center gap-1.5 shadow-sm text-xs font-bold hidden" title="Menú Principal">
           <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 00-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
           </svg>
@@ -35,13 +35,13 @@
 
       <!-- User Profile & Global Nav -->
       <div class="flex items-center space-x-2 text-xs">
-        <div id="user-profile-badge" class="hidden sm:flex items-center gap-2 px-2.5 py-1 bg-slate-800 border border-slate-700 rounded-lg">
+        <div id="user-profile-badge" class="hidden sm:flex items-center gap-2 px-2.5 py-1 bg-slate-800 border border-slate-700 rounded-lg hidden">
           <span id="user-display-name" class="font-bold text-slate-200">--</span>
           <span id="user-display-role" class="px-1.5 py-0.5 text-[9.5px] font-bold rounded bg-blue-600 text-white">Técnico</span>
         </div>
 
         <!-- Desktop Header Actions -->
-        <div class="hidden md:flex items-center space-x-1.5">
+        <div id="desktop-header-actions" class="items-center space-x-1.5 hidden">
           <button type="button" id="btn-view-clients" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition flex items-center gap-1">👥 Clientes</button>
           <button type="button" id="btn-view-technicians" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition flex items-center gap-1">👨‍🔧 Técnicos</button>
           <button type="button" id="btn-view-equipments" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition flex items-center gap-1">⚙️ Equipos</button>
@@ -1275,6 +1275,6 @@
 
   <!-- Iframe oculto para procesamiento de envíos sin bloqueos de CORS -->
   <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-  <script src="app.js?v=53.0"></script>
+  <script src="app.js?v=54.0"></script>
 </body>
 </html>

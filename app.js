@@ -38,19 +38,28 @@ function switchView(viewId) {
 }
 
 function updateNavigationUI() {
+  const btnHome = document.getElementById('btn-nav-home');
   const badge = document.getElementById('user-profile-badge');
   const nameEl = document.getElementById('user-display-name');
   const roleEl = document.getElementById('user-display-role');
   const btnLogout = document.getElementById('btn-nav-logout');
+  const desktopActions = document.getElementById('desktop-header-actions');
+  const mobileMenuBtn = document.getElementById('btn-mobile-menu');
   const btnViewUsers = document.getElementById('btn-view-users');
   const btnMobileUsers = document.getElementById('btn-mobile-users');
   const cardUsers = document.getElementById('card-manage-users');
 
   if (currentUser) {
+    if (btnHome) btnHome.classList.remove('hidden');
     if (badge) badge.classList.remove('hidden');
     if (nameEl) nameEl.textContent = currentUser.nombre;
     if (roleEl) roleEl.textContent = currentUser.rol || 'Técnico';
     if (btnLogout) btnLogout.classList.remove('hidden');
+    if (desktopActions) {
+      desktopActions.classList.remove('hidden');
+      desktopActions.classList.add('md:flex');
+    }
+    if (mobileMenuBtn) mobileMenuBtn.classList.remove('hidden');
 
     const welcomeName = document.getElementById('dashboard-welcome-name');
     const welcomeRolePill = document.getElementById('dashboard-user-role-pill');
@@ -67,8 +76,14 @@ function updateNavigationUI() {
       if (cardUsers) cardUsers.classList.add('hidden');
     }
   } else {
+    if (btnHome) btnHome.classList.add('hidden');
     if (badge) badge.classList.add('hidden');
     if (btnLogout) btnLogout.classList.add('hidden');
+    if (desktopActions) {
+      desktopActions.classList.add('hidden');
+      desktopActions.classList.remove('md:flex');
+    }
+    if (mobileMenuBtn) mobileMenuBtn.classList.add('hidden');
     if (btnViewUsers) btnViewUsers.classList.add('hidden');
     if (btnMobileUsers) btnMobileUsers.classList.add('hidden');
     if (cardUsers) cardUsers.classList.add('hidden');
@@ -128,6 +143,11 @@ async function initAuthSystem() {
       }
     } catch (e) {}
   }
+
+  // Si no hay sesión válida activa, forzar pantalla de login y ocultar nav UI
+  currentUser = null;
+  updateNavigationUI();
+  switchView('view-login');
 
   const users = await fetchUsersData();
   const formSetup = document.getElementById('form-initial-setup');
