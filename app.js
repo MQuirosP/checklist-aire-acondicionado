@@ -190,6 +190,11 @@ async function initAuthSystem() {
   setupBiometrics();
 }
 
+let isPinKeypadInitialized = false;
+let isInitialFormInitialized = false;
+let isBiometricsInitialized = false;
+let isValidatingPin = false;
+
 function populateUserSelect(users) {
   const select = document.getElementById('login-user-select');
   if (!select) return;
@@ -215,6 +220,18 @@ function populateUserSelect(users) {
   if (select.options.length > 1) {
     select.selectedIndex = 1;
   }
+
+  // Escuchar cambio de usuario para resetear el PIN ingresado inmediatamente
+  if (!select.dataset.hasChangeListener) {
+    select.dataset.hasChangeListener = 'true';
+    select.addEventListener('change', () => {
+      enteredPin = '';
+      updatePinDisplay();
+    });
+  }
+
+  enteredPin = '';
+  updatePinDisplay();
 }
 
 function updatePinDisplay() {
@@ -230,8 +247,12 @@ function updatePinDisplay() {
 }
 
 function setupPinKeypad() {
+  if (isPinKeypadInitialized) return;
+  isPinKeypadInitialized = true;
+
   document.querySelectorAll('.btn-pin').forEach(btn => {
     btn.addEventListener('click', () => {
+      if (isValidatingPin) return;
       const num = btn.getAttribute('data-num');
       if (enteredPin.length < 4) {
         enteredPin += num;
@@ -246,6 +267,7 @@ function setupPinKeypad() {
   const btnClear = document.getElementById('btn-pin-clear');
   if (btnClear) {
     btnClear.addEventListener('click', () => {
+      if (isValidatingPin) return;
       enteredPin = '';
       updatePinDisplay();
     });
@@ -254,6 +276,7 @@ function setupPinKeypad() {
   const btnBack = document.getElementById('btn-pin-backspace');
   if (btnBack) {
     btnBack.addEventListener('click', () => {
+      if (isValidatingPin) return;
       if (enteredPin.length > 0) {
         enteredPin = enteredPin.slice(0, -1);
         updatePinDisplay();
@@ -263,11 +286,15 @@ function setupPinKeypad() {
 }
 
 function validateEnteredPin() {
+  if (isValidatingPin) return;
+  isValidatingPin = true;
+
   const select = document.getElementById('login-user-select');
   if (!select || !select.value) {
     alert('Por favor selecciona tu usuario en el desplegable.');
     enteredPin = '';
     updatePinDisplay();
+    isValidatingPin = false;
     return;
   }
 
@@ -280,6 +307,9 @@ function validateEnteredPin() {
       nombre: opt.dataset.name,
       rol: opt.dataset.role
     };
+    enteredPin = '';
+    updatePinDisplay();
+    isValidatingPin = false;
     loginUser(user);
   } else {
     const display = document.getElementById('pin-display');
@@ -290,11 +320,15 @@ function validateEnteredPin() {
     setTimeout(() => {
       enteredPin = '';
       updatePinDisplay();
+      isValidatingPin = false;
     }, 1000);
   }
 }
 
 function setupInitialForm() {
+  if (isInitialFormInitialized) return;
+  isInitialFormInitialized = true;
+
   const form = document.getElementById('form-initial-setup');
   const btnShowRegister = document.getElementById('btn-show-register');
   const btnCancelRegister = document.getElementById('btn-cancel-register');
@@ -389,6 +423,9 @@ function base64UrlToArrayBuffer(base64url) {
 }
 
 function setupBiometrics() {
+  if (isBiometricsInitialized) return;
+  isBiometricsInitialized = true;
+
   const btnBio = document.getElementById('btn-biometrics-login') || document.getElementById('btn-login-biometric');
   const userSelect = document.getElementById('login-user-select');
 
