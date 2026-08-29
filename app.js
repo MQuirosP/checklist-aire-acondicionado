@@ -167,12 +167,19 @@ async function initAuthSystem() {
   const loginTitle = document.getElementById('login-title');
   const loginSubtitle = document.getElementById('login-subtitle');
 
+  const roleInput = document.getElementById('setup-role');
+  const roleDisplay = document.getElementById('setup-role-display');
+
   if (!users || users.length === 0) {
+    if (roleInput) roleInput.value = 'Administrador';
+    if (roleDisplay) roleDisplay.value = 'Administrador Inicial';
     if (formSetup) formSetup.classList.remove('hidden');
     if (pinContainer) pinContainer.classList.add('hidden');
     if (loginTitle) loginTitle.textContent = 'Configuración Inicial';
     if (loginSubtitle) loginSubtitle.textContent = 'Crea la cuenta de Administrador para comenzar';
   } else {
+    if (roleInput) roleInput.value = 'Técnico';
+    if (roleDisplay) roleDisplay.value = 'Técnico (Estándar)';
     if (formSetup) formSetup.classList.add('hidden');
     if (pinContainer) pinContainer.classList.remove('hidden');
     if (loginTitle) loginTitle.textContent = 'Acceso al Sistema';
