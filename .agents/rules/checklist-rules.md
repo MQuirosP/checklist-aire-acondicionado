@@ -41,3 +41,10 @@
   No agregues funciones de respaldo ("fallback"), limpiadores, reordenamiento de columnas, lógica secundaria ni cambies comportamientos existentes sin solicitud previa y autorización explícita.
 - **PROTEGER CÓDIGO FUNCIONAL ("CÓDIGO CONGELADO")**:
   Cualquier componente, script o función que ya esté funcionando correctamente se considera **CONGELADO** y no se debe tocar ni reescribir.
+
+---
+
+## 5. Control Estricto de Despliegues y Commits
+
+- **PROHIBIDO REALIZAR DESPLIEGUES O `git push` SIN SOLICITUD EXPLÍCITA**:
+  Queda estrictamente prohibido ejecutar `git push`, publicar en GitHub Pages o realizar cualquier tipo de despliegue a menos que el usuario lo pida explícitamente en la conversación. Todos los cambios deben realizarse únicamente en local hasta recibir la orden de despliegue.

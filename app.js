@@ -431,8 +431,7 @@ function setupBiometrics() {
             const rawIdBuffer = base64UrlToArrayBuffer(storedCredIdBase64);
             getPublicKeyOptions.allowCredentials = [{
               type: 'public-key',
-              id: rawIdBuffer,
-              transports: ['internal']
+              id: rawIdBuffer
             }];
           } catch (e) {
             console.warn('Error convirtiendo credencial local:', e);
@@ -2753,8 +2752,6 @@ function initMobileMenu() {
   if (mobileBiometric) {
     mobileBiometric.addEventListener('click', () => {
       if (mobileMenu) mobileMenu.classList.add('hidden');
-      const btnRegBio = document.getElementById('btn-register-biometric');
-      if (btnRegBio) btnRegBio.click();
     });
   }
 
