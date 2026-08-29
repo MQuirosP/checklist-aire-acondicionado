@@ -49,6 +49,19 @@ function matchTechnicianName(strA, strB) {
   return matches.length >= 1;
 }
 
+function setSelectVal(id, val) {
+  const el = document.getElementById(id);
+  if (!el || !val) return;
+  let opt = Array.from(el.options).find(o => o.value === val);
+  if (!opt) {
+    opt = document.createElement('option');
+    opt.value = val;
+    opt.textContent = val;
+    el.insertBefore(opt, el.lastElementChild);
+  }
+  el.value = val;
+}
+
 function switchView(viewId) {
   const views = ['view-login', 'view-dashboard', 'view-form'];
   views.forEach(id => {
@@ -61,6 +74,11 @@ function switchView(viewId) {
       }
     }
   });
+  if (viewId === 'view-form') {
+    if (typeof updateClientsUI === 'function') updateClientsUI();
+    if (typeof updateTechniciansUI === 'function') updateTechniciansUI();
+    if (typeof updateEquipmentTypesUI === 'function') updateEquipmentTypesUI();
+  }
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -117,6 +135,11 @@ function loginUser(user) {
   } catch (e) {}
 
   updateNavigationUI();
+  if (typeof updateClientsUI === 'function') updateClientsUI();
+  if (typeof updateTechniciansUI === 'function') updateTechniciansUI();
+  if (typeof updateEquipmentTypesUI === 'function') updateEquipmentTypesUI();
+
+  if (typeof fetchHistoryData === 'function') fetchHistoryData();
   switchView('view-dashboard');
 }
 
@@ -127,6 +150,10 @@ function logoutUser() {
   try {
     localStorage.removeItem('session_user');
   } catch (e) {}
+
+  if (typeof updateClientsUI === 'function') updateClientsUI();
+  if (typeof updateTechniciansUI === 'function') updateTechniciansUI();
+  if (typeof updateEquipmentTypesUI === 'function') updateEquipmentTypesUI();
 
   const formSetup = document.getElementById('form-initial-setup');
   if (formSetup) {
@@ -2435,18 +2462,44 @@ window.resetTechnicianEditForm = function() {
   if (cancelBtn) cancelBtn.classList.add('hidden');
 };
 
+function isClientVisibleForUser(c, user) {
+  if (!user || isUserAdmin(user)) return true;
+
+  const creador = (c.Creador || c['Creador'] || c.creador || '').toString().trim();
+  const uName = user.nombre;
+
+  // 1. Si tiene creador explícito registrado
+  if (creador) {
+    if (matchTechnicianName(creador, 'Sistema') || matchTechnicianName(creador, 'Base') || matchTechnicianName(creador, 'Empresa')) {
+      return true;
+    }
+    return matchTechnicianName(creador, uName);
+  }
+
+  // 2. Si no tiene creador explícito (registro antiguo o sin columna G):
+  // ÚNICAMENTE mostrar si el técnico activo tiene historial registrado con este cliente
+  const cliNombre = (c['Nombre / Empresa'] || c.nombre || '').toString().toLowerCase().trim();
+  if (!cliNombre) return false;
+
+  if (Array.isArray(historyDataCache) && historyDataCache.length > 0) {
+    const hasUserHistory = historyDataCache.some(item => {
+      const itemCli = (item['Cliente / Ubicación'] || '').toString().toLowerCase().trim();
+      const itemTec = (item['Técnico Responsable'] || item['Nombre Técnico'] || '').toString();
+      return itemCli.includes(cliNombre) && matchTechnicianName(itemTec, uName);
+    });
+    return hasUserHistory;
+  }
+
+  // Si no tiene creador del técnico actual y no hay historial verificado de él, ocultar por aislamiento de tenant
+  return false;
+}
+
 function updateClientsUI() {
   const select = document.getElementById('cliente');
   const tbody = document.getElementById('clients-table-body');
   const showInactive = document.getElementById('show-inactive-clients')?.checked;
 
-  const uName = currentUser ? (currentUser.nombre || '').toLowerCase().trim() : '';
-
-  const visibleClients = clientsCache.filter(c => {
-    if (!currentUser || currentUser.rol === 'Administrador') return true;
-    const creador = (c.Creador || c['Creador'] || c.creador || 'Sistema').toString().toLowerCase().trim();
-    return !creador || creador === 'sistema' || creador === 'base' || creador === uName;
-  });
+  const visibleClients = clientsCache.filter(c => isClientVisibleForUser(c, currentUser));
 
   if (select) {
     const currentVal = select.value;
@@ -2583,14 +2636,21 @@ function updateTechniciansUI() {
   const mergedTechs = Array.from(allTechsMap.values());
 
   if (select) {
-    const currentVal = select.value;
-    const activeTechs = mergedTechs.filter(t => (t.Estado || t['Estado'] || 'Activo') !== 'Inactivo');
-    select.innerHTML = `<option value="" disabled ${!currentVal ? 'selected' : ''}>Seleccionar...</option>` +
-      activeTechs.map(t => {
-        const nombre = t['Nombre del Técnico'] || t.nombre || '';
-        return `<option value="${nombre}" ${currentVal === nombre ? 'selected' : ''}>${nombre}</option>`;
-      }).join('') +
-      `<option value="__NEW_TECH__" style="font-weight: bold; color: #2563eb;">➕ Registrar Nuevo Técnico...</option>`;
+    if (currentUser && isUserTech(currentUser)) {
+      // Si el usuario activo es Técnico, mostrar ÚNICAMENTE su propio nombre
+      select.innerHTML = `<option value="${currentUser.nombre}" selected>${currentUser.nombre}</option>`;
+      select.value = currentUser.nombre;
+    } else {
+      // Si es Administrador, mostrar todos los técnicos activos y la opción de registrar nuevo
+      const activeTechs = mergedTechs.filter(t => (t.Estado || t['Estado'] || 'Activo') !== 'Inactivo');
+      const currentVal = select.value;
+      select.innerHTML = `<option value="" disabled ${!currentVal ? 'selected' : ''}>Seleccionar...</option>` +
+        activeTechs.map(t => {
+          const nombre = t['Nombre del Técnico'] || t.nombre || '';
+          return `<option value="${nombre}" ${currentVal === nombre ? 'selected' : ''}>${nombre}</option>`;
+        }).join('') +
+        `<option value="__NEW_TECH__" style="font-weight: bold; color: #2563eb;">➕ Registrar Nuevo Técnico...</option>`;
+    }
   }
 
   if (tbody) {
