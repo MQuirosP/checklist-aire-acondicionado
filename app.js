@@ -381,18 +381,20 @@ function setupBiometrics() {
         return;
       }
 
-      // Ejecutar verificación biométrica real con WebAuthn API
+      // Ejecutar verificación biométrica real con WebAuthn API nativa del sistema/dispositivo
       try {
         const challenge = new Uint8Array(32);
         window.crypto.getRandomValues(challenge);
 
-        const credential = await navigator.credentials.get({
+        const getOptions = {
           publicKey: {
             challenge: challenge,
             timeout: 60000,
             userVerification: 'required'
           }
-        });
+        };
+
+        const credential = await navigator.credentials.get(getOptions);
 
         if (credential) {
           const user = { id: userId, nombre: opt.dataset.name, rol: opt.dataset.role };
@@ -424,7 +426,7 @@ function setupBiometrics() {
       const credential = await navigator.credentials.create({
         publicKey: {
           challenge: challenge,
-          rp: { name: "Checklist A/C" },
+          rp: { name: "Tecnicheck Pro" },
           user: {
             id: userIdBytes,
             name: currentUser.nombre,
@@ -433,7 +435,11 @@ function setupBiometrics() {
           pubKeyCredParams: [{ alg: -7, type: "public-key" }, { alg: -257, type: "public-key" }],
           timeout: 60000,
           attestation: "none",
-          authenticatorSelection: { userVerification: "preferred" }
+          authenticatorSelection: {
+            authenticatorAttachment: "platform",
+            userVerification: "preferred",
+            requireResidentKey: false
+          }
         }
       });
 
@@ -614,12 +620,35 @@ function renderUsersTable() {
     const tr = document.createElement('tr');
     tr.className = 'hover:bg-slate-50 transition border-b border-slate-100';
     tr.innerHTML = `
-      <td class="py-2 px-3 font-semibold text-slate-800">${uName}</td>
-      <td class="py-2 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${u.Rol === 'Administrador' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}">${u.Rol || 'Técnico'}</span></td>
-      <td class="py-2 px-3 font-mono">•••• (${u.PIN || '1234'})</td>
-      <td class="py-2 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${u.Estado === 'Inactivo' ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}">${u.Estado || 'Activo'}</span></td>
-      <td class="py-2 px-3 text-center space-x-1">
+      <!-- Desktop Cells -->
+      <td class="hidden sm:table-cell py-2 px-3 font-semibold text-slate-800">${uName}</td>
+      <td class="hidden sm:table-cell py-2 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${u.Rol === 'Administrador' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}">${u.Rol || 'Técnico'}</span></td>
+      <td class="hidden sm:table-cell py-2 px-3 font-mono">•••• (${u.PIN || '1234'})</td>
+      <td class="hidden sm:table-cell py-2 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${u.Estado === 'Inactivo' ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}">${u.Estado || 'Activo'}</span></td>
+      <td class="hidden sm:table-cell py-2 px-3 text-center space-x-1">
         <button type="button" class="btn-toggle-user px-2 py-1 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded font-medium text-[10px]" data-index="${index}">${u.Estado === 'Inactivo' ? 'Activar' : 'Desactivar'}</button>
+      </td>
+
+      <!-- Mobile Card Row -->
+      <td colspan="5" class="sm:hidden p-3">
+        <details class="group">
+          <summary class="flex items-center justify-between font-bold text-slate-800 cursor-pointer list-none select-none">
+            <div class="flex items-center gap-1.5 text-xs">
+              <span>👤 ${uName}</span>
+              <span class="px-1.5 py-0.5 rounded text-[9.5px] font-bold ${u.Rol === 'Administrador' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}">${u.Rol || 'Técnico'}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold ${u.Estado === 'Inactivo' ? 'text-rose-600' : 'text-emerald-600'}">${u.Estado || 'Activo'}</span>
+              <span class="text-slate-400 group-open:rotate-180 transition-transform text-xs">▼</span>
+            </div>
+          </summary>
+          <div class="mt-2.5 pt-2 border-t border-slate-100 text-xs space-y-2 text-slate-600">
+            <p><strong>PIN Actual:</strong> <span class="font-mono bg-slate-100 px-2 py-0.5 rounded">${u.PIN || '1234'}</span></p>
+            <div class="pt-1 flex items-center justify-end">
+              <button type="button" class="btn-toggle-user px-3 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded font-semibold text-xs transition" data-index="${index}">${u.Estado === 'Inactivo' ? '🔄 Activar Usuario' : '🚫 Desactivar Usuario'}</button>
+            </div>
+          </div>
+        </details>
       </td>
     `;
     tbody.appendChild(tr);
@@ -1460,17 +1489,44 @@ function renderHistoryTable(query) {
     const fechaFormatted = formatLocalDate(item['Fecha Inspección'] || item['Fecha / Hora Registro']);
 
     tr.innerHTML = `
-      <td class="py-2.5 px-3 font-medium text-slate-700 whitespace-nowrap">${fechaFormatted}</td>
-      <td class="py-2.5 px-3 font-bold text-blue-600 whitespace-nowrap">${item['N° Orden / OT'] || '--'}</td>
-      <td class="py-2.5 px-3 text-slate-800">${item['Cliente / Ubicación'] || '--'}</td>
-      <td class="py-2.5 px-3 text-slate-600">${item['Técnico Responsable'] || '--'}</td>
-      <td class="py-2.5 px-3 text-slate-600">${item['Tipo de Unidad'] || ''} ${item['Marca / Modelo'] || ''}</td>
-      <td class="py-2.5 px-3 text-slate-600">${item['Refrigerante'] || '--'}</td>
-      <td class="py-2.5 px-3 font-semibold text-emerald-600 whitespace-nowrap">${item['Med: Delta T (°C)'] ? item['Med: Delta T (°C)'] + ' °C' : '--'}</td>
-      <td class="py-2.5 px-3 text-center whitespace-nowrap">
+      <!-- Desktop Cells -->
+      <td class="hidden sm:table-cell py-2.5 px-3 font-medium text-slate-700 whitespace-nowrap">${fechaFormatted}</td>
+      <td class="hidden sm:table-cell py-2.5 px-3 font-bold text-blue-600 whitespace-nowrap">${item['N° Orden / OT'] || '--'}</td>
+      <td class="hidden sm:table-cell py-2.5 px-3 text-slate-800">${item['Cliente / Ubicación'] || '--'}</td>
+      <td class="hidden sm:table-cell py-2.5 px-3 text-slate-600">${item['Técnico Responsable'] || '--'}</td>
+      <td class="hidden sm:table-cell py-2.5 px-3 text-slate-600">${item['Tipo de Unidad'] || ''} ${item['Marca / Modelo'] || ''}</td>
+      <td class="hidden sm:table-cell py-2.5 px-3 text-slate-600">${item['Refrigerante'] || '--'}</td>
+      <td class="hidden sm:table-cell py-2.5 px-3 font-semibold text-emerald-600 whitespace-nowrap">${item['Med: Delta T (°C)'] ? item['Med: Delta T (°C)'] + ' °C' : '--'}</td>
+      <td class="hidden sm:table-cell py-2.5 px-3 text-center whitespace-nowrap">
         <button type="button" class="btn-view-detail-row px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded font-medium text-[11px] transition inline-flex items-center gap-1 shadow-sm" data-index="${index}">
           👁️ Ver / Editar
         </button>
+      </td>
+
+      <!-- Mobile Card View -->
+      <td colspan="8" class="sm:hidden p-3">
+        <details class="group">
+          <summary class="flex items-center justify-between font-bold text-slate-800 cursor-pointer list-none select-none">
+            <div>
+              <span class="text-blue-600 font-bold text-xs">${item['N° Orden / OT'] || '--'}</span>
+              <span class="text-slate-500 font-normal text-[11px] block">${item['Cliente / Ubicación'] || '--'}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] text-slate-500 font-medium">${fechaFormatted}</span>
+              <span class="text-slate-400 group-open:rotate-180 transition-transform text-xs">▼</span>
+            </div>
+          </summary>
+          <div class="mt-2.5 pt-2 border-t border-slate-100 text-xs space-y-1.5 text-slate-600">
+            <p><strong>Técnico:</strong> ${item['Técnico Responsable'] || '--'}</p>
+            <p><strong>Equipo:</strong> ${item['Tipo de Unidad'] || ''} ${item['Marca / Modelo'] || ''}</p>
+            <p><strong>Refrigerante:</strong> ${item['Refrigerante'] || '--'} | <strong>Delta T:</strong> ${item['Med: Delta T (°C)'] ? item['Med: Delta T (°C)'] + ' °C' : '--'}</p>
+            <div class="pt-2 flex justify-end">
+              <button type="button" class="btn-view-detail-row w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-xs transition flex items-center justify-center gap-1.5 shadow-sm" data-index="${index}">
+                👁️ Ver / Editar Orden
+              </button>
+            </div>
+          </div>
+        </details>
       </td>
     `;
     tbody.appendChild(tr);
@@ -2169,20 +2225,41 @@ function updateClientsUI() {
       const isInactive = estado === 'Inactivo';
 
       return `
-        <tr class="hover:bg-slate-50 border-b border-slate-100 ${isInactive ? 'bg-slate-50 opacity-60' : ''}">
+        <!-- Desktop Row -->
+        <tr class="hidden sm:table-row hover:bg-slate-50 border-b border-slate-100 ${isInactive ? 'bg-slate-50 opacity-60' : ''}">
           <td class="py-2 px-3 font-semibold text-slate-800">${nombre}</td>
           <td class="py-2 px-3 text-slate-600">${ubicacion}</td>
           <td class="py-2 px-3 text-slate-600">${telefono}</td>
           <td class="py-2 px-3 font-semibold ${isInactive ? 'text-rose-600' : 'text-emerald-600'}">${estado}</td>
           <td class="py-2 px-3 text-center">
             <div class="flex items-center justify-center gap-1">
-              <button type="button" onclick="startEditClient('${id.replace(/'/g, "\\'")}', '${nombre.replace(/'/g, "\\'")}', '${ubicacion.replace(/'/g, "\\'")}', '${telefono.replace(/'/g, "\\'")}', '${correo.replace(/'/g, "\\'")}')" class="px-2 py-1 text-[11px] font-semibold rounded bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition">
-                ✏️ Editar
-              </button>
-              <button type="button" onclick="toggleClientSoftDelete('${id.replace(/'/g, "\\'")}', '${nombre.replace(/'/g, "\\'")}', '${estado}')" class="px-2 py-1 text-[11px] font-semibold rounded ${isInactive ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'} transition">
-                ${isInactive ? '🔄 Reactivar' : '🗑️ Desactivar'}
-              </button>
+              <button type="button" onclick="startEditClient('${id.replace(/'/g, "\\'")}', '${nombre.replace(/'/g, "\\'")}', '${ubicacion.replace(/'/g, "\\'")}', '${telefono.replace(/'/g, "\\'")}', '${correo.replace(/'/g, "\\'")}')" class="px-2 py-1 text-[11px] font-semibold rounded bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition">✏️ Editar</button>
+              <button type="button" onclick="toggleClientSoftDelete('${id.replace(/'/g, "\\'")}', '${nombre.replace(/'/g, "\\'")}', '${estado}')" class="px-2 py-1 text-[11px] font-semibold rounded ${isInactive ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'} transition">${isInactive ? '🔄 Reactivar' : '🗑️ Desactivar'}</button>
             </div>
+          </td>
+        </tr>
+
+        <!-- Mobile Card Row -->
+        <tr class="sm:hidden border-b border-slate-200 ${isInactive ? 'bg-slate-50 opacity-60' : ''}">
+          <td colspan="5" class="p-3">
+            <details class="group">
+              <summary class="flex items-center justify-between font-bold text-slate-800 cursor-pointer list-none select-none">
+                <span class="text-xs">👥 ${nombre}</span>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-semibold ${isInactive ? 'text-rose-600' : 'text-emerald-600'}">${estado}</span>
+                  <span class="text-slate-400 group-open:rotate-180 transition-transform text-xs">▼</span>
+                </div>
+              </summary>
+              <div class="mt-2.5 pt-2 border-t border-slate-100 text-xs space-y-1.5 text-slate-600">
+                <p><strong>Ubicación:</strong> ${ubicacion}</p>
+                <p><strong>Teléfono:</strong> ${telefono}</p>
+                ${correo && correo !== '--' ? `<p><strong>Correo:</strong> ${correo}</p>` : ''}
+                <div class="pt-2 flex items-center justify-end gap-2">
+                  <button type="button" onclick="startEditClient('${id.replace(/'/g, "\\'")}', '${nombre.replace(/'/g, "\\'")}', '${ubicacion.replace(/'/g, "\\'")}', '${telefono.replace(/'/g, "\\'")}', '${correo.replace(/'/g, "\\'")}')" class="px-3 py-1.5 text-xs font-semibold rounded bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition">✏️ Editar</button>
+                  <button type="button" onclick="toggleClientSoftDelete('${id.replace(/'/g, "\\'")}', '${nombre.replace(/'/g, "\\'")}', '${estado}')" class="px-3 py-1.5 text-xs font-semibold rounded ${isInactive ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'} transition">${isInactive ? '🔄 Reactivar' : '🗑️ Desactivar'}</button>
+                </div>
+              </div>
+            </details>
           </td>
         </tr>
       `;
@@ -2245,20 +2322,40 @@ function updateTechniciansUI() {
       const isInactive = estado === 'Inactivo';
 
       return `
-        <tr class="hover:bg-slate-50 border-b border-slate-100 ${isInactive ? 'bg-slate-50 opacity-60' : ''}">
+        <!-- Desktop Row -->
+        <tr class="hidden sm:table-row hover:bg-slate-50 border-b border-slate-100 ${isInactive ? 'bg-slate-50 opacity-60' : ''}">
           <td class="py-2 px-3 font-semibold text-slate-800">${nombre}</td>
           <td class="py-2 px-3 text-slate-600">${cedula}</td>
           <td class="py-2 px-3 text-slate-600">${telefono}</td>
           <td class="py-2 px-3 font-semibold ${isInactive ? 'text-rose-600' : 'text-emerald-600'}">${estado}</td>
           <td class="py-2 px-3 text-center">
             <div class="flex items-center justify-center gap-1">
-              <button type="button" onclick="startEditTechnician('${id.replace(/'/g, "\\'")}', '${nombre.replace(/'/g, "\\'")}', '${cedula.replace(/'/g, "\\'")}', '${telefono.replace(/'/g, "\\'")}')" class="px-2 py-1 text-[11px] font-semibold rounded bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition">
-                ✏️ Editar
-              </button>
-              <button type="button" onclick="toggleTechnicianSoftDelete('${id.replace(/'/g, "\\'")}', '${nombre.replace(/'/g, "\\'")}', '${estado}')" class="px-2 py-1 text-[11px] font-semibold rounded ${isInactive ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'} transition">
-                ${isInactive ? '🔄 Reactivar' : '🗑️ Desactivar'}
-              </button>
+              <button type="button" onclick="startEditTechnician('${id.replace(/'/g, "\\'")}', '${nombre.replace(/'/g, "\\'")}', '${cedula.replace(/'/g, "\\'")}', '${telefono.replace(/'/g, "\\'")}')" class="px-2 py-1 text-[11px] font-semibold rounded bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition">✏️ Editar</button>
+              <button type="button" onclick="toggleTechnicianSoftDelete('${id.replace(/'/g, "\\'")}', '${nombre.replace(/'/g, "\\'")}', '${estado}')" class="px-2 py-1 text-[11px] font-semibold rounded ${isInactive ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'} transition">${isInactive ? '🔄 Reactivar' : '🗑️ Desactivar'}</button>
             </div>
+          </td>
+        </tr>
+
+        <!-- Mobile Card Row -->
+        <tr class="sm:hidden border-b border-slate-200 ${isInactive ? 'bg-slate-50 opacity-60' : ''}">
+          <td colspan="5" class="p-3">
+            <details class="group">
+              <summary class="flex items-center justify-between font-bold text-slate-800 cursor-pointer list-none select-none">
+                <span class="text-xs">👨‍🔧 ${nombre}</span>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-semibold ${isInactive ? 'text-rose-600' : 'text-emerald-600'}">${estado}</span>
+                  <span class="text-slate-400 group-open:rotate-180 transition-transform text-xs">▼</span>
+                </div>
+              </summary>
+              <div class="mt-2.5 pt-2 border-t border-slate-100 text-xs space-y-1.5 text-slate-600">
+                <p><strong>Cédula / ID:</strong> ${cedula}</p>
+                <p><strong>Teléfono:</strong> ${telefono}</p>
+                <div class="pt-2 flex items-center justify-end gap-2">
+                  <button type="button" onclick="startEditTechnician('${id.replace(/'/g, "\\'")}', '${nombre.replace(/'/g, "\\'")}', '${cedula.replace(/'/g, "\\'")}', '${telefono.replace(/'/g, "\\'")}')" class="px-3 py-1.5 text-xs font-semibold rounded bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition">✏️ Editar</button>
+                  <button type="button" onclick="toggleTechnicianSoftDelete('${id.replace(/'/g, "\\'")}', '${nombre.replace(/'/g, "\\'")}', '${estado}')" class="px-3 py-1.5 text-xs font-semibold rounded ${isInactive ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-rose-100 text-rose-700 hover:bg-rose-200'} transition">${isInactive ? '🔄 Reactivar' : '🗑️ Desactivar'}</button>
+                </div>
+              </div>
+            </details>
           </td>
         </tr>
       `;
@@ -2482,7 +2579,8 @@ function updateEquipmentTypesUI() {
       }
 
       return `
-        <tr class="hover:bg-slate-50 border-b border-slate-100 ${isInactive ? 'bg-slate-50 opacity-60' : ''}">
+        <!-- Desktop Row -->
+        <tr class="hidden sm:table-row hover:bg-slate-50 border-b border-slate-100 ${isInactive ? 'bg-slate-50 opacity-60' : ''}">
           <td class="py-2 px-3 font-semibold text-slate-800 flex items-center gap-1.5">${nombre} ${isBase ? '<span class="text-[9.5px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold">Base</span>' : '<span class="text-[9.5px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold">Personalizado</span>'}</td>
           <td class="py-2 px-3 text-slate-600">${desc}</td>
           <td class="py-2 px-3 font-semibold ${isInactive ? 'text-rose-600' : 'text-emerald-600'}">${estado}</td>
@@ -2490,6 +2588,30 @@ function updateEquipmentTypesUI() {
             <div class="flex items-center justify-center gap-1">
               ${actionButtons}
             </div>
+          </td>
+        </tr>
+
+        <!-- Mobile Card Row -->
+        <tr class="sm:hidden border-b border-slate-200 ${isInactive ? 'bg-slate-50 opacity-60' : ''}">
+          <td colspan="4" class="p-3">
+            <details class="group">
+              <summary class="flex items-center justify-between font-bold text-slate-800 cursor-pointer list-none select-none">
+                <div class="flex items-center gap-1.5 text-xs">
+                  <span>⚙️ ${nombre}</span>
+                  ${isBase ? '<span class="text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold">Base</span>' : '<span class="text-[9px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold">Personalizado</span>'}
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-semibold ${isInactive ? 'text-rose-600' : 'text-emerald-600'}">${estado}</span>
+                  <span class="text-slate-400 group-open:rotate-180 transition-transform text-xs">▼</span>
+                </div>
+              </summary>
+              <div class="mt-2.5 pt-2 border-t border-slate-100 text-xs space-y-2 text-slate-600">
+                <p><strong>Descripción:</strong> ${desc}</p>
+                <div class="pt-1 flex items-center justify-end gap-2">
+                  ${actionButtons}
+                </div>
+              </div>
+            </details>
           </td>
         </tr>
       `;
