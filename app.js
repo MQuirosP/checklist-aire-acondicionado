@@ -23,9 +23,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function isUserAdmin(user) {
-  if (!user || !user.rol) return false;
-  const r = String(user.rol).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-  return r.includes('admin');
+  if (!user) return false;
+  const role = (user.rol || user.Rol || user.role || user.Role || '').toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  return role.includes('admin');
 }
 
 function isUserTech(user) {
@@ -86,6 +86,11 @@ function updateNavigationUI() {
   const btnHome = document.getElementById('btn-nav-home');
   const desktopActions = document.getElementById('desktop-header-actions');
   const mobileMenuBtn = document.getElementById('btn-mobile-menu');
+
+  const btnViewTechs = document.getElementById('btn-view-technicians');
+  const btnMobileTechs = document.getElementById('btn-mobile-technicians');
+  const cardTechs = document.getElementById('card-manage-techs');
+
   const btnViewUsers = document.getElementById('btn-view-users');
   const btnMobileUsers = document.getElementById('btn-mobile-users');
   const cardUsers = document.getElementById('card-manage-users');
@@ -100,14 +105,26 @@ function updateNavigationUI() {
 
     const welcomeName = document.getElementById('dashboard-welcome-name');
     const welcomeRolePill = document.getElementById('dashboard-user-role-pill');
-    if (welcomeName) welcomeName.textContent = `¡Bienvenido, ${currentUser.nombre}! 👋`;
-    if (welcomeRolePill) welcomeRolePill.textContent = currentUser.rol || 'Técnico';
 
-    if (isUserAdmin(currentUser)) {
+    const uName = currentUser.nombre || currentUser.Nombre || currentUser['Nombre Usuario'] || currentUser.id || 'Usuario';
+    const isAdmin = isUserAdmin(currentUser);
+
+    if (welcomeName) welcomeName.textContent = `¡Bienvenido, ${uName}! 👋`;
+    if (welcomeRolePill) welcomeRolePill.textContent = isAdmin ? 'Administrador' : 'Técnico';
+
+    if (isAdmin) {
+      if (btnViewTechs) btnViewTechs.classList.remove('hidden');
+      if (btnMobileTechs) btnMobileTechs.classList.remove('hidden');
+      if (cardTechs) cardTechs.classList.remove('hidden');
+
       if (btnViewUsers) btnViewUsers.classList.remove('hidden');
       if (btnMobileUsers) btnMobileUsers.classList.remove('hidden');
       if (cardUsers) cardUsers.classList.remove('hidden');
     } else {
+      if (btnViewTechs) btnViewTechs.classList.add('hidden');
+      if (btnMobileTechs) btnMobileTechs.classList.add('hidden');
+      if (cardTechs) cardTechs.classList.add('hidden');
+
       if (btnViewUsers) btnViewUsers.classList.add('hidden');
       if (btnMobileUsers) btnMobileUsers.classList.add('hidden');
       if (cardUsers) cardUsers.classList.add('hidden');
@@ -119,6 +136,11 @@ function updateNavigationUI() {
       desktopActions.classList.remove('md:flex', 'flex');
     }
     if (mobileMenuBtn) mobileMenuBtn.classList.add('hidden');
+
+    if (btnViewTechs) btnViewTechs.classList.add('hidden');
+    if (btnMobileTechs) btnMobileTechs.classList.add('hidden');
+    if (cardTechs) cardTechs.classList.add('hidden');
+
     if (btnViewUsers) btnViewUsers.classList.add('hidden');
     if (btnMobileUsers) btnMobileUsers.classList.add('hidden');
     if (cardUsers) cardUsers.classList.add('hidden');
@@ -413,9 +435,9 @@ function validateEnteredPin() {
   }
 
   const opt = select.options[select.selectedIndex];
-  const expectedPin = opt.dataset.pin || '1234';
+  const expectedPin = String(opt.dataset.pin || '1234').trim();
 
-  if (enteredPin === expectedPin || enteredPin === '1234') {
+  if (enteredPin === expectedPin) {
     const user = {
       id: select.value,
       nombre: opt.dataset.name,
@@ -825,6 +847,8 @@ window.startEditUser = function(id, nombre, pin, rol) {
   if (form) form.scrollIntoView({ behavior: 'smooth' });
 };
 
+let visibleUserPins = new Set();
+
 function renderUsersTable() {
   const tbody = document.getElementById('users-table-body');
   if (!tbody) return;
@@ -834,13 +858,21 @@ function renderUsersTable() {
     const uName = u['Nombre Usuario'] || u['Nombre'] || u['Nombre del Técnico'] || u['Usuario'] || u.nombre || u.ID || 'Usuario';
     const uPin = String(u.PIN || u.pin || '1234');
     const uRol = String(u.Rol || u.rol || 'Técnico');
+    const isPinVisible = visibleUserPins.has(index);
+    const pinDisplayStr = isPinVisible ? uPin : '••••';
+
     const tr = document.createElement('tr');
     tr.className = 'hover:bg-slate-50 transition border-b border-slate-100';
     tr.innerHTML = `
       <!-- Desktop Cells -->
       <td class="hidden sm:table-cell py-2 px-3 font-semibold text-slate-800">${uName}</td>
       <td class="hidden sm:table-cell py-2 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${uRol === 'Administrador' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}">${uRol}</span></td>
-      <td class="hidden sm:table-cell py-2 px-3 font-mono">•••• (${uPin})</td>
+      <td class="hidden sm:table-cell py-2 px-3 font-mono">
+        <span class="inline-flex items-center gap-1.5 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+          <span>${pinDisplayStr}</span>
+          <button type="button" class="btn-toggle-pin text-xs hover:scale-110 transition p-0.5 cursor-pointer" data-index="${index}" title="${isPinVisible ? 'Ocultar PIN' : 'Ver PIN'}">${isPinVisible ? '🙈' : '👁️'}</button>
+        </span>
+      </td>
       <td class="hidden sm:table-cell py-2 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${u.Estado === 'Inactivo' ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}">${u.Estado || 'Activo'}</span></td>
       <td class="hidden sm:table-cell py-2 px-3 text-center space-x-1">
         <button type="button" onclick="startEditUser('${uId.replace(/'/g, "\\'")}', '${uName.replace(/'/g, "\\'")}', '${uPin.replace(/'/g, "\\'")}', '${uRol.replace(/'/g, "\\'")}')" class="px-2 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded font-semibold text-[10px] transition">✏️ Editar</button>
@@ -861,7 +893,12 @@ function renderUsersTable() {
             </div>
           </summary>
           <div class="mt-2.5 pt-2 border-t border-slate-100 text-xs space-y-2 text-slate-600">
-            <p><strong>PIN Actual:</strong> <span class="font-mono bg-slate-100 px-2 py-0.5 rounded">${uPin}</span></p>
+            <p><strong>PIN Actual:</strong> 
+              <span class="font-mono bg-slate-100 px-2 py-0.5 rounded border border-slate-200 inline-flex items-center gap-1.5">
+                <span>${pinDisplayStr}</span>
+                <button type="button" class="btn-toggle-pin text-xs hover:scale-110 transition p-0.5 cursor-pointer" data-index="${index}" title="${isPinVisible ? 'Ocultar PIN' : 'Ver PIN'}">${isPinVisible ? '🙈' : '👁️'}</button>
+              </span>
+            </p>
             <div class="pt-1 flex items-center justify-end gap-2">
               <button type="button" onclick="startEditUser('${uId.replace(/'/g, "\\'")}', '${uName.replace(/'/g, "\\'")}', '${uPin.replace(/'/g, "\\'")}', '${uRol.replace(/'/g, "\\'")}')" class="px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded font-semibold text-xs transition">✏️ Editar</button>
               <button type="button" class="btn-toggle-user px-3 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded font-semibold text-xs transition" data-index="${index}">${u.Estado === 'Inactivo' ? '🔄 Activar Usuario' : '🚫 Desactivar Usuario'}</button>
@@ -871,6 +908,19 @@ function renderUsersTable() {
       </td>
     `;
     tbody.appendChild(tr);
+  });
+
+  tbody.querySelectorAll('.btn-toggle-pin').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const idx = parseInt(e.currentTarget.getAttribute('data-index'));
+      if (visibleUserPins.has(idx)) {
+        visibleUserPins.delete(idx);
+      } else {
+        visibleUserPins.add(idx);
+      }
+      renderUsersTable();
+    });
   });
 
   tbody.querySelectorAll('.btn-toggle-user').forEach(btn => {
@@ -1710,7 +1760,8 @@ function renderHistoryTable(query) {
 
     // Aislamiento por usuario: si el usuario es Técnico, solo ve sus propias órdenes
     if (currentUser && isUserTech(currentUser)) {
-      if (!matchTechnicianName(tecResp, currentUser.nombre)) {
+      const uTechName = currentUser.nombre || currentUser.Nombre || currentUser['Nombre Usuario'] || currentUser.id || '';
+      if (!matchTechnicianName(tecResp, uTechName)) {
         return false;
       }
     }
