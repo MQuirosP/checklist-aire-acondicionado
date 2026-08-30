@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initClientsAndTechniciansManagement();
   initEquipmentManagement();
   initMobileMenu();
+  initChangeOwnPinModal();
 });
 
 function isUserAdmin(user) {
@@ -393,7 +394,7 @@ function populateUserSelect(users) {
     if (u.Estado !== 'Inactivo') {
       const uName = u['Nombre Usuario'] || u['Nombre'] || u['Nombre del Técnico'] || u['Usuario'] || u.nombre || u.ID || 'Usuario';
       const uRole = u.Rol || u['Rol'] || 'Técnico';
-      const uPin = u.PIN || u['PIN'] || '1234';
+      const uPin = String(u.PIN || u['PIN'] || '1234').trim().padStart(4, '0');
       const uId = u.ID || u['ID'] || uName;
 
       const opt = document.createElement('option');
@@ -548,7 +549,7 @@ function validateEnteredPin() {
   }
 
   const opt = select.options[select.selectedIndex];
-  const expectedPin = String(opt.dataset.pin || '1234').trim();
+  const expectedPin = String(opt.dataset.pin || '1234').trim().padStart(4, '0');
 
   if (enteredPin === expectedPin) {
     const user = {
@@ -741,10 +742,14 @@ function setupBiometrics() {
   const btnRegBio = document.getElementById('btn-register-biometric');
   const btnMobileRegBio = document.getElementById('btn-mobile-biometric');
 
-  const handleRegisterBio = async () => {
+  const handleRegisterBio = async (e) => {
+    if (e) e.stopPropagation();
+    const secMenu = document.getElementById('security-menu');
+    if (secMenu) secMenu.classList.add('hidden');
+
     if (!currentUser) return;
     if (!window.PublicKeyCredential) {
-      alert('La autenticación biométrica no está disponible en este navegador o requiere conexión HTTPS.');
+      showAlertModal('La autenticación biométrica no está disponible en este navegador o requiere conexión HTTPS.', 'Biometría No Disponible', '⚠️');
       return;
     }
 
@@ -759,8 +764,8 @@ function setupBiometrics() {
           rp: { name: "Tecnicheck Pro" },
           user: {
             id: userIdBytes,
-            name: currentUser.nombre,
-            displayName: currentUser.nombre
+            name: currentUser.nombre || 'Usuario',
+            displayName: currentUser.nombre || 'Usuario'
           },
           pubKeyCredParams: [{ alg: -7, type: "public-key" }, { alg: -257, type: "public-key" }],
           timeout: 60000,
@@ -788,11 +793,11 @@ function setupBiometrics() {
           });
         } catch (e) {}
 
-        alert('✅ ¡Huella / Face ID vinculada exitosamente a este dispositivo! En tus próximas visitas podrás ingresar con 1 toque.');
+        showAlertModal('✅ ¡Huella / Face ID / Windows Hello vinculada exitosamente a este dispositivo! En tus próximas visitas podrás ingresar con 1 toque.', 'Biometría Vinculada', '👆');
       }
     } catch (err) {
       console.warn('Error registrando biometría:', err);
-      alert('La vinculación biométrica fue cancelada o no es compatible.');
+      showAlertModal('La vinculación biométrica fue cancelada, rechazada por el sistema o requiere activar Windows Hello / Huella dactilar en este equipo.', 'Vinculación Biométrica', 'ℹ️');
     }
   };
 
@@ -3249,6 +3254,44 @@ function initMobileMenu() {
     });
   }
 
+  const btnCatalogues = document.getElementById('btn-catalogues-dropdown');
+  const cataloguesMenu = document.getElementById('catalogues-menu');
+  if (btnCatalogues && cataloguesMenu) {
+    btnCatalogues.addEventListener('click', (e) => {
+      e.stopPropagation();
+      cataloguesMenu.classList.toggle('hidden');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!cataloguesMenu.contains(e.target) && !btnCatalogues.contains(e.target)) {
+        cataloguesMenu.classList.add('hidden');
+      }
+    });
+
+    cataloguesMenu.querySelectorAll('button').forEach(b => {
+      b.addEventListener('click', () => cataloguesMenu.classList.add('hidden'));
+    });
+  }
+
+  const btnSecurity = document.getElementById('btn-security-dropdown');
+  const securityMenu = document.getElementById('security-menu');
+  if (btnSecurity && securityMenu) {
+    btnSecurity.addEventListener('click', (e) => {
+      e.stopPropagation();
+      securityMenu.classList.toggle('hidden');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!securityMenu.contains(e.target) && !btnSecurity.contains(e.target)) {
+        securityMenu.classList.add('hidden');
+      }
+    });
+
+    securityMenu.querySelectorAll('button').forEach(b => {
+      b.addEventListener('click', () => securityMenu.classList.add('hidden'));
+    });
+  }
+
   // Vincular botones del menú desplegable móvil
   const mobileNavHome = document.getElementById('btn-mobile-nav-home');
   const mobileClients = document.getElementById('btn-mobile-clients');
@@ -3268,51 +3311,41 @@ function initMobileMenu() {
   if (mobileClients) {
     mobileClients.addEventListener('click', () => {
       if (mobileMenu) mobileMenu.classList.add('hidden');
-      const modal = document.getElementById('modal-clients');
-      if (modal) {
-        modal.classList.remove('hidden');
-        if (typeof fetchClients === 'function') fetchClients(false);
-      }
+      openModal('modal-clients');
+      if (typeof fetchClients === 'function') fetchClients(false);
     });
   }
 
   if (mobileTechs) {
     mobileTechs.addEventListener('click', () => {
       if (mobileMenu) mobileMenu.classList.add('hidden');
-      const modal = document.getElementById('modal-technicians');
-      if (modal) {
-        modal.classList.remove('hidden');
-        if (typeof fetchTechnicians === 'function') fetchTechnicians(false);
-      }
+      openModal('modal-technicians');
+      if (typeof fetchTechnicians === 'function') fetchTechnicians(false);
     });
   }
 
   if (mobileEquip) {
     mobileEquip.addEventListener('click', () => {
       if (mobileMenu) mobileMenu.classList.add('hidden');
-      const modal = document.getElementById('modal-equipment-types');
-      if (modal) {
-        modal.classList.remove('hidden');
-        if (typeof updateEquipmentTypesUI === 'function') updateEquipmentTypesUI();
-        if (typeof fetchEquipmentTypes === 'function') fetchEquipmentTypes(false);
-      }
+      openModal('modal-equipment-types');
+      if (typeof updateEquipmentTypesUI === 'function') updateEquipmentTypesUI();
+      if (typeof fetchEquipmentTypes === 'function') fetchEquipmentTypes(false);
     });
   }
 
   if (mobileBiometric) {
     mobileBiometric.addEventListener('click', () => {
       if (mobileMenu) mobileMenu.classList.add('hidden');
+      const btnReg = document.getElementById('btn-register-biometric');
+      if (btnReg) btnReg.click();
     });
   }
 
   if (mobileHistory) {
     mobileHistory.addEventListener('click', () => {
       if (mobileMenu) mobileMenu.classList.add('hidden');
-      const modal = document.getElementById('modal-history');
-      if (modal) {
-        modal.classList.remove('hidden');
-        fetchHistoryData();
-      }
+      openModal('modal-history');
+      fetchHistoryData();
     });
   }
 
@@ -3320,6 +3353,129 @@ function initMobileMenu() {
     mobileLogout.addEventListener('click', () => {
       if (mobileMenu) mobileMenu.classList.add('hidden');
       logoutUser();
+    });
+  }
+}
+
+function initChangeOwnPinModal() {
+  const btnOpenDesktop = document.getElementById('btn-open-change-pin');
+  const btnOpenMobile = document.getElementById('btn-mobile-change-pin');
+  const modal = document.getElementById('modal-change-pin');
+  const btnCloseX = document.getElementById('btn-close-change-pin-x');
+  const btnCancel = document.getElementById('btn-cancel-change-pin');
+  const form = document.getElementById('form-change-own-pin');
+  const errorText = document.getElementById('change-pin-error-text');
+
+  const openModalHandler = (e) => {
+    if (e) e.stopPropagation();
+    const modalEl = document.getElementById('modal-change-pin');
+    if (modalEl) {
+      if (form) form.reset();
+      if (errorText) {
+        errorText.textContent = '';
+        errorText.classList.add('hidden');
+      }
+      modalEl.classList.remove('hidden');
+    }
+  };
+
+  const closeModalHandler = () => {
+    const modalEl = document.getElementById('modal-change-pin');
+    if (modalEl) modalEl.classList.add('hidden');
+  };
+
+  if (btnOpenDesktop) btnOpenDesktop.addEventListener('click', openModalHandler);
+  if (btnOpenMobile) btnOpenMobile.addEventListener('click', openModalHandler);
+  if (btnCloseX) btnCloseX.addEventListener('click', closeModalHandler);
+  if (btnCancel) btnCancel.addEventListener('click', closeModalHandler);
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUser) return;
+      const currentPin = (document.getElementById('change-pin-current')?.value || '').trim();
+      const newPin = (document.getElementById('change-pin-new')?.value || '').trim();
+      const confirmPin = (document.getElementById('change-pin-confirm')?.value || '').trim();
+
+      const showError = (msg) => {
+        if (errorText) {
+          errorText.textContent = msg;
+          errorText.classList.remove('hidden');
+        }
+      };
+
+      if (!currentPin || !newPin || !confirmPin) {
+        showError('Por favor completa todos los campos.');
+        return;
+      }
+
+      if (newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
+        showError('El nuevo PIN debe contener exactamente 4 dígitos numéricos.');
+        return;
+      }
+
+      if (newPin !== confirmPin) {
+        showError('El nuevo PIN y su confirmación no coinciden.');
+        return;
+      }
+
+      const select = document.getElementById('login-user-select');
+      const opt = select ? Array.from(select.options).find(o => o.value === currentUser.id) : null;
+      const expectedPin = opt ? String(opt.dataset.pin || '1234').trim() : '';
+
+      if (expectedPin && currentPin !== expectedPin) {
+        showError('El PIN actual es incorrecto.');
+        return;
+      }
+
+      const submitBtn = document.getElementById('btn-submit-change-pin');
+      if (submitBtn) submitBtn.disabled = true;
+
+      try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({
+            action: 'change_own_pin',
+            userId: currentUser.id,
+            id: currentUser.id,
+            newPin: newPin
+          })
+        });
+
+        if (opt) opt.dataset.pin = newPin;
+
+        // Actualizar en el estado global y caché local
+        if (Array.isArray(usersDataCache)) {
+          usersDataCache.forEach(u => {
+            const uId = String(u.ID || u.id || '');
+            if (uId === currentUser.id || u.nombre === currentUser.nombre) {
+              u.PIN = newPin;
+              u.pin = newPin;
+            }
+          });
+          try {
+            localStorage.setItem('app_users_custom_v1', JSON.stringify(usersDataCache));
+          } catch (e) {}
+        }
+
+        if (currentUser) {
+          currentUser.pin = newPin;
+          currentUser.PIN = newPin;
+          try {
+            localStorage.setItem('session_user', JSON.stringify(currentUser));
+          } catch (e) {}
+        }
+
+        populateUserSelect(usersDataCache);
+        closeModalHandler();
+        showAlertModal('✅ ¡Tu PIN de acceso ha sido actualizado exitosamente!', 'PIN Actualizado', '🔑');
+      } catch (err) {
+        showError('Ocurrió un error al actualizar el PIN. Intenta nuevamente.');
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+      }
     });
   }
 }

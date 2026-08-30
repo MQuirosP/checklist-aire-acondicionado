@@ -244,6 +244,28 @@ function doPost(e) {
       return ContentService.createTextOutput(JSON.stringify({ "result": "success", "token": newToken, "expiresIn": 86400 })).setMimeType(ContentService.MimeType.JSON);
     }
 
+    // 7.4 Cambiar PIN propio de usuario
+    if (data.action === 'change_own_pin') {
+      var userId = (data.userId || data.user_id || data.id || "").toString().trim();
+      var newPin = (data.newPin || data.pin || "").toString().trim();
+      if (!userId || !newPin) {
+        return ContentService.createTextOutput(JSON.stringify({ "result": "error", "error": "userId y newPin requeridos" })).setMimeType(ContentService.MimeType.JSON);
+      }
+      var userSheet = ss.getSheetByName('Usuarios');
+      if (userSheet) {
+        var rows = userSheet.getDataRange().getValues();
+        for (var i = 1; i < rows.length; i++) {
+          var rowId = (rows[i][0] || "").toString().trim();
+          var rowName = (rows[i][1] || "").toString().trim();
+          if (rowId === userId || rowName === userId || rowName === data.nombre) {
+            userSheet.getRange(i + 1, 3).setNumberFormat("@").setValue("'" + newPin);
+            return ContentService.createTextOutput(JSON.stringify({ "result": "success", "id": rowId, "updated": true })).setMimeType(ContentService.MimeType.JSON);
+          }
+        }
+      }
+      return ContentService.createTextOutput(JSON.stringify({ "result": "error", "error": "Usuario no encontrado" })).setMimeType(ContentService.MimeType.JSON);
+    }
+
     // 8. Por defecto: Guardar Mantenimiento en la pestaña Mantenimientos
     var sheet = ss.getSheetByName('Mantenimientos') || ss.getSheets()[0];
 

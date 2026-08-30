@@ -51,13 +51,34 @@
 
         <!-- Desktop Header Actions -->
         <!-- Desktop Header Actions (SOLO VISIBLE EN DESKTOP >= 768px) -->
-        <div id="desktop-header-actions" class="hidden md:flex items-center space-x-1.5">
-          <button type="button" id="btn-view-clients" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition flex items-center gap-1">👥 Clientes</button>
-          <button type="button" id="btn-view-technicians" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition flex items-center gap-1">👨‍🔧 Técnicos</button>
-          <button type="button" id="btn-view-equipments" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition flex items-center gap-1">⚙️ Equipos</button>
-          <button type="button" id="btn-view-users" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 rounded-md transition flex items-center gap-1 hidden">🔐 Usuarios</button>
-          <button type="button" id="btn-register-biometric" class="px-2 py-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 rounded-md transition flex items-center gap-1 text-[11px]" title="Vincular Huella/Face ID en este dispositivo">👆 Biometría</button>
-          <button type="button" id="btn-view-history" class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition flex items-center gap-1 shadow-sm">📋 Órdenes</button>
+        <div id="desktop-header-actions" class="hidden md:flex items-center space-x-2">
+          <!-- Desplegable de Catálogos -->
+          <div class="relative">
+            <button type="button" id="btn-catalogues-dropdown" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition flex items-center gap-1.5 font-medium text-xs">
+              <span>📁 Catálogos</span>
+              <span class="text-[10px] text-slate-400">▼</span>
+            </button>
+            <div id="catalogues-menu" class="absolute right-0 mt-1.5 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-1.5 space-y-1 z-50 hidden">
+              <button type="button" id="btn-view-clients" class="w-full text-left px-3 py-2 text-slate-200 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">👥 Clientes</button>
+              <button type="button" id="btn-view-technicians" class="w-full text-left px-3 py-2 text-slate-200 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">👨‍🔧 Técnicos</button>
+              <button type="button" id="btn-view-equipments" class="w-full text-left px-3 py-2 text-slate-200 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">⚙️ Equipos</button>
+              <button type="button" id="btn-view-users" class="w-full text-left px-3 py-2 text-amber-300 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2 hidden">🔐 Usuarios</button>
+            </div>
+          </div>
+
+          <!-- Desplegable de Seguridad -->
+          <div class="relative">
+            <button type="button" id="btn-security-dropdown" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-md transition flex items-center gap-1.5 font-medium text-xs">
+              <span>🛡️ Seguridad</span>
+              <span class="text-[10px] text-slate-400">▼</span>
+            </button>
+            <div id="security-menu" class="absolute right-0 mt-1.5 w-52 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-1.5 space-y-1 z-50 hidden">
+              <button type="button" id="btn-open-change-pin" class="w-full text-left px-3 py-2 text-amber-300 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">🔑 Cambiar mi PIN</button>
+              <button type="button" id="btn-register-biometric" class="w-full text-left px-3 py-2 text-emerald-400 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">👆 Vincular Biometría</button>
+            </div>
+          </div>
+
+          <button type="button" id="btn-view-history" class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition flex items-center gap-1 shadow-sm text-xs">📋 Órdenes</button>
           <button type="button" id="btn-nav-logout" class="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-medium rounded-md transition flex items-center gap-1 text-xs shadow-sm ml-1" title="Cerrar Sesión">🔒 Salir</button>
         </div>
 
@@ -74,6 +95,7 @@
             <button type="button" id="btn-mobile-technicians" class="w-full text-left px-3 py-2 text-slate-200 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">👨‍🔧 Técnicos</button>
             <button type="button" id="btn-mobile-equipments" class="w-full text-left px-3 py-2 text-slate-200 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">⚙️ Catálogo Equipos</button>
             <button type="button" id="btn-mobile-users" class="w-full text-left px-3 py-2 text-amber-300 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2 hidden">🔐 Gestión Usuarios</button>
+            <button type="button" id="btn-mobile-change-pin" class="w-full text-left px-3 py-2 text-amber-300 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">🔑 Cambiar mi PIN</button>
             <button type="button" id="btn-mobile-biometric" class="w-full text-left px-3 py-2 text-emerald-400 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">👆 Vincular Biometría</button>
             <button type="button" id="btn-mobile-history" class="w-full text-left px-3 py-2 text-blue-400 font-semibold hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">📋 Ver Registros</button>
             <button type="button" id="btn-mobile-logout" class="w-full text-left px-3 py-2 text-rose-400 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2 border-t border-slate-800 mt-1">🔒 Cerrar Sesión</button>
@@ -1060,6 +1082,44 @@
     </div>
   </div>
 
+  <!-- MODAL CAMBIAR MI PIN -->
+  <div id="modal-change-pin" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center hidden p-4">
+    <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+          <span>🔑</span> Cambiar mi PIN
+        </h3>
+        <button type="button" id="btn-close-change-pin-x" class="text-slate-400 hover:text-slate-600 text-lg font-bold">✕</button>
+      </div>
+
+      <form id="form-change-own-pin" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">PIN Actual</label>
+          <input type="password" id="change-pin-current" maxlength="4" placeholder="••••" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-center font-mono tracking-widest focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Nuevo PIN (4 dígitos)</label>
+          <input type="password" id="change-pin-new" maxlength="4" placeholder="••••" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-center font-mono tracking-widest focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Confirmar Nuevo PIN</label>
+          <input type="password" id="change-pin-confirm" maxlength="4" placeholder="••••" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-center font-mono tracking-widest focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div id="change-pin-error-text" class="text-xs text-rose-600 font-semibold text-center hidden"></div>
+
+        <div class="flex gap-2 pt-2">
+          <button type="button" id="btn-cancel-change-pin" class="flex-1 py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-xl text-xs hover:bg-slate-200 transition">
+            Cancelar
+          </button>
+          <button type="submit" id="btn-submit-change-pin" class="flex-1 py-2.5 bg-blue-600 text-white font-semibold rounded-xl text-xs hover:bg-blue-700 transition shadow-md">
+            Actualizar PIN
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- MODAL HISTORIAL DE REGISTROS -->
   <div id="modal-history" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
     <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] shadow-2xl flex flex-col overflow-hidden">
@@ -1346,6 +1406,6 @@
 
   <!-- Iframe oculto para procesamiento de envíos sin bloqueos de CORS -->
   <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-  <script src="app.js?v=108.0"></script>
+  <script src="app.js?v=114.0"></script>
 </body>
 </html>
