@@ -1019,6 +1019,45 @@
         </button>
       </div>
     </div>
+  </div> <!-- /#modal-status -->
+
+  <!-- MODAL DE CONFIRMACIÓN UNIVERSAL -->
+  <div id="modal-universal-confirm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center hidden p-4">
+    <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl text-center space-y-4">
+      <div id="confirm-modal-icon" class="w-14 h-14 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto text-2xl">
+        ❓
+      </div>
+      <div>
+        <h3 id="confirm-modal-title" class="text-base font-bold text-slate-800">¿Confirmar Acción?</h3>
+        <p id="confirm-modal-message" class="text-xs text-slate-600 mt-1">¿Estás seguro de realizar esta operación?</p>
+      </div>
+      <div class="flex gap-2 pt-2">
+        <button type="button" id="btn-confirm-cancel" class="flex-1 py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-xl text-xs hover:bg-slate-200 transition">
+          Cancelar
+        </button>
+        <button type="button" id="btn-confirm-accept" class="flex-1 py-2.5 bg-blue-600 text-white font-semibold rounded-xl text-xs hover:bg-blue-700 transition shadow-md">
+          Aceptar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE ALERTA UNIVERSAL -->
+  <div id="modal-universal-alert" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center hidden p-4">
+    <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl text-center space-y-4">
+      <div id="alert-modal-icon" class="w-14 h-14 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto text-2xl">
+        ℹ️
+      </div>
+      <div>
+        <h3 id="alert-modal-title" class="text-base font-bold text-slate-800">Aviso del Sistema</h3>
+        <p id="alert-modal-message" class="text-xs text-slate-600 mt-1">Información importante</p>
+      </div>
+      <div class="pt-2">
+        <button type="button" id="btn-alert-accept" class="w-full py-2.5 bg-blue-600 text-white font-semibold rounded-xl text-xs hover:bg-blue-700 transition shadow-md">
+          Aceptar
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- MODAL HISTORIAL DE REGISTROS -->
@@ -1307,6 +1346,6 @@
 
   <!-- Iframe oculto para procesamiento de envíos sin bloqueos de CORS -->
   <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
-  <script src="app.js?v=103.0"></script>
+  <script src="app.js?v=107.0"></script>
 </body>
 </html>

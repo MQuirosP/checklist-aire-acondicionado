@@ -49,6 +49,69 @@ function matchTechnicianName(strA, strB) {
   return matches.length >= 1;
 }
 
+function showConfirmModal({ title = '¿Confirmar Acción?', message = '¿Estás seguro de realizar esta operación?', icon = '❓', acceptText = 'Aceptar', btnClass = 'bg-blue-600 hover:bg-blue-700', onAccept }) {
+  const modal = document.getElementById('modal-universal-confirm');
+  const titleEl = document.getElementById('confirm-modal-title');
+  const msgEl = document.getElementById('confirm-modal-message');
+  const iconEl = document.getElementById('confirm-modal-icon');
+  const btnCancel = document.getElementById('btn-confirm-cancel');
+  const btnAccept = document.getElementById('btn-confirm-accept');
+
+  if (!modal || !titleEl || !msgEl || !btnAccept || !btnCancel) {
+    if (confirm(message)) {
+      if (typeof onAccept === 'function') onAccept();
+    }
+    return;
+  }
+
+  if (titleEl) titleEl.textContent = title;
+  if (msgEl) msgEl.textContent = message;
+  if (iconEl) iconEl.textContent = icon;
+  if (btnAccept) {
+    btnAccept.textContent = acceptText;
+    btnAccept.className = `flex-1 py-2.5 text-white font-semibold rounded-xl text-xs transition shadow-md ${btnClass}`;
+  }
+
+  const handleClose = () => {
+    modal.classList.add('hidden');
+    btnCancel.onclick = null;
+    btnAccept.onclick = null;
+  };
+
+  btnCancel.onclick = () => handleClose();
+  btnAccept.onclick = () => {
+    handleClose();
+    if (typeof onAccept === 'function') onAccept();
+  };
+
+  modal.classList.remove('hidden');
+}
+
+function showAlertModal(message, title = 'Aviso del Sistema', icon = 'ℹ️') {
+  const modal = document.getElementById('modal-universal-alert');
+  const titleEl = document.getElementById('alert-modal-title');
+  const msgEl = document.getElementById('alert-modal-message');
+  const iconEl = document.getElementById('alert-modal-icon');
+  const btnAccept = document.getElementById('btn-alert-accept');
+
+  if (!modal || !msgEl || !btnAccept) {
+    alert(message);
+    return;
+  }
+
+  if (titleEl) titleEl.textContent = title;
+  if (msgEl) msgEl.textContent = message;
+  if (iconEl) iconEl.textContent = icon;
+
+  const handleClose = () => {
+    modal.classList.add('hidden');
+    btnAccept.onclick = null;
+  };
+
+  btnAccept.onclick = () => handleClose();
+  modal.classList.remove('hidden');
+}
+
 function setSelectVal(id, val) {
   const el = document.getElementById(id);
   if (!el || !val) return;
@@ -168,6 +231,7 @@ function loginUser(user) {
 function logoutUser() {
   currentUser = null;
   enteredPin = '';
+  isValidatingPin = false;
   updatePinDisplay();
   try {
     localStorage.removeItem('session_user');
@@ -194,20 +258,33 @@ function logoutUser() {
 }
 
 async function fetchUsersData() {
-  if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes('PEGA_AQUI_TU_URL')) return [];
+  try {
+    const cachedUsers = localStorage.getItem('app_users_custom_v1');
+    if (cachedUsers) {
+      const parsed = JSON.parse(cachedUsers);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        usersDataCache = parsed;
+      }
+    }
+  } catch (e) {}
+
+  if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes('PEGA_AQUI_TU_URL')) return usersDataCache || [];
   try {
     const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=usuarios&_t=${Date.now()}`, { cache: 'no-store' });
     const text = await res.text();
     let data = [];
     try { data = JSON.parse(text); } catch (e) {}
-    if (Array.isArray(data)) {
+    if (Array.isArray(data) && data.length > 0) {
       usersDataCache = data;
+      try {
+        localStorage.setItem('app_users_custom_v1', JSON.stringify(data));
+      } catch (e) {}
       return data;
     }
   } catch (err) {
     console.error('Error cargando usuarios:', err);
   }
-  return [];
+  return usersDataCache || [];
 }
 
 async function initAuthSystem() {
@@ -313,6 +390,7 @@ function populateUserSelect(users) {
     select.dataset.hasChangeListener = 'true';
     select.addEventListener('change', () => {
       enteredPin = '';
+      isValidatingPin = false;
       updatePinDisplay();
       if (select.value) {
         try { localStorage.setItem('last_login_user_id', select.value); } catch (e) {}
@@ -322,6 +400,7 @@ function populateUserSelect(users) {
   }
 
   enteredPin = '';
+  isValidatingPin = false;
   updatePinDisplay();
 
   if (select.value) {
@@ -403,8 +482,8 @@ function setupPinKeypad() {
   const btnClear = document.getElementById('btn-pin-clear');
   if (btnClear) {
     btnClear.addEventListener('click', () => {
-      if (isValidatingPin) return;
       enteredPin = '';
+      isValidatingPin = false;
       updatePinDisplay();
     });
   }
@@ -412,7 +491,7 @@ function setupPinKeypad() {
   const btnBack = document.getElementById('btn-pin-backspace');
   if (btnBack) {
     btnBack.addEventListener('click', () => {
-      if (isValidatingPin) return;
+      isValidatingPin = false;
       if (enteredPin.length > 0) {
         enteredPin = enteredPin.slice(0, -1);
         updatePinDisplay();
@@ -924,22 +1003,33 @@ function renderUsersTable() {
   });
 
   tbody.querySelectorAll('.btn-toggle-user').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
+    btn.addEventListener('click', (e) => {
       const idx = parseInt(e.currentTarget.getAttribute('data-index'));
       const targetUser = usersDataCache[idx];
-      if (targetUser) {
-        const payload = { action: 'toggle_user', id: targetUser.ID || targetUser['Nombre Usuario'] };
-        try {
-          await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify(payload)
-          });
-        } catch (err) {}
-        await fetchUsersData();
-        renderUsersTable();
-      }
+      if (!targetUser) return;
+      const isInactive = targetUser.Estado === 'Inactivo';
+      const uName = targetUser['Nombre Usuario'] || targetUser['Nombre'] || targetUser.ID || 'Usuario';
+
+      showConfirmModal({
+        title: isInactive ? '¿Activar Usuario?' : '¿Desactivar Usuario?',
+        message: `¿Estás seguro de que deseas ${isInactive ? 'activar' : 'desactivar'} la cuenta de "${uName}"?`,
+        icon: isInactive ? '🔄' : '🚫',
+        acceptText: isInactive ? 'Sí, activar' : 'Sí, desactivar',
+        btnClass: isInactive ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700',
+        onAccept: async () => {
+          const payload = { action: 'toggle_user', id: targetUser.ID || targetUser['Nombre Usuario'] };
+          try {
+            await fetch(GOOGLE_SCRIPT_URL, {
+              method: 'POST',
+              mode: 'no-cors',
+              headers: { 'Content-Type': 'text/plain' },
+              body: JSON.stringify(payload)
+            });
+          } catch (err) {}
+          await fetchUsersData();
+          renderUsersTable();
+        }
+      });
     });
   });
 }
@@ -1363,9 +1453,16 @@ function initFormSubmission() {
   const btnCloseError = document.getElementById('btn-close-error');
   if (btnReset) {
     btnReset.addEventListener('click', () => {
-      if (confirm('🧹 ¿Estás seguro de que deseas limpiar todo el formulario y las firmas?')) {
-        resetFormComplete();
-      }
+      showConfirmModal({
+        title: '¿Limpiar todo el formulario?',
+        message: 'Se borrarán la N° de Orden, todas las mediciones, firmas y el borrador guardado.',
+        icon: '🧹',
+        acceptText: 'Sí, limpiar todo',
+        btnClass: 'bg-rose-600 hover:bg-rose-700',
+        onAccept: () => {
+          resetFormComplete();
+        }
+      });
     });
   }
 
@@ -2624,27 +2721,35 @@ function updateClientsUI() {
 }
 
 async function toggleClientSoftDelete(id, nombre, currentStatus) {
-  const newStatus = currentStatus === 'Inactivo' ? 'Activo' : 'Inactivo';
-  const actionText = newStatus === 'Inactivo' ? 'desactivar' : 'reactivar';
-  if (!confirm(`¿Estás seguro de que deseas ${actionText} al cliente "${nombre}"?`)) return;
+  const isInactive = currentStatus === 'Inactivo';
+  const actionText = isInactive ? 'activar' : 'desactivar';
 
-  const payload = {
-    action: 'toggle_cliente',
-    id: id,
-    nombre: nombre,
-    estado: newStatus
-  };
+  showConfirmModal({
+    title: isInactive ? '¿Activar Cliente?' : '¿Desactivar Cliente?',
+    message: `¿Estás seguro de que deseas ${actionText} al cliente "${nombre}"?`,
+    icon: isInactive ? '🔄' : '🚫',
+    acceptText: isInactive ? 'Sí, activar' : 'Sí, desactivar',
+    btnClass: isInactive ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700',
+    onAccept: async () => {
+      const payload = {
+        action: 'toggle_cliente',
+        id: id,
+        nombre: nombre,
+        estado: isInactive ? 'Activo' : 'Inactivo'
+      };
 
-  try {
-    await fetch(GOOGLE_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      body: JSON.stringify(payload)
-    });
-    setTimeout(() => fetchClients(false), 1200);
-  } catch (err) {
-    console.error('Error al cambiar estado de cliente:', err);
-  }
+      try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          body: JSON.stringify(payload)
+        });
+        setTimeout(() => fetchClients(false), 1200);
+      } catch (err) {
+        console.error('Error al cambiar estado de cliente:', err);
+      }
+    }
+  });
 }
 
 function updateTechniciansUI() {
@@ -2761,27 +2866,35 @@ function updateTechniciansUI() {
 }
 
 async function toggleTechnicianSoftDelete(id, nombre, currentStatus) {
-  const newStatus = currentStatus === 'Inactivo' ? 'Activo' : 'Inactivo';
-  const actionText = newStatus === 'Inactivo' ? 'desactivar' : 'reactivar';
-  if (!confirm(`¿Estás seguro de que deseas ${actionText} al técnico "${nombre}"?`)) return;
+  const isInactive = currentStatus === 'Inactivo';
+  const actionText = isInactive ? 'activar' : 'desactivar';
 
-  const payload = {
-    action: 'toggle_tecnico',
-    id: id,
-    nombre: nombre,
-    estado: newStatus
-  };
+  showConfirmModal({
+    title: isInactive ? '¿Activar Técnico?' : '¿Desactivar Técnico?',
+    message: `¿Estás seguro de que deseas ${actionText} al técnico "${nombre}"?`,
+    icon: isInactive ? '🔄' : '🚫',
+    acceptText: isInactive ? 'Sí, activar' : 'Sí, desactivar',
+    btnClass: isInactive ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700',
+    onAccept: async () => {
+      const payload = {
+        action: 'toggle_tecnico',
+        id: id,
+        nombre: nombre,
+        estado: isInactive ? 'Activo' : 'Inactivo'
+      };
 
-  try {
-    await fetch(GOOGLE_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      body: JSON.stringify(payload)
-    });
-    setTimeout(() => fetchTechnicians(false), 1200);
-  } catch (err) {
-    console.error('Error al cambiar estado de técnico:', err);
-  }
+      try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          body: JSON.stringify(payload)
+        });
+        setTimeout(() => fetchTechnicians(false), 1200);
+      } catch (err) {
+        console.error('Error al cambiar estado de técnico:', err);
+      }
+    }
+  });
 }
 
 /**
@@ -3040,26 +3153,34 @@ function updateEquipmentTypesUI() {
 }
 
 async function toggleEquipmentSoftDelete(id, nombre, currentStatus) {
-  const newStatus = currentStatus === 'Inactivo' ? 'Activo' : 'Inactivo';
-  const actionText = newStatus === 'Inactivo' ? 'desactivar' : 'reactivar';
-  if (!confirm(`¿Estás seguro de que deseas ${actionText} la categoría "${nombre}"?`)) return;
+  const isInactive = currentStatus === 'Inactivo';
+  const actionText = isInactive ? 'activar' : 'desactivar';
 
-  const payload = {
-    action: 'toggle_equipo',
-    id: id,
-    estado: newStatus
-  };
+  showConfirmModal({
+    title: isInactive ? '¿Activar Tipo de Equipo?' : '¿Desactivar Tipo de Equipo?',
+    message: `¿Estás seguro de que deseas ${actionText} la categoría "${nombre}"?`,
+    icon: isInactive ? '🔄' : '🚫',
+    acceptText: isInactive ? 'Sí, activar' : 'Sí, desactivar',
+    btnClass: isInactive ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700',
+    onAccept: async () => {
+      const payload = {
+        action: 'toggle_equipo',
+        id: id,
+        estado: isInactive ? 'Activo' : 'Inactivo'
+      };
 
-  try {
-    await fetch(GOOGLE_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      body: JSON.stringify(payload)
-    });
-    setTimeout(() => fetchEquipmentTypes(false), 1200);
-  } catch (err) {
-    console.error('Error al cambiar estado de categoría de equipo:', err);
-  }
+      try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          body: JSON.stringify(payload)
+        });
+        setTimeout(() => fetchEquipmentTypes(false), 1200);
+      } catch (err) {
+        console.error('Error al cambiar estado de categoría de equipo:', err);
+      }
+    }
+  });
 }
 
 function initMobileMenu() {
