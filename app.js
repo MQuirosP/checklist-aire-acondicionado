@@ -210,6 +210,35 @@ function updateNavigationUI() {
   }
 }
 
+async function generateSessionTokenFromServer(userId) {
+  if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes('PEGA_AQUI_TU_URL')) return null;
+  try {
+    const res = await fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        action: 'generate_token',
+        userId: userId
+      })
+    });
+    const newToken = `ST-${userId}-${Date.now()}`;
+    try { localStorage.setItem('session_token', newToken); } catch (e) {}
+    return newToken;
+  } catch (e) {
+    console.warn('Error generando token:', e);
+  }
+  return null;
+}
+
+function getSessionToken() {
+  try {
+    return localStorage.getItem('session_token') || '';
+  } catch (e) {
+    return '';
+  }
+}
+
 function loginUser(user) {
   currentUser = user;
   try {
@@ -218,6 +247,10 @@ function loginUser(user) {
       localStorage.setItem('last_login_user_id', user.id);
     }
   } catch (e) {}
+
+  if (user && user.id) {
+    generateSessionTokenFromServer(user.id);
+  }
 
   updateNavigationUI();
   if (typeof updateClientsUI === 'function') updateClientsUI();
@@ -235,6 +268,7 @@ function logoutUser() {
   updatePinDisplay();
   try {
     localStorage.removeItem('session_user');
+    localStorage.removeItem('session_token');
   } catch (e) {}
 
   if (typeof updateClientsUI === 'function') updateClientsUI();
@@ -1227,14 +1261,20 @@ function initSignaturePads() {
 }
 
 /**
- * 5. Guardado de borrador en LocalStorage
+ * 5. Guardado de borrador en LocalStorage por Usuario
  */
-const STORAGE_KEY = 'checklist_ac_draft';
+function getStorageKeyForUser() {
+  if (currentUser && (currentUser.id || currentUser.nombre)) {
+    const idClean = (currentUser.id || currentUser.nombre).toString().replace(/[^a-zA-Z0-9_-]/g, '_');
+    return `checklist_ac_draft_${idClean}`;
+  }
+  return 'checklist_ac_draft_temp';
+}
 
 function updateDraftButtonState() {
   const btnText = document.getElementById('btn-draft-text');
   const btnMobileText = document.getElementById('btn-mobile-draft-text');
-  const saved = localStorage.getItem(STORAGE_KEY);
+  const saved = localStorage.getItem(getStorageKeyForUser());
   const labelText = saved ? '✓ Borrador guardado' : 'Guardar borrador';
   
   if (btnText) btnText.innerHTML = labelText;
@@ -1338,24 +1378,27 @@ function triggerDraftSave() {
 
 function saveDraft() {
   const form = document.getElementById('checklist-form');
-  if (!form) return;
-  const formData = new FormData(form);
-  const data = {};
-
-  formData.forEach((val, key) => {
-    data[key] = val;
-  });
-
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  updateDraftButtonState();
+  if (!form) return false;
+  try {
+    const formData = new FormData(form);
+    const draftData = {};
+    formData.forEach((val, key) => {
+      draftData[key] = val;
+    });
+    localStorage.setItem(getStorageKeyForUser(), JSON.stringify(draftData));
+    updateDraftButtonState();
+    return true;
+  } catch (err) {
+    console.error('Error al guardar borrador:', err);
+    return false;
+  }
 }
 
 function loadDraft() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (!saved) return;
-
   try {
-    const data = JSON.parse(saved);
+    const raw = localStorage.getItem(getStorageKeyForUser());
+    if (!raw) return;
+    const data = JSON.parse(raw);
     const form = document.getElementById('checklist-form');
     if (!form || !form.elements) return;
 
@@ -1380,11 +1423,17 @@ function loadDraft() {
   }
 }
 
+function clearDraft() {
+  try {
+    localStorage.removeItem(getStorageKeyForUser());
+    updateDraftButtonState();
+  } catch (err) {}
+}
+
 function resetFormComplete() {
   const form = document.getElementById('checklist-form');
   if (form) form.reset();
-  localStorage.removeItem(STORAGE_KEY);
-  updateDraftButtonState();
+  clearDraft();
 
   const banner = document.getElementById('edit-mode-banner');
   if (banner) banner.classList.add('hidden');

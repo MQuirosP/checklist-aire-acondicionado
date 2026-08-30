@@ -228,6 +228,22 @@ function doPost(e) {
       return ContentService.createTextOutput(JSON.stringify({ "result": "error", "error": "Usuario no encontrado" })).setMimeType(ContentService.MimeType.JSON);
     }
 
+    // 7.3 Generar Token de Sesión Único
+    if (data.action === 'generate_token') {
+      var userId = (data.userId || data.user_id || data.id || "").toString().trim();
+      if (!userId) {
+        return ContentService.createTextOutput(JSON.stringify({ "result": "error", "error": "userId requerido" })).setMimeType(ContentService.MimeType.JSON);
+      }
+      var tokenKey = 'session_token_' + userId;
+      var properties = PropertiesService.getUserProperties();
+      var timestamp = new Date().getTime();
+      var newToken = "ST-" + Utilities.getUuid() + "_" + timestamp;
+      properties.setProperty(tokenKey, newToken);
+      properties.setProperty(tokenKey + '_ts', timestamp.toString());
+      properties.setProperty(tokenKey + '_user', userId);
+      return ContentService.createTextOutput(JSON.stringify({ "result": "success", "token": newToken, "expiresIn": 86400 })).setMimeType(ContentService.MimeType.JSON);
+    }
+
     // 8. Por defecto: Guardar Mantenimiento en la pestaña Mantenimientos
     var sheet = ss.getSheetByName('Mantenimientos') || ss.getSheets()[0];
 
