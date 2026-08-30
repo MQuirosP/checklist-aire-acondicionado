@@ -3256,9 +3256,13 @@ function initMobileMenu() {
 
   const btnCatalogues = document.getElementById('btn-catalogues-dropdown');
   const cataloguesMenu = document.getElementById('catalogues-menu');
+  const btnSecurity = document.getElementById('btn-security-dropdown');
+  const securityMenu = document.getElementById('security-menu');
+
   if (btnCatalogues && cataloguesMenu) {
     btnCatalogues.addEventListener('click', (e) => {
       e.stopPropagation();
+      if (securityMenu) securityMenu.classList.add('hidden');
       cataloguesMenu.classList.toggle('hidden');
     });
 
@@ -3273,11 +3277,10 @@ function initMobileMenu() {
     });
   }
 
-  const btnSecurity = document.getElementById('btn-security-dropdown');
-  const securityMenu = document.getElementById('security-menu');
   if (btnSecurity && securityMenu) {
     btnSecurity.addEventListener('click', (e) => {
       e.stopPropagation();
+      if (cataloguesMenu) cataloguesMenu.classList.add('hidden');
       securityMenu.classList.toggle('hidden');
     });
 
