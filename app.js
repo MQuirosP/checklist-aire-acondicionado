@@ -50,6 +50,20 @@ function matchTechnicianName(strA, strB) {
   return matches.length >= 1;
 }
 
+function openModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.classList.remove('hidden');
+  }
+}
+
+function closeModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.classList.add('hidden');
+  }
+}
+
 function showConfirmModal({ title = '¿Confirmar Acción?', message = '¿Estás seguro de realizar esta operación?', icon = '❓', acceptText = 'Aceptar', btnClass = 'bg-blue-600 hover:bg-blue-700', onAccept }) {
   const modal = document.getElementById('modal-universal-confirm');
   const titleEl = document.getElementById('confirm-modal-title');
@@ -177,6 +191,7 @@ function updateNavigationUI() {
     if (welcomeRolePill) welcomeRolePill.textContent = isAdmin ? 'Administrador' : 'Técnico';
 
     if (isAdmin) {
+      // Admin: tiene acceso completo a administración global y configuración.
       if (btnViewTechs) btnViewTechs.classList.remove('hidden');
       if (btnMobileTechs) btnMobileTechs.classList.remove('hidden');
       if (cardTechs) cardTechs.classList.remove('hidden');
@@ -185,6 +200,8 @@ function updateNavigationUI() {
       if (btnMobileUsers) btnMobileUsers.classList.remove('hidden');
       if (cardUsers) cardUsers.classList.remove('hidden');
     } else {
+      // Técnico: no ve gestión de usuarios ni técnicos, pero sí gestiona su tenant
+      // con clientes, catálogo de equipos, historial y seguridad personal.
       if (btnViewTechs) btnViewTechs.classList.add('hidden');
       if (btnMobileTechs) btnMobileTechs.classList.add('hidden');
       if (cardTechs) cardTechs.classList.add('hidden');
@@ -272,6 +289,8 @@ function logoutUser() {
     localStorage.removeItem('session_token');
   } catch (e) {}
 
+  isPinKeypadInitialized = false;
+
   if (typeof updateClientsUI === 'function') updateClientsUI();
   if (typeof updateTechniciansUI === 'function') updateTechniciansUI();
   if (typeof updateEquipmentTypesUI === 'function') updateEquipmentTypesUI();
@@ -289,7 +308,10 @@ function logoutUser() {
 
   updateNavigationUI();
   switchView('view-login');
-  fetchUsersData().then(users => populateUserSelect(users));
+  fetchUsersData().then(users => {
+    populateUserSelect(users);
+    setupPinKeypad();
+  });
 }
 
 async function fetchUsersData() {
@@ -497,10 +519,9 @@ function updatePinDisplay() {
 }
 
 function setupPinKeypad() {
-  if (isPinKeypadInitialized) return;
-  isPinKeypadInitialized = true;
-
   document.querySelectorAll('.btn-pin').forEach(btn => {
+    if (btn.dataset.pinBound === 'true') return;
+    btn.dataset.pinBound = 'true';
     btn.addEventListener('click', () => {
       if (isValidatingPin) return;
       const num = btn.getAttribute('data-num');
@@ -515,7 +536,8 @@ function setupPinKeypad() {
   });
 
   const btnClear = document.getElementById('btn-pin-clear');
-  if (btnClear) {
+  if (btnClear && btnClear.dataset.pinBound !== 'true') {
+    btnClear.dataset.pinBound = 'true';
     btnClear.addEventListener('click', () => {
       enteredPin = '';
       isValidatingPin = false;
@@ -524,7 +546,8 @@ function setupPinKeypad() {
   }
 
   const btnBack = document.getElementById('btn-pin-backspace');
-  if (btnBack) {
+  if (btnBack && btnBack.dataset.pinBound !== 'true') {
+    btnBack.dataset.pinBound = 'true';
     btnBack.addEventListener('click', () => {
       isValidatingPin = false;
       if (enteredPin.length > 0) {
@@ -533,6 +556,8 @@ function setupPinKeypad() {
       }
     });
   }
+
+  isPinKeypadInitialized = true;
 }
 
 function validateEnteredPin() {
@@ -1306,71 +1331,6 @@ function initDraftStorage() {
       updateDraftButtonState();
     });
   }
-}
-
-function initMobileMenu() {
-  const btnMenu = document.getElementById('btn-mobile-menu');
-  const dropdown = document.getElementById('mobile-dropdown-menu');
-  const btnClients = document.getElementById('btn-mobile-clients');
-  const btnTechs = document.getElementById('btn-mobile-technicians');
-  const btnEquipments = document.getElementById('btn-mobile-equipments');
-  const btnHistory = document.getElementById('btn-mobile-history');
-  const btnDraft = document.getElementById('btn-mobile-draft');
-
-  if (!btnMenu || !dropdown) return;
-
-  const closeDropdown = () => dropdown.classList.add('hidden');
-
-  btnMenu.addEventListener('click', (e) => {
-    e.stopPropagation();
-    dropdown.classList.toggle('hidden');
-  });
-
-  if (btnClients) {
-    btnClients.addEventListener('click', () => {
-      closeDropdown();
-      const desktopBtn = document.getElementById('btn-view-clients');
-      if (desktopBtn) desktopBtn.click();
-    });
-  }
-
-  if (btnTechs) {
-    btnTechs.addEventListener('click', () => {
-      closeDropdown();
-      const desktopBtn = document.getElementById('btn-view-technicians');
-      if (desktopBtn) desktopBtn.click();
-    });
-  }
-
-  if (btnEquipments) {
-    btnEquipments.addEventListener('click', () => {
-      closeDropdown();
-      const desktopBtn = document.getElementById('btn-view-equipments');
-      if (desktopBtn) desktopBtn.click();
-    });
-  }
-
-  if (btnHistory) {
-    btnHistory.addEventListener('click', () => {
-      closeDropdown();
-      const desktopBtn = document.getElementById('btn-view-history');
-      if (desktopBtn) desktopBtn.click();
-    });
-  }
-
-  if (btnDraft) {
-    btnDraft.addEventListener('click', () => {
-      closeDropdown();
-      saveDraft();
-    });
-  }
-
-  // Cerrar menu al hacer clic fuera
-  document.addEventListener('click', (e) => {
-    if (!dropdown.contains(e.target) && !btnMenu.contains(e.target)) {
-      closeDropdown();
-    }
-  });
 }
 
 let saveTimeout = null;
@@ -3240,10 +3200,20 @@ async function toggleEquipmentSoftDelete(id, nombre, currentStatus) {
 function initMobileMenu() {
   const btnMobileMenu = document.getElementById('btn-mobile-menu');
   const mobileMenu = document.getElementById('mobile-dropdown-menu');
+  const btnCatalogues = document.getElementById('btn-catalogues-dropdown');
+  const cataloguesMenu = document.getElementById('catalogues-menu');
+  const btnSecurity = document.getElementById('btn-security-dropdown');
+  const securityMenu = document.getElementById('security-menu');
+
+  const closeMobileMenu = () => {
+    if (mobileMenu) mobileMenu.classList.add('hidden');
+  };
 
   if (btnMobileMenu && mobileMenu) {
     btnMobileMenu.addEventListener('click', (e) => {
       e.stopPropagation();
+      if (cataloguesMenu) cataloguesMenu.classList.add('hidden');
+      if (securityMenu) securityMenu.classList.add('hidden');
       mobileMenu.classList.toggle('hidden');
     });
 
@@ -3253,11 +3223,6 @@ function initMobileMenu() {
       }
     });
   }
-
-  const btnCatalogues = document.getElementById('btn-catalogues-dropdown');
-  const cataloguesMenu = document.getElementById('catalogues-menu');
-  const btnSecurity = document.getElementById('btn-security-dropdown');
-  const securityMenu = document.getElementById('security-menu');
 
   if (btnCatalogues && cataloguesMenu) {
     btnCatalogues.addEventListener('click', (e) => {
@@ -3295,25 +3260,26 @@ function initMobileMenu() {
     });
   }
 
-  // Vincular botones del menú desplegable móvil
   const mobileNavHome = document.getElementById('btn-mobile-nav-home');
   const mobileClients = document.getElementById('btn-mobile-clients');
   const mobileTechs = document.getElementById('btn-mobile-technicians');
   const mobileEquip = document.getElementById('btn-mobile-equipments');
+  const mobileUsers = document.getElementById('btn-mobile-users');
+  const mobileChangePin = document.getElementById('btn-mobile-change-pin');
   const mobileBiometric = document.getElementById('btn-mobile-biometric');
   const mobileHistory = document.getElementById('btn-mobile-history');
   const mobileLogout = document.getElementById('btn-mobile-logout');
 
   if (mobileNavHome) {
     mobileNavHome.addEventListener('click', () => {
-      if (mobileMenu) mobileMenu.classList.add('hidden');
+      closeMobileMenu();
       switchView('view-dashboard');
     });
   }
 
   if (mobileClients) {
     mobileClients.addEventListener('click', () => {
-      if (mobileMenu) mobileMenu.classList.add('hidden');
+      closeMobileMenu();
       openModal('modal-clients');
       if (typeof fetchClients === 'function') fetchClients(false);
     });
@@ -3321,7 +3287,7 @@ function initMobileMenu() {
 
   if (mobileTechs) {
     mobileTechs.addEventListener('click', () => {
-      if (mobileMenu) mobileMenu.classList.add('hidden');
+      closeMobileMenu();
       openModal('modal-technicians');
       if (typeof fetchTechnicians === 'function') fetchTechnicians(false);
     });
@@ -3329,16 +3295,45 @@ function initMobileMenu() {
 
   if (mobileEquip) {
     mobileEquip.addEventListener('click', () => {
-      if (mobileMenu) mobileMenu.classList.add('hidden');
+      closeMobileMenu();
       openModal('modal-equipment-types');
       if (typeof updateEquipmentTypesUI === 'function') updateEquipmentTypesUI();
       if (typeof fetchEquipmentTypes === 'function') fetchEquipmentTypes(false);
     });
   }
 
+  if (mobileUsers) {
+    mobileUsers.addEventListener('click', async () => {
+      closeMobileMenu();
+      const modal = document.getElementById('modal-users');
+      if (modal) {
+        modal.classList.remove('hidden');
+        await fetchUsersData();
+        renderUsersTable();
+      }
+    });
+  }
+
+  if (mobileChangePin) {
+    mobileChangePin.addEventListener('click', () => {
+      closeMobileMenu();
+      const modal = document.getElementById('modal-change-pin');
+      if (modal) {
+        const form = document.getElementById('form-change-own-pin');
+        const errorText = document.getElementById('change-pin-error-text');
+        if (form) form.reset();
+        if (errorText) {
+          errorText.textContent = '';
+          errorText.classList.add('hidden');
+        }
+        modal.classList.remove('hidden');
+      }
+    });
+  }
+
   if (mobileBiometric) {
     mobileBiometric.addEventListener('click', () => {
-      if (mobileMenu) mobileMenu.classList.add('hidden');
+      closeMobileMenu();
       const btnReg = document.getElementById('btn-register-biometric');
       if (btnReg) btnReg.click();
     });
@@ -3346,7 +3341,7 @@ function initMobileMenu() {
 
   if (mobileHistory) {
     mobileHistory.addEventListener('click', () => {
-      if (mobileMenu) mobileMenu.classList.add('hidden');
+      closeMobileMenu();
       openModal('modal-history');
       fetchHistoryData();
     });
@@ -3354,7 +3349,7 @@ function initMobileMenu() {
 
   if (mobileLogout) {
     mobileLogout.addEventListener('click', () => {
-      if (mobileMenu) mobileMenu.classList.add('hidden');
+      closeMobileMenu();
       logoutUser();
     });
   }

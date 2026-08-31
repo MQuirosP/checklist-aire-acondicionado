@@ -89,16 +89,36 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
             </svg>
           </button>
-          <div id="mobile-dropdown-menu" class="absolute right-0 mt-2 w-52 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-1.5 space-y-1 z-50 hidden">
-            <button type="button" id="btn-mobile-nav-home" class="w-full text-left px-3 py-2 text-blue-400 font-semibold hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">🏠 Menú Principal</button>
-            <button type="button" id="btn-mobile-clients" class="w-full text-left px-3 py-2 text-slate-200 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">👥 Clientes</button>
-            <button type="button" id="btn-mobile-technicians" class="w-full text-left px-3 py-2 text-slate-200 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">👨‍🔧 Técnicos</button>
-            <button type="button" id="btn-mobile-equipments" class="w-full text-left px-3 py-2 text-slate-200 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">⚙️ Catálogo Equipos</button>
-            <button type="button" id="btn-mobile-users" class="w-full text-left px-3 py-2 text-amber-300 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2 hidden">🔐 Gestión Usuarios</button>
-            <button type="button" id="btn-mobile-change-pin" class="w-full text-left px-3 py-2 text-amber-300 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">🔑 Cambiar mi PIN</button>
-            <button type="button" id="btn-mobile-biometric" class="w-full text-left px-3 py-2 text-emerald-400 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">👆 Vincular Biometría</button>
-            <button type="button" id="btn-mobile-history" class="w-full text-left px-3 py-2 text-blue-400 font-semibold hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">📋 Ver Registros</button>
-            <button type="button" id="btn-mobile-logout" class="w-full text-left px-3 py-2 text-rose-400 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2 border-t border-slate-800 mt-1">🔒 Cerrar Sesión</button>
+          <div id="mobile-dropdown-menu" class="absolute right-0 mt-2 w-60 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-2 space-y-2 z-50 hidden">
+            <div>
+              <p class="px-2 pb-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-400">Navegación</p>
+              <div class="space-y-1">
+                <button type="button" id="btn-mobile-nav-home" class="w-full text-left px-3 py-2 text-blue-400 font-semibold hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">🏠 Menú Principal</button>
+                <button type="button" id="btn-mobile-history" class="w-full text-left px-3 py-2 text-blue-400 font-semibold hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">📋 Ver Registros</button>
+              </div>
+            </div>
+
+            <div>
+              <p class="px-2 pb-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-400">Administración</p>
+              <div class="space-y-1">
+                <button type="button" id="btn-mobile-clients" class="w-full text-left px-3 py-2 text-slate-200 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">👥 Clientes</button>
+                <button type="button" id="btn-mobile-technicians" class="w-full text-left px-3 py-2 text-slate-200 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">👨‍🔧 Técnicos</button>
+                <button type="button" id="btn-mobile-equipments" class="w-full text-left px-3 py-2 text-slate-200 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">⚙️ Catálogo Equipos</button>
+                <button type="button" id="btn-mobile-users" class="w-full text-left px-3 py-2 text-amber-300 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2 border border-amber-500/20 bg-amber-500/5 hidden">🔐 Gestión Usuarios</button>
+              </div>
+            </div>
+
+            <div>
+              <p class="px-2 pb-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-400">Seguridad</p>
+              <div class="space-y-1">
+                <button type="button" id="btn-mobile-change-pin" class="w-full text-left px-3 py-2 text-amber-300 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2 border border-amber-500/20 bg-amber-500/5">🔑 Cambiar mi PIN</button>
+                <button type="button" id="btn-mobile-biometric" class="w-full text-left px-3 py-2 text-emerald-400 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">👆 Vincular Biometría</button>
+              </div>
+            </div>
+
+            <div class="pt-1 border-t border-slate-800">
+              <button type="button" id="btn-mobile-logout" class="w-full text-left px-3 py-2 text-rose-400 hover:bg-slate-800 rounded-lg text-xs flex items-center gap-2">🔒 Cerrar Sesión</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1084,39 +1104,41 @@
 
   <!-- MODAL CAMBIAR MI PIN -->
   <div id="modal-change-pin" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center hidden p-4">
-    <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-          <span>🔑</span> Cambiar mi PIN
+    <div class="bg-white rounded-2xl max-w-sm w-full shadow-2xl flex flex-col overflow-hidden">
+      <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+        <h3 class="text-base font-semibold flex items-center gap-2">
+          <span class="text-amber-300">🔑</span> Cambiar mi PIN
         </h3>
-        <button type="button" id="btn-close-change-pin-x" class="text-slate-400 hover:text-slate-600 text-lg font-bold">✕</button>
+        <button type="button" id="btn-close-change-pin-x" class="text-slate-400 hover:text-white text-xl font-bold p-1">✕</button>
       </div>
 
-      <form id="form-change-own-pin" class="space-y-3.5">
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">PIN Actual</label>
-          <input type="password" id="change-pin-current" maxlength="4" placeholder="••••" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-center font-mono tracking-widest focus:ring-2 focus:ring-blue-500">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Nuevo PIN (4 dígitos)</label>
-          <input type="password" id="change-pin-new" maxlength="4" placeholder="••••" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-center font-mono tracking-widest focus:ring-2 focus:ring-blue-500">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Confirmar Nuevo PIN</label>
-          <input type="password" id="change-pin-confirm" maxlength="4" placeholder="••••" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-center font-mono tracking-widest focus:ring-2 focus:ring-blue-500">
-        </div>
+      <div class="p-4 bg-slate-50 border-b border-slate-200">
+        <form id="form-change-own-pin" class="space-y-3.5">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-700 mb-1">PIN Actual</label>
+            <input type="password" id="change-pin-current" maxlength="4" placeholder="••••" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-center font-mono tracking-widest bg-white focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-700 mb-1">Nuevo PIN (4 dígitos)</label>
+            <input type="password" id="change-pin-new" maxlength="4" placeholder="••••" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-center font-mono tracking-widest bg-white focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-700 mb-1">Confirmar Nuevo PIN</label>
+            <input type="password" id="change-pin-confirm" maxlength="4" placeholder="••••" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-center font-mono tracking-widest bg-white focus:ring-2 focus:ring-blue-500">
+          </div>
 
-        <div id="change-pin-error-text" class="text-xs text-rose-600 font-semibold text-center hidden"></div>
+          <div id="change-pin-error-text" class="text-xs text-rose-600 font-semibold text-center hidden"></div>
 
-        <div class="flex gap-2 pt-2">
-          <button type="button" id="btn-cancel-change-pin" class="flex-1 py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-xl text-xs hover:bg-slate-200 transition">
-            Cancelar
-          </button>
-          <button type="submit" id="btn-submit-change-pin" class="flex-1 py-2.5 bg-blue-600 text-white font-semibold rounded-xl text-xs hover:bg-blue-700 transition shadow-md">
-            Actualizar PIN
-          </button>
-        </div>
-      </form>
+          <div class="flex gap-2 pt-2">
+            <button type="button" id="btn-cancel-change-pin" class="flex-1 py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-xl text-xs hover:bg-slate-200 transition">
+              Cancelar
+            </button>
+            <button type="submit" id="btn-submit-change-pin" class="flex-1 py-2.5 bg-blue-600 text-white font-semibold rounded-xl text-xs hover:bg-blue-700 transition shadow-md">
+              Actualizar PIN
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 

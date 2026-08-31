@@ -92,7 +92,45 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/TU_SCRIPT_ID/exec'
 
 ---
 
-## 📝 Secciones Incluidas en el Checklist
+## 🎨 Estilo estándar de modales
+
+Todos los modales del sistema deben seguir la misma estructura visual para mantener consistencia UX y facilitar mantenimiento:
+
+- Contenedor base: `fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center hidden p-4`
+- Ventana principal: `bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden`
+- Encabezado: `bg-slate-900 text-white px-6 py-4 flex items-center justify-between`
+- Título: `text-base font-semibold` con icono y color blanco
+- Cierre: botón con `text-slate-400 hover:text-white text-xl font-bold p-1`
+- Cuerpo: `p-4 bg-slate-50 border-b border-slate-200` para formularios y contenido principal
+- Botones de acción: `flex gap-2` con primario `bg-blue-600 hover:bg-blue-700 text-white` y secundario `bg-slate-100 text-slate-700 hover:bg-slate-200`
+- Inputs: `border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500`
+- Etiquetas: `text-[11px] font-semibold text-slate-700`
+
+Esta convención aplica a los modales de usuarios, historial, seguridad y cambio de PIN para mantener la misma apariencia visual en desktop y mobile.
+
+---
+
+## � Permisos por Rol y Aislamiento por Técnico
+
+La aplicación define dos perfiles principales con visibilidad diferenciada en el menú y en los accesos funcionales:
+
+| Rol | Puede acceder | No puede acceder |
+| --- | --- | --- |
+| Administrador | Usuarios, técnicos, clientes, catálogo de equipos, historial, seguridad y configuración global | Nada relevante del ámbito administrativo (salvo lo que corresponda a su rol) |
+| Técnico | Clientes, catálogo de equipos, historial de sus órdenes, creación de checklist, seguridad personal (PIN/biometría) | Usuarios, gestión de otros técnicos, administración global |
+
+### Regla de negocio aplicada
+
+- El técnico vive dentro de su propio dominio operativo: clientes y equipo que él gestiona.
+- El técnico no puede ver ni administrar usuarios ni otros técnicos.
+- La administración global continúa reservada para el rol Administrador.
+- La seguridad personal del técnico (cambio de PIN, biometría y cierre de sesión) permanece disponible sin exponer funciones de administración.
+
+Esto evita el problema de permisos cruzados y mantiene el aislamiento por técnico o tenant funcional, tal como se requiere para equipos de trabajo distribuidos o varios técnicos con sus propios clientes y catálogos.
+
+---
+
+## �📝 Secciones Incluidas en el Checklist
 
 1. **Información General**: Fecha, N° de Orden/OT, Cliente, Técnico, Tipo de Unidad, Marca/Modelo, Tag/ID, Refrigerante.
 2. **Unidad Evaporadora (Interior)**: 9 puntos de inspección (B/R/M/N/A) + observaciones por punto.
