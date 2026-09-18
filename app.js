@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initEquipmentManagement();
   initMobileMenu();
   initChangeOwnPinModal();
+  initInstallationModule();
 });
 
 function isUserAdmin(user) {
@@ -1407,6 +1408,11 @@ function loadDraft() {
     const tempInjInput = document.getElementById('med_temp_inyeccion');
     if (tempInjInput) tempInjInput.dispatchEvent(new Event('input'));
 
+    // Actualizar secciones dinámicas y badge de vacío según el borrador
+    toggleEquipmentTypeSections();
+    const vacioInput = document.getElementById('inst_vacio_micrones');
+    if (vacioInput) vacioInput.dispatchEvent(new Event('input'));
+
   } catch (e) {
     console.error('Error al cargar borrador:', e);
   }
@@ -1437,6 +1443,12 @@ function resetFormComplete() {
   if (deltaBadge) {
     deltaBadge.textContent = '-- °C';
     deltaBadge.className = 'text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-500';
+  }
+
+  const vacioBadge = document.getElementById('badge-vacio-micrones');
+  if (vacioBadge) {
+    vacioBadge.className = 'text-[10px] font-bold px-1.5 py-0.2 rounded bg-slate-200 text-slate-600';
+    vacioBadge.textContent = 'Meta < 500 µm';
   }
 
   isOtDuplicate = false;
@@ -1590,6 +1602,23 @@ function initFormSubmission() {
     form.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
       payload[radio.name] = radio.value;
     });
+
+    // Mapeo amigable de campos de instalación para persistencia y lectura
+    if (payload.tipoMantenimiento === 'Instalación') {
+      payload['Inst: Longitud Tubería (m)'] = payload.inst_longitud_tuberia || '';
+      payload['Inst: Diámetros Tubería'] = payload.inst_diametros || '';
+      payload['Inst: Vacío Alcanzado (Micrones)'] = payload.inst_vacio_micrones || '';
+      payload['Inst: Retención Vacío (min)'] = payload.inst_tiempo_vacio || '';
+      payload['Inst: Prueba Nitrógeno'] = payload.inst_prueba_nitrogeno || '';
+      payload['Inst: Presión Nitrógeno'] = payload.inst_presion_nitrogeno || '';
+      payload['Inst: Gas Adicional'] = payload.inst_carga_adicional || '';
+      payload['Inst: Válvulas Servicio'] = payload.inst_valvulas_servicio || '';
+      payload['Inst: Chk Evaporadora'] = payload.inst_chk_evap || 'OK';
+      payload['Inst: Chk Condensadora'] = payload.inst_chk_cond || 'OK';
+      payload['Inst: Chk Aislamiento'] = payload.inst_chk_aislamiento || 'OK';
+      payload['Inst: Chk Drenaje'] = payload.inst_chk_drenaje || 'OK';
+      payload['Inst: Chk Electrico'] = payload.inst_chk_electrico || 'OK';
+    }
 
     // Auto-registrar equipo personalizado en el Catálogo de Equipos si no existía previamente
     if (payload.tipoUnidad === 'Otro' && payload.subtipoEquipo && payload.subtipoEquipo !== '__MANAGE_EQUIPMENT__') {
@@ -1917,11 +1946,13 @@ function renderHistoryTable(query) {
     tr.className = 'hover:bg-slate-50 transition border-b border-slate-100';
 
     const fechaFormatted = formatLocalDate(item['Fecha Inspección'] || item['Fecha / Hora Registro']);
+    const isRowInstalacion = (item['Tipo de Mantenimiento'] || '').toString().trim() === 'Instalación';
+    const rowBadgeHTML = isRowInstalacion ? '<span class="px-1.5 py-0.2 rounded text-[9px] bg-emerald-100 text-emerald-800 border border-emerald-300 font-semibold ml-1">Instalación</span>' : '';
 
     tr.innerHTML = `
       <!-- Desktop Cells -->
       <td class="hidden sm:table-cell py-2.5 px-3 font-medium text-slate-700 whitespace-nowrap">${fechaFormatted}</td>
-      <td class="hidden sm:table-cell py-2.5 px-3 font-bold text-blue-600 whitespace-nowrap">${item['N° Orden / OT'] || '--'}</td>
+      <td class="hidden sm:table-cell py-2.5 px-3 font-bold text-blue-600 whitespace-nowrap">${item['N° Orden / OT'] || '--'}${rowBadgeHTML}</td>
       <td class="hidden sm:table-cell py-2.5 px-3 text-slate-800">${item['Cliente / Ubicación'] || '--'}</td>
       <td class="hidden sm:table-cell py-2.5 px-3 text-slate-600">${item['Técnico Responsable'] || '--'}</td>
       <td class="hidden sm:table-cell py-2.5 px-3 text-slate-600">${item['Tipo de Unidad'] || ''} ${item['Marca / Modelo'] || ''}</td>
@@ -1938,7 +1969,7 @@ function renderHistoryTable(query) {
         <details class="group">
           <summary class="flex items-center justify-between font-bold text-slate-800 cursor-pointer list-none select-none">
             <div>
-              <span class="text-blue-600 font-bold text-xs">${item['N° Orden / OT'] || '--'}</span>
+              <span class="text-blue-600 font-bold text-xs">${item['N° Orden / OT'] || '--'}</span>${rowBadgeHTML}
               <span class="text-slate-500 font-normal text-[11px] block">${item['Cliente / Ubicación'] || '--'}</span>
             </div>
             <div class="flex items-center gap-2">
@@ -2086,6 +2117,21 @@ function openRecordDetail(record) {
   }
 
   const isEquipoOtro = (record['Tipo de Unidad'] || '').toString().trim() === 'Otro';
+  const isInstalacion = (tipoMant || '').toString().trim() === 'Instalación';
+
+  const modalTitle = document.getElementById('modal-detail-title');
+  if (modalTitle) {
+    modalTitle.textContent = isInstalacion ? 'Acta de Instalación y Puesta en Marcha' : 'Detalle del Reporte de Mantenimiento';
+  }
+
+  let badgeClass = 'bg-blue-100 text-blue-800 border-blue-300';
+  let badgeText = tipoMant;
+  if (isInstalacion) {
+    badgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-300';
+    badgeText = 'Instalación y Puesta en Marcha';
+  } else if (tipoMant === 'Correctivo') {
+    badgeClass = 'bg-amber-100 text-amber-800 border-amber-300';
+  }
 
   const tagRefrigeranteHTML = isEquipoOtro
     ? `<div><span class="text-slate-400 block text-[9.5px]">ID / Tag Equipo:</span> <strong class="text-slate-800 font-semibold truncate block">${getVal('ID / Tag Equipo')}</strong></div>`
@@ -2104,11 +2150,71 @@ function openRecordDetail(record) {
     </div>
   `;
 
+  const instalacionBlockHTML = isEquipoOtro ? '' : `
+    <!-- Bloque de Instalación y Puesta en Marcha -->
+    <div class="border border-slate-200 rounded-xl p-1.5 px-2 bg-white shadow-sm space-y-1">
+      <h4 class="font-bold text-slate-800 text-[10px] border-b border-slate-100 pb-0.5 flex items-center justify-between">
+        <span class="flex items-center gap-1.5">🛠️ Protocolo de Instalación, Hermeticidad y Vacío</span>
+        <span class="text-[8.5px] text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">Garantía Certificada</span>
+      </h4>
+      <div class="grid grid-cols-3 sm:grid-cols-6 gap-1 text-center">
+        <div class="bg-slate-50 p-1 rounded border border-slate-100">
+          <span class="text-slate-400 block text-[8px]">Tubería:</span>
+          <strong class="text-slate-800 text-[9.5px]">${getVal('Inst: Longitud Tubería (m)') || getVal('inst_longitud_tuberia') || '--'} m</strong>
+        </div>
+        <div class="bg-slate-50 p-1 rounded border border-slate-100">
+          <span class="text-slate-400 block text-[8px]">Diámetros:</span>
+          <strong class="text-slate-800 text-[9.5px]">${getVal('Inst: Diámetros Tubería') || getVal('inst_diametros') || '--'}</strong>
+        </div>
+        <div class="bg-blue-50 p-1 rounded border border-blue-200">
+          <span class="text-blue-600 block text-[8px] font-semibold">Vacío Final:</span>
+          <strong class="text-blue-800 text-[9.5px]">${getVal('Inst: Vacío Alcanzado (Micrones)') || getVal('inst_vacio_micrones') || '--'} µm</strong>
+        </div>
+        <div class="bg-slate-50 p-1 rounded border border-slate-100">
+          <span class="text-slate-400 block text-[8px]">Retención:</span>
+          <strong class="text-slate-800 text-[9.5px]">${getVal('Inst: Retención Vacío (min)') || getVal('inst_tiempo_vacio') || '--'} min</strong>
+        </div>
+        <div class="bg-slate-50 p-1 rounded border border-slate-100">
+          <span class="text-slate-400 block text-[8px]">Nitrógeno:</span>
+          <strong class="text-slate-800 text-[9.5px]">${getVal('Inst: Prueba Nitrógeno') || getVal('inst_prueba_nitrogeno') || '--'}</strong>
+        </div>
+        <div class="bg-slate-50 p-1 rounded border border-slate-100">
+          <span class="text-slate-400 block text-[8px]">Gas Adicional:</span>
+          <strong class="text-slate-800 text-[9.5px]">${getVal('Inst: Gas Adicional') || getVal('inst_carga_adicional') || '0 gr'}</strong>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-1 pt-0.5">
+        <div class="p-1 bg-slate-50 border border-slate-200 rounded text-[9px] flex items-center justify-between">
+          <span class="text-slate-700 truncate mr-1">Evaporadora nivel:</span>
+          <span class="px-1 py-0.2 rounded font-bold text-[8px] ${(getVal('Inst: Chk Evaporadora') || getVal('inst_chk_evap')) === 'M' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-800'}">${getVal('Inst: Chk Evaporadora') || getVal('inst_chk_evap') || 'OK'}</span>
+        </div>
+        <div class="p-1 bg-slate-50 border border-slate-200 rounded text-[9px] flex items-center justify-between">
+          <span class="text-slate-700 truncate mr-1">Condensadora base:</span>
+          <span class="px-1 py-0.2 rounded font-bold text-[8px] ${(getVal('Inst: Chk Condensadora') || getVal('inst_chk_cond')) === 'M' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-800'}">${getVal('Inst: Chk Condensadora') || getVal('inst_chk_cond') || 'OK'}</span>
+        </div>
+        <div class="p-1 bg-slate-50 border border-slate-200 rounded text-[9px] flex items-center justify-between">
+          <span class="text-slate-700 truncate mr-1">Pase y aislante UV:</span>
+          <span class="px-1 py-0.2 rounded font-bold text-[8px] ${(getVal('Inst: Chk Aislamiento') || getVal('inst_chk_aislamiento')) === 'M' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-800'}">${getVal('Inst: Chk Aislamiento') || getVal('inst_chk_aislamiento') || 'OK'}</span>
+        </div>
+        <div class="p-1 bg-slate-50 border border-slate-200 rounded text-[9px] flex items-center justify-between">
+          <span class="text-slate-700 truncate mr-1">Drenaje probado:</span>
+          <span class="px-1 py-0.2 rounded font-bold text-[8px] ${(getVal('Inst: Chk Drenaje') || getVal('inst_chk_drenaje')) === 'M' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-800'}">${getVal('Inst: Chk Drenaje') || getVal('inst_chk_drenaje') || 'OK'}</span>
+        </div>
+        <div class="p-1 bg-slate-50 border border-slate-200 rounded text-[9px] flex items-center justify-between">
+          <span class="text-slate-700 truncate mr-1">Eléctrico / Tierra:</span>
+          <span class="px-1 py-0.2 rounded font-bold text-[8px] ${(getVal('Inst: Chk Electrico') || getVal('inst_chk_electrico')) === 'M' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-800'}">${getVal('Inst: Chk Electrico') || getVal('inst_chk_electrico') || 'OK'}</span>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const medicionesTitle = isInstalacion ? '📊 Pruebas Operativas de Puesta en Marcha' : '📊 Mediciones Técnicas';
+
   const medicionesBlockHTML = isEquipoOtro ? '' : `
     <!-- Section 4: Operational Measurements Summary -->
     <div class="border border-slate-200 rounded-xl p-2 bg-white shadow-sm">
       <h4 class="font-bold text-slate-800 text-[11px] mb-1 border-b border-slate-100 pb-0.5 flex items-center gap-1.5">
-        📊 Mediciones Técnicas
+        ${medicionesTitle}
       </h4>
       <div class="grid grid-cols-3 sm:grid-cols-6 gap-1 text-xs text-center">
         <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[8.5px]">Voltaje:</span> <strong class="text-slate-800 text-[10px]">${getVal('Med: Voltaje (V AC)')} V</strong></div>
@@ -2127,7 +2233,7 @@ function openRecordDetail(record) {
       <div class="flex flex-wrap justify-between items-center border-b border-slate-200 pb-1 gap-2">
         <div class="flex items-center gap-2">
           <span class="text-xs font-bold text-blue-600">Orden: ${getVal('N° Orden / OT')}</span>
-          <span class="px-2 py-0.5 text-[10px] font-bold rounded-full ${tipoMant === 'Correctivo' ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-blue-100 text-blue-800 border border-blue-300'}">${tipoMant}</span>
+          <span class="px-2 py-0.5 text-[10px] font-bold rounded-full ${badgeClass}">${badgeText}</span>
         </div>
         <span class="text-xs text-slate-500 font-medium">Fecha: ${fechaVal}</span>
       </div>
@@ -2139,7 +2245,7 @@ function openRecordDetail(record) {
       </div>
     </div>
 
-    ${checklistBlockHTML}
+    ${isInstalacion ? instalacionBlockHTML : checklistBlockHTML}
 
     ${medicionesBlockHTML}
 
@@ -2283,6 +2389,25 @@ function loadRecordIntoForm(record) {
   } else {
     setSelectVal('refrigerante', rec['Refrigerante']);
   }
+
+  // Carga de campos de Instalación (si aplica)
+  setVal('inst_longitud_tuberia', rec['Inst: Longitud Tubería (m)'] || rec['inst_longitud_tuberia'] || '');
+  setSelectVal('inst_diametros', rec['Inst: Diámetros Tubería'] || rec['inst_diametros'] || '');
+  setVal('inst_vacio_micrones', rec['Inst: Vacío Alcanzado (Micrones)'] || rec['inst_vacio_micrones'] || '');
+  setVal('inst_tiempo_vacio', rec['Inst: Retención Vacío (min)'] || rec['inst_tiempo_vacio'] || '');
+  setSelectVal('inst_prueba_nitrogeno', rec['Inst: Prueba Nitrógeno'] || rec['inst_prueba_nitrogeno'] || 'Conforme (Hermético)');
+  setVal('inst_presion_nitrogeno', rec['Inst: Presión Nitrógeno'] || rec['inst_presion_nitrogeno'] || '');
+  setVal('inst_carga_adicional', rec['Inst: Gas Adicional'] || rec['inst_carga_adicional'] || '');
+  setSelectVal('inst_valvulas_servicio', rec['Inst: Válvulas Servicio'] || rec['inst_valvulas_servicio'] || '100% Abiertas y Ajustadas');
+
+  setRadio('inst_chk_evap', rec['Inst: Chk Evaporadora'] || rec['inst_chk_evap'] || 'B');
+  setRadio('inst_chk_cond', rec['Inst: Chk Condensadora'] || rec['inst_chk_cond'] || 'B');
+  setRadio('inst_chk_aislamiento', rec['Inst: Chk Aislamiento'] || rec['inst_chk_aislamiento'] || 'B');
+  setRadio('inst_chk_drenaje', rec['Inst: Chk Drenaje'] || rec['inst_chk_drenaje'] || 'B');
+  setRadio('inst_chk_electrico', rec['Inst: Chk Electrico'] || rec['inst_chk_electrico'] || 'B');
+
+  const vacioInput = document.getElementById('inst_vacio_micrones');
+  if (vacioInput) vacioInput.dispatchEvent(new Event('input'));
 
   // Sección 1: Evaporadora
   setRadio('evap_gabinete', record['Evap: Gabinete Externo']);
@@ -3024,9 +3149,15 @@ function toggleEquipmentTypeSections(val) {
   const sEvap = document.getElementById('section-evaporadora');
   const sCond = document.getElementById('section-condensadora');
   const sElec = document.getElementById('section-electrico');
+  const sInst = document.getElementById('section-instalacion');
   const sMed = document.getElementById('section-mediciones');
 
-  const isOtro = (val || '').toString().trim() === 'Otro';
+  const tipoMantSelect = document.getElementById('tipoMantenimiento');
+  const tipoMant = (tipoMantSelect ? tipoMantSelect.value : 'Preventivo') || 'Preventivo';
+  const isInstalacion = tipoMant.toString().trim() === 'Instalación';
+
+  const unitVal = val !== undefined ? val : (document.getElementById('tipoUnidad') ? document.getElementById('tipoUnidad').value : '');
+  const isOtro = (unitVal || '').toString().trim() === 'Otro';
 
   if (isOtro) {
     if (containerSubtipo) containerSubtipo.classList.remove('hidden');
@@ -3035,21 +3166,33 @@ function toggleEquipmentTypeSections(val) {
     if (sEvap) sEvap.classList.add('hidden');
     if (sCond) sCond.classList.add('hidden');
     if (sElec) sElec.classList.add('hidden');
+    if (sInst) sInst.classList.add('hidden');
     if (sMed) sMed.classList.add('hidden');
     if (typeof fetchEquipmentTypes === 'function') fetchEquipmentTypes(true);
   } else {
     if (containerSubtipo) containerSubtipo.classList.add('hidden');
     if (subtipoSelect) subtipoSelect.value = '';
     if (containerRefrigerante) containerRefrigerante.classList.remove('hidden');
-    if (sEvap) sEvap.classList.remove('hidden');
-    if (sCond) sCond.classList.remove('hidden');
-    if (sElec) sElec.classList.remove('hidden');
-    if (sMed) sMed.classList.remove('hidden');
+
+    if (isInstalacion) {
+      if (sEvap) sEvap.classList.add('hidden');
+      if (sCond) sCond.classList.add('hidden');
+      if (sElec) sElec.classList.add('hidden');
+      if (sInst) sInst.classList.remove('hidden');
+      if (sMed) sMed.classList.remove('hidden');
+    } else {
+      if (sEvap) sEvap.classList.remove('hidden');
+      if (sCond) sCond.classList.remove('hidden');
+      if (sElec) sElec.classList.remove('hidden');
+      if (sInst) sInst.classList.add('hidden');
+      if (sMed) sMed.classList.remove('hidden');
+    }
   }
 }
 
 function initEquipmentManagement() {
   const tipoUnidadSelect = document.getElementById('tipoUnidad');
+  const tipoMantSelect = document.getElementById('tipoMantenimiento');
   const containerSubtipo = document.getElementById('container-subtipo-equipo');
   const containerRefrigerante = document.getElementById('container-refrigerante');
   const subtipoSelect = document.getElementById('subtipoEquipo');
@@ -3063,6 +3206,12 @@ function initEquipmentManagement() {
   if (tipoUnidadSelect) {
     tipoUnidadSelect.addEventListener('change', (e) => {
       toggleEquipmentTypeSections(e.target.value);
+    });
+  }
+
+  if (tipoMantSelect) {
+    tipoMantSelect.addEventListener('change', () => {
+      toggleEquipmentTypeSections(tipoUnidadSelect ? tipoUnidadSelect.value : '');
     });
   }
 
@@ -3584,3 +3733,38 @@ function initChangeOwnPinModal() {
     });
   }
 }
+
+/**
+ * 11. Módulo Especializado de Instalación y Puesta en Marcha (Commissioning)
+ */
+function initInstallationModule() {
+  const btnBulkInstall = document.getElementById('btn-bulk-install-ok');
+  if (btnBulkInstall) {
+    btnBulkInstall.addEventListener('click', () => {
+      const checks = ['inst_chk_evap', 'inst_chk_cond', 'inst_chk_aislamiento', 'inst_chk_drenaje', 'inst_chk_electrico'];
+      checks.forEach(name => {
+        const radio = document.querySelector(`input[name="${name}"][value="B"]`);
+        if (radio) radio.checked = true;
+      });
+    });
+  }
+
+  const vacioInput = document.getElementById('inst_vacio_micrones');
+  const vacioBadge = document.getElementById('badge-vacio-micrones');
+  if (vacioInput && vacioBadge) {
+    vacioInput.addEventListener('input', () => {
+      const val = parseFloat(vacioInput.value);
+      if (isNaN(val) || val <= 0) {
+        vacioBadge.className = 'text-[10px] font-bold px-1.5 py-0.2 rounded bg-slate-200 text-slate-600';
+        vacioBadge.textContent = 'Meta < 500 µm';
+      } else if (val <= 500) {
+        vacioBadge.className = 'text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 border border-emerald-300';
+        vacioBadge.textContent = '✓ Óptimo (' + val + ' µm)';
+      } else {
+        vacioBadge.className = 'text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 border border-amber-300';
+        vacioBadge.textContent = '⚠️ > 500 µm';
+      }
+    });
+  }
+}
+

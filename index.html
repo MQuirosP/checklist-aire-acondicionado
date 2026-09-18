@@ -392,10 +392,11 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1" for="tipoMantenimiento">Tipo Mantenimiento:</label>
+            <label class="block text-xs font-semibold text-slate-600 mb-1" for="tipoMantenimiento">Tipo de Servicio:</label>
             <select id="tipoMantenimiento" name="tipoMantenimiento" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 bg-white">
               <option value="Preventivo" selected>Preventivo</option>
               <option value="Correctivo">Correctivo</option>
+              <option value="Instalación">Instalación</option>
             </select>
           </div>
 
@@ -458,6 +459,189 @@
               <option value="R-404A">R-404A</option>
               <option value="Otro">Otro</option>
             </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECCIÓN ESPECIALIZADA: PROTOCOLO DE INSTALACIÓN, HERMETICIDAD Y VACÍO (#section-instalacion) -->
+      <section id="section-instalacion" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hidden">
+        <div class="bg-slate-800 text-white px-5 py-3.5 flex justify-between items-center">
+          <h2 class="font-semibold text-base flex items-center gap-2">
+            <span class="bg-emerald-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">🛠️</span>
+            Protocolo de Instalación, Hermeticidad y Vacío (Puesta en Marcha)
+          </h2>
+          <button type="button" id="btn-bulk-install-ok" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded transition flex items-center gap-1">
+            ✓ Marcar Todo Conforme (OK)
+          </button>
+        </div>
+
+        <div class="p-5 space-y-5">
+          <!-- Sub-bloque 1: Parámetros Frigoríficos y Prueba de Vacío -->
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-1.5">
+              <span>🧪</span> Circuito Frigorífico, Presurización y Vacío
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1" for="inst_longitud_tuberia">Longitud Tubería:</label>
+                <div class="flex items-center gap-1">
+                  <input type="number" step="0.1" min="0" id="inst_longitud_tuberia" name="inst_longitud_tuberia" placeholder="Ej. 4.5" class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+                  <span class="text-xs font-medium text-slate-500 whitespace-nowrap">m</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1" for="inst_diametros">Diámetros Tubería:</label>
+                <select id="inst_diametros" name="inst_diametros" class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+                  <option value="" selected>Seleccionar...</option>
+                  <option value="1/4 - 3/8">1/4" Liq. / 3/8" Gas</option>
+                  <option value="1/4 - 1/2">1/4" Liq. / 1/2" Gas</option>
+                  <option value="1/4 - 5/8">1/4" Liq. / 5/8" Gas</option>
+                  <option value="3/8 - 5/8">3/8" Liq. / 5/8" Gas</option>
+                  <option value="3/8 - 3/4">3/8" Liq. / 3/4" Gas</option>
+                  <option value="Otro">Otro diámetro</option>
+                </select>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <label class="block text-xs font-semibold text-slate-600" for="inst_vacio_micrones">Vacío Alcanzado:</label>
+                  <span id="badge-vacio-micrones" class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-slate-200 text-slate-600">Meta &lt; 500 µm</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <input type="number" step="1" min="0" id="inst_vacio_micrones" name="inst_vacio_micrones" placeholder="Ej. 380" class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+                  <span class="text-xs font-medium text-slate-500 whitespace-nowrap">µm</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1" for="inst_tiempo_vacio">Retención Vacío:</label>
+                <div class="flex items-center gap-1">
+                  <input type="number" step="1" min="0" id="inst_tiempo_vacio" name="inst_tiempo_vacio" placeholder="Ej. 15" class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+                  <span class="text-xs font-medium text-slate-500 whitespace-nowrap">min</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1" for="inst_prueba_nitrogeno">Prueba Nitrógeno:</label>
+                <select id="inst_prueba_nitrogeno" name="inst_prueba_nitrogeno" class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+                  <option value="Conforme (Hermético)" selected>Conforme (Hermético)</option>
+                  <option value="No Realizada">No Realizada</option>
+                  <option value="N/A">N/A</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1" for="inst_presion_nitrogeno">Presión Nitrógeno:</label>
+                <div class="flex items-center gap-1">
+                  <input type="number" step="5" min="0" id="inst_presion_nitrogeno" name="inst_presion_nitrogeno" placeholder="Ej. 350" class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+                  <span class="text-xs font-medium text-slate-500 whitespace-nowrap">PSI</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1" for="inst_carga_adicional">Gas Adicional:</label>
+                <div class="flex items-center gap-1">
+                  <input type="text" id="inst_carga_adicional" name="inst_carga_adicional" placeholder="0 (Precargado) o gr" class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1" for="inst_valvulas_servicio">Válvulas Servicio:</label>
+                <select id="inst_valvulas_servicio" name="inst_valvulas_servicio" class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500">
+                  <option value="100% Abiertas y Ajustadas" selected>100% Abiertas y Ajustadas</option>
+                  <option value="Pendiente">Pendiente</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sub-bloque 2: Checklist de Montaje Mecánico, Drenaje y Seguridad Eléctrica -->
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-1.5">
+              <span>📋</span> Verificaciones de Montaje Mecánico, Drenaje y Seguridad
+            </h3>
+            <div class="space-y-3" id="section-install-checks">
+              <!-- Item 1: Evaporadora -->
+              <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <span class="font-medium text-sm text-slate-800">1. Montaje y Nivelación de Unidad Evaporadora</span>
+                    <p class="text-[11px] text-slate-500">Placa nivelada sólidamente con caída leve hacia el lado del desagüe.</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <label class="radio-btn"><input type="radio" name="inst_chk_evap" value="B" checked><span>OK</span></label>
+                    <label class="radio-btn"><input type="radio" name="inst_chk_evap" value="R"><span>R</span></label>
+                    <label class="radio-btn"><input type="radio" name="inst_chk_evap" value="M"><span>M</span></label>
+                    <label class="radio-btn"><input type="radio" name="inst_chk_evap" value="N/A"><span>N/A</span></label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Item 2: Condensadora -->
+              <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <span class="font-medium text-sm text-slate-800">2. Fijación y Base de Unidad Condensadora</span>
+                    <p class="text-[11px] text-slate-500">Soportes/base nivelada con amortiguadores de vibración colocados.</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <label class="radio-btn"><input type="radio" name="inst_chk_cond" value="B" checked><span>OK</span></label>
+                    <label class="radio-btn"><input type="radio" name="inst_chk_cond" value="R"><span>R</span></label>
+                    <label class="radio-btn"><input type="radio" name="inst_chk_cond" value="M"><span>M</span></label>
+                    <label class="radio-btn"><input type="radio" name="inst_chk_cond" value="N/A"><span>N/A</span></label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Item 3: Pase de Muro y Aislamiento -->
+              <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <span class="font-medium text-sm text-slate-800">3. Pase de Muro y Aislamiento Térmico UV</span>
+                    <p class="text-[11px] text-slate-500">Pase sellado herméticamente, coquilla aislante sin empalmes descubiertos y cinta UV.</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <label class="radio-btn"><input type="radio" name="inst_chk_aislamiento" value="B" checked><span>OK</span></label>
+                    <label class="radio-btn"><input type="radio" name="inst_chk_aislamiento" value="R"><span>R</span></label>
+                    <label class="radio-btn"><input type="radio" name="inst_chk_aislamiento" value="M"><span>M</span></label>
+                    <label class="radio-btn"><input type="radio" name="inst_chk_aislamiento" value="N/A"><span>N/A</span></label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Item 4: Drenaje Hidráulico -->
+              <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <span class="font-medium text-sm text-slate-800">4. Prueba Hidráulica de Desagüe / Drenaje</span>
+                    <p class="text-[11px] text-slate-500">Prueba con agua comprobando descarga libre continua y cero goteo interno.</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <label class="radio-btn"><input type="radio" name="inst_chk_drenaje" value="B" checked><span>OK</span></label>
+                    <label class="radio-btn"><input type="radio" name="inst_chk_drenaje" value="R"><span>R</span></label>
+                    <label class="radio-btn"><input type="radio" name="inst_chk_drenaje" value="M"><span>M</span></label>
+                    <label class="radio-btn"><input type="radio" name="inst_chk_drenaje" value="N/A"><span>N/A</span></label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Item 5: Circuito Eléctrico y Tierra -->
+              <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <span class="font-medium text-sm text-slate-800">5. Conexión Eléctrica, Breaker y Tierra Física</span>
+                    <p class="text-[11px] text-slate-500">Breaker termomagnético normado, cableado ajustado y conexión a tierra física firme.</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <label class="radio-btn"><input type="radio" name="inst_chk_electrico" value="B" checked><span>OK</span></label>
+                    <label class="radio-btn"><input type="radio" name="inst_chk_electrico" value="R"><span>R</span></label>
+                    <label class="radio-btn"><input type="radio" name="inst_chk_electrico" value="M"><span>M</span></label>
+                    <label class="radio-btn"><input type="radio" name="inst_chk_electrico" value="N/A"><span>N/A</span></label>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -1210,7 +1394,7 @@
           <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
           </svg>
-          Detalle del Reporte de Mantenimiento
+          <span id="modal-detail-title">Detalle del Reporte de Mantenimiento</span>
         </h3>
         <button type="button" id="btn-close-detail" class="text-slate-400 hover:text-white text-xl font-bold p-1">
           ✕

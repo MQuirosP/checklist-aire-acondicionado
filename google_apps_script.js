@@ -324,11 +324,34 @@ function doPost(e) {
         "Elec: Protecciones Eléctricas", "Elec: Protecciones Obs", "Elec: Conexión Tierra Física", "Elec: Tierra Obs",
         "Med: Voltaje (V AC)", "Med: Corriente Compresor (A)", "Med: Corriente Motor Ext (A)", "Med: Presión Baja (PSI)",
         "Med: Presión Alta (PSI)", "Med: Control Remoto Estado", "Diagnóstico y Observaciones Finales",
-        "Nombre Técnico", "Firma Técnico (DataURL)", "Nombre Cliente", "Firma Cliente (DataURL)"
+        "Nombre Técnico", "Firma Técnico (DataURL)", "Nombre Cliente", "Firma Cliente (DataURL)",
+        "Inst: Longitud Tubería (m)", "Inst: Diámetros Tubería", "Inst: Vacío Alcanzado (Micrones)",
+        "Inst: Retención Vacío (min)", "Inst: Prueba Nitrógeno", "Inst: Presión Nitrógeno",
+        "Inst: Gas Adicional", "Inst: Válvulas Servicio", "Inst: Chk Evaporadora",
+        "Inst: Chk Condensadora", "Inst: Chk Aislamiento", "Inst: Chk Drenaje", "Inst: Chk Electrico"
       ];
       sheet.appendRow(sheetHeaders);
       sheet.getRange(1, 1, 1, sheetHeaders.length).setFontWeight("bold").setBackground("#e2e8f0");
       sheet.setFrozenRows(1);
+    } else {
+      // Auto-asegurar columnas de instalación al final de la hoja activa si aún no existen
+      var installHeaders = [
+        "Inst: Longitud Tubería (m)", "Inst: Diámetros Tubería", "Inst: Vacío Alcanzado (Micrones)",
+        "Inst: Retención Vacío (min)", "Inst: Prueba Nitrógeno", "Inst: Presión Nitrógeno",
+        "Inst: Gas Adicional", "Inst: Válvulas Servicio", "Inst: Chk Evaporadora",
+        "Inst: Chk Condensadora", "Inst: Chk Aislamiento", "Inst: Chk Drenaje", "Inst: Chk Electrico"
+      ];
+      var missingHeaders = [];
+      installHeaders.forEach(function(h) {
+        if (sheetHeaders.indexOf(h) === -1) {
+          missingHeaders.push(h);
+        }
+      });
+      if (missingHeaders.length > 0) {
+        var startCol = sheet.getLastColumn() + 1;
+        sheet.getRange(1, startCol, 1, missingHeaders.length).setValues([missingHeaders]).setFontWeight("bold").setBackground("#e2e8f0");
+        sheetHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      }
     }
 
     var timestamp = new Date();
@@ -416,7 +439,20 @@ function doPost(e) {
       "Nombre Técnico": data.nombre_tecnico_firma || "",
       "Firma Técnico (DataURL)": data.firma_tecnico || "",
       "Nombre Cliente": data.nombre_cliente_firma || "",
-      "Firma Cliente (DataURL)": data.firma_cliente || ""
+      "Firma Cliente (DataURL)": data.firma_cliente || "",
+      "Inst: Longitud Tubería (m)": data["Inst: Longitud Tubería (m)"] || data.inst_longitud_tuberia || "",
+      "Inst: Diámetros Tubería": data["Inst: Diámetros Tubería"] || data.inst_diametros || "",
+      "Inst: Vacío Alcanzado (Micrones)": data["Inst: Vacío Alcanzado (Micrones)"] || data.inst_vacio_micrones || "",
+      "Inst: Retención Vacío (min)": data["Inst: Retención Vacío (min)"] || data.inst_tiempo_vacio || "",
+      "Inst: Prueba Nitrógeno": data["Inst: Prueba Nitrógeno"] || data.inst_prueba_nitrogeno || "",
+      "Inst: Presión Nitrógeno": data["Inst: Presión Nitrógeno"] || data.inst_presion_nitrogeno || "",
+      "Inst: Gas Adicional": data["Inst: Gas Adicional"] || data.inst_carga_adicional || "",
+      "Inst: Válvulas Servicio": data["Inst: Válvulas Servicio"] || data.inst_valvulas_servicio || "",
+      "Inst: Chk Evaporadora": data["Inst: Chk Evaporadora"] || data.inst_chk_evap || "",
+      "Inst: Chk Condensadora": data["Inst: Chk Condensadora"] || data.inst_chk_cond || "",
+      "Inst: Chk Aislamiento": data["Inst: Chk Aislamiento"] || data.inst_chk_aislamiento || "",
+      "Inst: Chk Drenaje": data["Inst: Chk Drenaje"] || data.inst_chk_drenaje || "",
+      "Inst: Chk Electrico": data["Inst: Chk Electrico"] || data.inst_chk_electrico || ""
     };
 
     var row = sheetHeaders.map(function(h) {
