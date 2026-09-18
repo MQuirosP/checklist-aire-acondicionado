@@ -186,11 +186,33 @@ function doPost(e) {
         if (data.rol) userSheet.getRange(existingRowIndex, 4).setValue(data.rol);
         if (data.biometria) userSheet.getRange(existingRowIndex, 5).setValue(data.biometria);
         if (data.estado) userSheet.getRange(existingRowIndex, 6).setValue(data.estado);
-        return ContentService.createTextOutput(JSON.stringify({ "result": "success", "id": userId, "updated": true })).setMimeType(ContentService.MimeType.JSON);
       } else {
         userSheet.appendRow([userId, data.nombre || "", data.pin || "1234", data.rol || "Técnico", data.biometria || "", "Activo", new Date()]);
-        return ContentService.createTextOutput(JSON.stringify({ "result": "success", "id": userId, "created": true })).setMimeType(ContentService.MimeType.JSON);
       }
+
+      // Sincronizar automáticamente con la pestaña Técnicos si el rol es Técnico
+      var userRol = (data.rol || (existingRowIndex !== -1 ? userSheet.getRange(existingRowIndex, 4).getValue() : "Técnico")).toString().trim().toLowerCase();
+      var userName = (data.nombre || (existingRowIndex !== -1 ? userSheet.getRange(existingRowIndex, 2).getValue() : "")).toString().trim();
+      if (userRol.indexOf('tec') !== -1 && userName) {
+        var tecSheet = ss.getSheetByName('Técnicos') || ss.insertSheet('Técnicos');
+        initTechnicianSheetIfNeeded(tecSheet);
+        var tecRows = tecSheet.getDataRange().getValues();
+        var tecExists = false;
+        for (var t = 1; t < tecRows.length; t++) {
+          var tName = (tecRows[t][1] || "").toString().trim().toLowerCase();
+          if (tName === userName.toLowerCase()) {
+            tecExists = true;
+            if (data.estado) tecSheet.getRange(t + 1, 5).setValue(data.estado);
+            break;
+          }
+        }
+        if (!tecExists) {
+          var tecId = "TEC-" + (tecSheet.getLastRow() > 0 ? tecSheet.getLastRow() : 1);
+          tecSheet.appendRow([tecId, userName, data.cedula || "", data.telefono || "", data.estado || "Activo", new Date()]);
+        }
+      }
+
+      return ContentService.createTextOutput(JSON.stringify({ "result": "success", "id": userId, "updated": existingRowIndex !== -1, "created": existingRowIndex === -1 })).setMimeType(ContentService.MimeType.JSON);
     }
 
     // 7.1 Soft-delete / Toggle estado de usuario
@@ -204,6 +226,19 @@ function doPost(e) {
           if (rowId === data.id || rowName === data.id || rowName === data.nombre) {
             var newStatus = data.estado || (rows[i][5] === "Inactivo" ? "Activo" : "Inactivo");
             userSheet.getRange(i + 1, 6).setValue(newStatus);
+
+            // Reflejar estado en la hoja Técnicos si existe allí
+            var tecSheet = ss.getSheetByName('Técnicos');
+            if (tecSheet) {
+              var tecRows = tecSheet.getDataRange().getValues();
+              for (var t = 1; t < tecRows.length; t++) {
+                if ((tecRows[t][1] || "").toString().trim().toLowerCase() === rowName.toLowerCase()) {
+                  tecSheet.getRange(t + 1, 5).setValue(newStatus);
+                  break;
+                }
+              }
+            }
+
             return ContentService.createTextOutput(JSON.stringify({ "result": "success", "id": rowId, "estado": newStatus })).setMimeType(ContentService.MimeType.JSON);
           }
         }
@@ -483,6 +518,14 @@ function initUserSheetIfNeeded(sheet) {
   }
 }
 
+function initTechnicianSheetIfNeeded(sheet) {
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(["ID", "Nombre del Técnico", "Cédula / ID", "Teléfono", "Estado", "Fecha Registro"]);
+    sheet.getRange(1, 1, 1, 6).setFontWeight("bold").setBackground("#e2e8f0");
+    sheet.setFrozenRows(1);
+  }
+}
+
 function getSheetJson(sheet) {
   var rows = sheet.getDataRange().getValues();
   if (rows.length < 2) return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
@@ -547,4 +590,37 @@ function realignHeadersAndFixRows() {
 
   sheet.getRange(1, 1, 1, STANDARD_HEADERS.length).setValues([STANDARD_HEADERS]).setFontWeight("bold").setBackground("#e2e8f0");
   sheet.setFrozenRows(1);
+}
+
+/**
+ * Función de 1-Clic para sincronizar todos los usuarios con rol "Técnico" hacia la pestaña "Técnicos"
+ */
+function syncAllUsersWithTechnicians() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var userSheet = ss.getSheetByName('Usuarios');
+  var tecSheet = ss.getSheetByName('Técnicos') || ss.insertSheet('Técnicos');
+  initTechnicianSheetIfNeeded(tecSheet);
+
+  if (!userSheet) return;
+
+  var userRows = userSheet.getDataRange().getValues();
+  var tecRows = tecSheet.getDataRange().getValues();
+
+  var existingNames = new Set();
+  for (var t = 1; t < tecRows.length; t++) {
+    var name = (tecRows[t][1] || "").toString().trim().toLowerCase();
+    if (name) existingNames.add(name);
+  }
+
+  for (var u = 1; u < userRows.length; u++) {
+    var rol = (userRows[u][3] || "").toString().trim().toLowerCase();
+    var nombre = (userRows[u][1] || "").toString().trim();
+    var estado = (userRows[u][5] || "Activo").toString().trim();
+
+    if (rol.indexOf('tec') !== -1 && nombre && !existingNames.has(nombre.toLowerCase())) {
+      var tecId = "TEC-" + (tecSheet.getLastRow() > 0 ? tecSheet.getLastRow() : 1);
+      tecSheet.appendRow([tecId, nombre, "", "", estado, new Date()]);
+      existingNames.add(nombre.toLowerCase());
+    }
+  }
 }
