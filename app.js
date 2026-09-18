@@ -258,6 +258,13 @@ function getSessionToken() {
 }
 
 function loginUser(user) {
+  if (user && (!user.id || user.id === user.nombre) && Array.isArray(usersDataCache) && usersDataCache.length > 0) {
+    const matched = usersDataCache.find(u => matchTechnicianName(u['Nombre Usuario'] || u.nombre, user.nombre));
+    if (matched && (matched.ID || matched.id)) {
+      user.id = matched.ID || matched.id;
+    }
+  }
+
   currentUser = user;
   try {
     localStorage.setItem('session_user', JSON.stringify(user));
@@ -275,6 +282,8 @@ function loginUser(user) {
   if (typeof updateTechniciansUI === 'function') updateTechniciansUI();
   if (typeof updateEquipmentTypesUI === 'function') updateEquipmentTypesUI();
 
+  if (typeof fetchClients === 'function') fetchClients(false);
+  if (typeof fetchEquipmentTypes === 'function') fetchEquipmentTypes(false);
   if (typeof fetchHistoryData === 'function') fetchHistoryData();
   switchView('view-dashboard');
 }
@@ -353,7 +362,19 @@ async function initAuthSystem() {
         currentUser = parsed;
         updateNavigationUI();
         switchView('view-dashboard');
-        fetchUsersData();
+        fetchUsersData().then(users => {
+          if (currentUser && (!currentUser.id || currentUser.id === currentUser.nombre) && Array.isArray(users)) {
+            const found = users.find(u => matchTechnicianName(u['Nombre Usuario'] || u.nombre, currentUser.nombre));
+            if (found && (found.ID || found.id)) {
+              currentUser.id = found.ID || found.id;
+              try { localStorage.setItem('session_user', JSON.stringify(currentUser)); } catch (e) {}
+              if (typeof updateClientsUI === 'function') updateClientsUI();
+              if (typeof updateEquipmentTypesUI === 'function') updateEquipmentTypesUI();
+            }
+          }
+        });
+        if (typeof fetchClients === 'function') fetchClients(false);
+        if (typeof fetchEquipmentTypes === 'function') fetchEquipmentTypes(false);
         return;
       }
     } catch (e) {}
@@ -845,6 +866,8 @@ function initDashboardNavigation() {
   if (cardCreateOrder) {
     cardCreateOrder.addEventListener('click', () => {
       switchView('view-form');
+      if (typeof updateClientsUI === 'function') updateClientsUI();
+      if (typeof updateEquipmentTypesUI === 'function') updateEquipmentTypesUI();
       const otInput = document.getElementById('ot');
       if (otInput && !otInput.value) {
         const btnAutoOt = document.getElementById('btn-auto-ot');
@@ -873,6 +896,7 @@ function initDashboardNavigation() {
       const modal = document.getElementById('modal-clients');
       if (modal) {
         modal.classList.remove('hidden');
+        if (typeof updateClientsUI === 'function') updateClientsUI();
         if (typeof fetchClients === 'function') fetchClients(false);
       }
     });
@@ -2371,6 +2395,16 @@ let equipmentTypesCache = [];
 
 async function fetchClients(silent = false) {
   try {
+    if (clientsCache.length === 0) {
+      const saved = localStorage.getItem('app_clients_cache_v1');
+      if (saved) {
+        clientsCache = JSON.parse(saved);
+        updateClientsUI();
+      }
+    }
+  } catch (e) {}
+
+  try {
     const fetchUrl = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + 'action=clientes&_t=' + Date.now();
     const res = await fetch(fetchUrl, { cache: 'no-store' });
     const text = await res.text();
@@ -2381,6 +2415,7 @@ async function fetchClients(silent = false) {
     const data = JSON.parse(text);
     if (Array.isArray(data)) {
       clientsCache = data;
+      try { localStorage.setItem('app_clients_cache_v1', JSON.stringify(data)); } catch (e) {}
       updateClientsUI();
     }
   } catch (err) {
@@ -2417,6 +2452,16 @@ async function fetchTechnicians(silent = false) {
 
 async function fetchEquipmentTypes(silent = false) {
   try {
+    if (equipmentTypesCache.length === 0) {
+      const saved = localStorage.getItem('app_equipment_cache_v1');
+      if (saved) {
+        equipmentTypesCache = JSON.parse(saved);
+        updateEquipmentTypesUI();
+      }
+    }
+  } catch (e) {}
+
+  try {
     const fetchUrl = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.includes('?') ? '&' : '?') + 'action=equipos&_t=' + Date.now();
     const res = await fetch(fetchUrl, { cache: 'no-store' });
     const text = await res.text();
@@ -2427,6 +2472,7 @@ async function fetchEquipmentTypes(silent = false) {
     const data = JSON.parse(text);
     if (Array.isArray(data)) {
       equipmentTypesCache = data;
+      try { localStorage.setItem('app_equipment_cache_v1', JSON.stringify(data)); } catch (e) {}
       updateEquipmentTypesUI();
     }
   } catch (err) {
@@ -2630,8 +2676,20 @@ window.resetTechnicianEditForm = function() {
 function isClientVisibleForUser(c, user) {
   if (!user || isUserAdmin(user)) return true;
 
-  const uId = (user.id || user.ID || '').toString().trim().toLowerCase();
+  let uId = (user.id || user.ID || '').toString().trim().toLowerCase();
   const uName = (user.nombre || user.Nombre || '').toString().trim();
+
+  // Si no tenemos uId o es igual al nombre, intentar resolverlo desde usersDataCache
+  if ((!uId || uId === uName.toLowerCase()) && Array.isArray(usersDataCache) && usersDataCache.length > 0) {
+    const matched = usersDataCache.find(u => {
+      const candName = (u['Nombre Usuario'] || u['Nombre del Técnico'] || u.nombre || '').toString().trim();
+      return matchTechnicianName(candName, uName);
+    });
+    if (matched && (matched.ID || matched.id)) {
+      uId = String(matched.ID || matched.id).trim().toLowerCase();
+      user.id = matched.ID || matched.id;
+    }
+  }
 
   // 1. Coincidencia por ID de creador (prioritario, inmutable y ligero)
   const creadorId = (c.Creador_ID || c['Creador_ID'] || c.creadorId || c['creador_id'] || '').toString().trim().toLowerCase();
@@ -2641,6 +2699,16 @@ function isClientVisibleForUser(c, user) {
     }
     if (uId && creadorId === uId) {
       return true;
+    }
+    if (matchTechnicianName(creadorId, uName) || matchTechnicianName(creadorId, uId)) {
+      return true;
+    }
+    // Si en usersDataCache ese creadorId pertenece al usuario activo
+    if (Array.isArray(usersDataCache) && usersDataCache.length > 0) {
+      const userOfCreator = usersDataCache.find(u => String(u.ID || u.id).trim().toLowerCase() === creadorId);
+      if (userOfCreator && matchTechnicianName(userOfCreator['Nombre Usuario'] || userOfCreator.nombre, uName)) {
+        return true;
+      }
     }
   }
 
@@ -2655,6 +2723,12 @@ function isClientVisibleForUser(c, user) {
     }
     if (matchTechnicianName(creador, uName)) {
       return true;
+    }
+    if (Array.isArray(usersDataCache) && usersDataCache.length > 0) {
+      const userOfCreator = usersDataCache.find(u => String(u.ID || u.id).trim().toLowerCase() === creador.toLowerCase());
+      if (userOfCreator && matchTechnicianName(userOfCreator['Nombre Usuario'] || userOfCreator.nombre, uName)) {
+        return true;
+      }
     }
   }
 
