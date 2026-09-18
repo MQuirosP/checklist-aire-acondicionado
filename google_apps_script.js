@@ -23,14 +23,11 @@ function doPost(e) {
     // 1. Guardar nuevo cliente si action === 'add_cliente'
     if (data.action === 'add_cliente') {
       var clientSheet = ss.getSheetByName('Clientes') || ss.insertSheet('Clientes');
-      if (clientSheet.getLastRow() === 0) {
-        clientSheet.appendRow(["ID", "Nombre / Empresa", "Ubicación / Dirección", "Teléfono", "Correo", "Estado", "Fecha Registro"]);
-        clientSheet.getRange(1, 1, 1, 7).setFontWeight("bold").setBackground("#e2e8f0");
-        clientSheet.setFrozenRows(1);
-      }
+      initClientSheetIfNeeded(clientSheet);
       var clientId = "CLI-" + (clientSheet.getLastRow() > 0 ? clientSheet.getLastRow() : 1);
-      clientSheet.appendRow([clientId, data.nombre || "", data.ubicacion || "", data.telefono || "", data.correo || "", "Activo", new Date()]);
-      return ContentService.createTextOutput(JSON.stringify({ "result": "success", "id": clientId })).setMimeType(ContentService.MimeType.JSON);
+      var creadorVal = data.creadorId || data.creador_id || data.userId || data.creador || "Sistema";
+      clientSheet.appendRow([clientId, data.nombre || "", data.ubicacion || "", data.telefono || "", data.correo || "", "Activo", new Date(), creadorVal]);
+      return ContentService.createTextOutput(JSON.stringify({ "result": "success", "id": clientId, "creadorId": creadorVal })).setMimeType(ContentService.MimeType.JSON);
     }
 
     // 2. Soft-delete / Toggle estado de cliente (Activo <-> Inactivo)
@@ -55,6 +52,7 @@ function doPost(e) {
     if (data.action === 'edit_cliente') {
       var clientSheet = ss.getSheetByName('Clientes');
       if (clientSheet) {
+        initClientSheetIfNeeded(clientSheet);
         var rows = clientSheet.getDataRange().getValues();
         for (var i = 1; i < rows.length; i++) {
           var rowId = (rows[i][0] || "").toString().trim();
@@ -64,6 +62,7 @@ function doPost(e) {
             if (data.ubicacion !== undefined) clientSheet.getRange(i + 1, 3).setValue(data.ubicacion);
             if (data.telefono !== undefined) clientSheet.getRange(i + 1, 4).setValue(data.telefono);
             if (data.correo !== undefined) clientSheet.getRange(i + 1, 5).setValue(data.correo);
+            if (data.creadorId !== undefined) clientSheet.getRange(i + 1, 8).setValue(data.creadorId);
             return ContentService.createTextOutput(JSON.stringify({ "result": "success", "id": rowId })).setMimeType(ContentService.MimeType.JSON);
           }
         }
@@ -126,8 +125,9 @@ function doPost(e) {
       var eqSheet = ss.getSheetByName('Catálogo de Equipos') || ss.insertSheet('Catálogo de Equipos');
       initEquipmentSheetIfNeeded(eqSheet);
       var eqId = "EQ-" + (eqSheet.getLastRow() > 0 ? eqSheet.getLastRow() : 1);
-      eqSheet.appendRow([eqId, data.nombre || "", data.descripcion || "", "Activo", new Date(), data.creador || "Sistema"]);
-      return ContentService.createTextOutput(JSON.stringify({ "result": "success", "id": eqId })).setMimeType(ContentService.MimeType.JSON);
+      var creadorVal = data.creadorId || data.creador_id || data.creador || "Sistema";
+      eqSheet.appendRow([eqId, data.nombre || "", data.descripcion || "", "Activo", new Date(), creadorVal]);
+      return ContentService.createTextOutput(JSON.stringify({ "result": "success", "id": eqId, "creador": creadorVal })).setMimeType(ContentService.MimeType.JSON);
     }
 
     // 6. Editar tipo de equipo
@@ -409,6 +409,7 @@ function doGet(e) {
 
     if (action === 'clientes') {
       var sheet = ss.getSheetByName('Clientes') || ss.insertSheet('Clientes');
+      initClientSheetIfNeeded(sheet);
       return getSheetJson(sheet);
     }
     if (action === 'tecnicos') {
@@ -432,6 +433,20 @@ function doGet(e) {
 
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({ error: err.toString() })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function initClientSheetIfNeeded(sheet) {
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(["ID", "Nombre / Empresa", "Ubicación / Dirección", "Teléfono", "Correo", "Estado", "Fecha Registro", "Creador_ID"]);
+    sheet.getRange(1, 1, 1, 8).setFontWeight("bold").setBackground("#e2e8f0");
+    sheet.setFrozenRows(1);
+  } else {
+    // Si la hoja ya existe, aseguramos que la celda H1 (columna 8) tenga "Creador_ID"
+    var valH1 = sheet.getRange(1, 8).getValue();
+    if (!valH1 || valH1.toString().trim() === "") {
+      sheet.getRange(1, 8).setValue("Creador_ID").setFontWeight("bold").setBackground("#e2e8f0");
+    }
   }
 }
 
@@ -478,7 +493,7 @@ function getSheetJson(sheet) {
     headers[5] = "Creador";
   }
   if (sheet.getName() === 'Clientes' && headers.length >= 8 && (!headers[7] || headers[7].toString().trim() === "")) {
-    headers[7] = "Creador";
+    headers[7] = "Creador_ID";
   }
 
   var data = [];

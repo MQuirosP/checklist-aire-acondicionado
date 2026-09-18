@@ -1579,7 +1579,8 @@ function initFormSubmission() {
               action: 'add_equipo',
               nombre: payload.subtipoEquipo,
               descripcion: 'Categoría registrada desde Orden ' + (payload.ot || ''),
-              creador: currentUser ? currentUser.nombre : 'Sistema'
+              creadorId: currentUser ? (currentUser.id || '') : '',
+              creador: currentUser ? (currentUser.id || currentUser.nombre) : 'Sistema'
             })
           });
           setTimeout(() => fetchEquipmentTypes(true), 1000);
@@ -2481,6 +2482,7 @@ function initClientsAndTechniciansManagement() {
       if (!name || !location) return;
 
       const isEdit = Boolean(editId);
+      const creadorId = currentUser ? (currentUser.id || '') : '';
       const payload = {
         action: isEdit ? 'edit_cliente' : 'add_cliente',
         id: editId,
@@ -2488,7 +2490,8 @@ function initClientsAndTechniciansManagement() {
         ubicacion: location,
         telefono: phone,
         correo: email,
-        creador: currentUser ? currentUser.nombre : 'Sistema'
+        creadorId: creadorId,
+        creador: creadorId || (currentUser ? currentUser.nombre : 'Sistema')
       };
 
       try {
@@ -2627,18 +2630,35 @@ window.resetTechnicianEditForm = function() {
 function isClientVisibleForUser(c, user) {
   if (!user || isUserAdmin(user)) return true;
 
-  const creador = (c.Creador || c['Creador'] || c.creador || '').toString().trim();
-  const uName = user.nombre;
+  const uId = (user.id || user.ID || '').toString().trim().toLowerCase();
+  const uName = (user.nombre || user.Nombre || '').toString().trim();
 
-  // 1. Si tiene creador explícito registrado
+  // 1. Coincidencia por ID de creador (prioritario, inmutable y ligero)
+  const creadorId = (c.Creador_ID || c['Creador_ID'] || c.creadorId || c['creador_id'] || '').toString().trim().toLowerCase();
+  if (creadorId) {
+    if (creadorId === 'sistema' || creadorId === 'base' || creadorId === 'empresa') {
+      return true;
+    }
+    if (uId && creadorId === uId) {
+      return true;
+    }
+  }
+
+  // 2. Coincidencia por campo Creador (puede contener el ID o el Nombre)
+  const creador = (c.Creador || c['Creador'] || c.creador || '').toString().trim();
   if (creador) {
     if (matchTechnicianName(creador, 'Sistema') || matchTechnicianName(creador, 'Base') || matchTechnicianName(creador, 'Empresa')) {
       return true;
     }
-    return matchTechnicianName(creador, uName);
+    if (uId && creador.toLowerCase() === uId) {
+      return true;
+    }
+    if (matchTechnicianName(creador, uName)) {
+      return true;
+    }
   }
 
-  // 2. Si no tiene creador explícito (registro antiguo o sin columna G):
+  // 3. Si no tiene creador explícito (clientes antiguos):
   // ÚNICAMENTE mostrar si el técnico activo tiene historial registrado con este cliente
   const cliNombre = (c['Nombre / Empresa'] || c.nombre || '').toString().toLowerCase().trim();
   if (!cliNombre) return false;
@@ -3015,12 +3035,14 @@ function initEquipmentManagement() {
       if (!name) return;
 
       const isEdit = Boolean(editId);
+      const creadorId = currentUser ? (currentUser.id || '') : '';
       const payload = {
         action: isEdit ? 'edit_equipo' : 'add_equipo',
         id: editId,
         nombre: name,
         descripcion: desc,
-        creador: currentUser ? currentUser.nombre : 'Sistema'
+        creadorId: creadorId,
+        creador: creadorId || (currentUser ? currentUser.nombre : 'Sistema')
       };
 
       try {
@@ -3066,11 +3088,12 @@ function updateEquipmentTypesUI() {
   const showInactive = document.getElementById('show-inactive-equipments')?.checked;
 
   const isTech = currentUser && currentUser.rol === 'Técnico';
+  const uId = currentUser ? (currentUser.id || '').toLowerCase().trim() : '';
   const uName = currentUser ? (currentUser.nombre || '').toLowerCase().trim() : '';
 
   // Filtrar equipos visibles según aislamiento por usuario:
   // - Base / Sistema: Visibles para todos los usuarios.
-  // - Creados por Técnico: Visibles sólo para el Técnico creador (y Administrador).
+  // - Creados por Técnico: Visibles sólo para el Técnico creador (por ID o nombre) y Administrador.
   const visibleEquipments = equipmentTypesCache.filter(eq => {
     const creador = (eq.Creador || eq['Creador'] || eq.creador || eq[''] || 'Sistema').toString().toLowerCase().trim();
     const isBase = !creador || creador === 'sistema' || creador === 'base';
@@ -3079,7 +3102,8 @@ function updateEquipmentTypesUI() {
       return true; // Administrador ve todo el catálogo
     }
 
-    return isBase || creador === uName;
+    const matchesUser = (uId && creador === uId) || (uName && creador === uName);
+    return isBase || matchesUser;
   });
 
   if (select) {
@@ -3109,7 +3133,8 @@ function updateEquipmentTypesUI() {
       const isInactive = estado === 'Inactivo';
 
       // Inmutabilidad: Si es equipo Base y el usuario es Técnico, NO puede editar ni desactivar.
-      const canEdit = !isTech || (!isBase && creador.toLowerCase().trim() === uName);
+      const matchesCreator = (uId && creador.toLowerCase().trim() === uId) || (uName && creador.toLowerCase().trim() === uName);
+      const canEdit = !isTech || (!isBase && matchesCreator);
 
       let actionButtons = '';
       if (canEdit) {
