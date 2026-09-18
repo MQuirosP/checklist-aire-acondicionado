@@ -2087,6 +2087,10 @@ function openRecordDetail(record) {
 
   const isEquipoOtro = (record['Tipo de Unidad'] || '').toString().trim() === 'Otro';
 
+  const tagRefrigeranteHTML = isEquipoOtro
+    ? `<div><span class="text-slate-400 block text-[9.5px]">ID / Tag Equipo:</span> <strong class="text-slate-800 font-semibold truncate block">${getVal('ID / Tag Equipo')}</strong></div>`
+    : `<div><span class="text-slate-400 block text-[9.5px]">Tag / Refrigerante:</span> <strong class="text-slate-800 font-semibold truncate block">${getVal('ID / Tag Equipo')} (${getVal('Refrigerante')})</strong></div>`;
+
   const checklistBlockHTML = isEquipoOtro ? '' : `
     <!-- Puntos Revisados / Inspeccionados (4 Columnas - 1 Sola Línea) -->
     <div class="border border-slate-200 rounded-xl p-1.5 px-2 bg-white shadow-sm">
@@ -2096,6 +2100,23 @@ function openRecordDetail(record) {
       </h4>
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-1">
         ${allChecklistItems.map(item => renderItemPill(item)).join('')}
+      </div>
+    </div>
+  `;
+
+  const medicionesBlockHTML = isEquipoOtro ? '' : `
+    <!-- Section 4: Operational Measurements Summary -->
+    <div class="border border-slate-200 rounded-xl p-2 bg-white shadow-sm">
+      <h4 class="font-bold text-slate-800 text-[11px] mb-1 border-b border-slate-100 pb-0.5 flex items-center gap-1.5">
+        📊 Mediciones Técnicas
+      </h4>
+      <div class="grid grid-cols-3 sm:grid-cols-6 gap-1 text-xs text-center">
+        <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[8.5px]">Voltaje:</span> <strong class="text-slate-800 text-[10px]">${getVal('Med: Voltaje (V AC)')} V</strong></div>
+        <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[8.5px]">Corr. Compr:</span> <strong class="text-slate-800 text-[10px]">${getVal('Med: Corriente Compresor (A)')} A</strong></div>
+        <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[8.5px]">Corr. Vent:</span> <strong class="text-slate-800 text-[10px]">${getVal('Med: Corriente Motor Ext (A)')} A</strong></div>
+        <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[8.5px]">Presión Baja:</span> <strong class="text-slate-800 text-[10px]">${getVal('Med: Presión Baja (PSI)')} PSI</strong></div>
+        <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[8.5px]">Presión Alta:</span> <strong class="text-slate-800 text-[10px]">${getVal('Med: Presión Alta (PSI)')} PSI</strong></div>
+        <div class="bg-emerald-50 p-1 rounded border border-emerald-200"><span class="text-emerald-700 block text-[8.5px] font-semibold">ΔT:</span> <strong class="text-emerald-800 text-[10px]">${getVal('Med: Delta T (°C)')} °C</strong></div>
       </div>
     </div>
   `;
@@ -2114,31 +2135,18 @@ function openRecordDetail(record) {
         <div><span class="text-slate-400 block text-[9.5px]">Cliente / Ubicación:</span> <strong class="text-slate-800 font-semibold truncate block">${getVal('Cliente / Ubicación')}</strong></div>
         <div><span class="text-slate-400 block text-[9.5px]">Técnico Responsable:</span> <strong class="text-slate-800 font-semibold truncate block">${getVal('Técnico Responsable')}</strong></div>
         <div><span class="text-slate-400 block text-[9.5px]">Equipo / Marca:</span> <strong class="text-slate-800 font-semibold truncate block">${getVal('Tipo de Unidad')} ${getVal('Subtipo / Categoría Equipo') ? '(' + getVal('Subtipo / Categoría Equipo') + ')' : ''} ${getVal('Marca / Modelo')}</strong></div>
-        <div><span class="text-slate-400 block text-[9.5px]">Tag / Refrigerante:</span> <strong class="text-slate-800 font-semibold truncate block">${getVal('ID / Tag Equipo')} (${getVal('Refrigerante')})</strong></div>
+        ${tagRefrigeranteHTML}
       </div>
     </div>
 
     ${checklistBlockHTML}
 
-    <!-- Section 4: Operational Measurements Summary -->
-    <div class="border border-slate-200 rounded-xl p-2 bg-white shadow-sm">
-      <h4 class="font-bold text-slate-800 text-[11px] mb-1 border-b border-slate-100 pb-0.5 flex items-center gap-1.5">
-        📊 Mediciones Técnicas
-      </h4>
-      <div class="grid grid-cols-3 sm:grid-cols-6 gap-1 text-xs text-center">
-        <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[8.5px]">Voltaje:</span> <strong class="text-slate-800 text-[10px]">${getVal('Med: Voltaje (V AC)')} V</strong></div>
-        <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[8.5px]">Corr. Compr:</span> <strong class="text-slate-800 text-[10px]">${getVal('Med: Corriente Compresor (A)')} A</strong></div>
-        <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[8.5px]">Corr. Vent:</span> <strong class="text-slate-800 text-[10px]">${getVal('Med: Corriente Motor Ext (A)')} A</strong></div>
-        <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[8.5px]">Presión Baja:</span> <strong class="text-slate-800 text-[10px]">${getVal('Med: Presión Baja (PSI)')} PSI</strong></div>
-        <div class="bg-slate-50 p-1 rounded border border-slate-100"><span class="text-slate-400 block text-[8.5px]">Presión Alta:</span> <strong class="text-slate-800 text-[10px]">${getVal('Med: Presión Alta (PSI)')} PSI</strong></div>
-        <div class="bg-emerald-50 p-1 rounded border border-emerald-200"><span class="text-emerald-700 block text-[8.5px] font-semibold">ΔT:</span> <strong class="text-emerald-800 text-[10px]">${getVal('Med: Delta T (°C)')} °C</strong></div>
-      </div>
-    </div>
+    ${medicionesBlockHTML}
 
     <!-- Section 5: Observaciones Finales (Espacio Maximizado) -->
     <div class="border border-slate-200 rounded-xl p-2.5 bg-white shadow-sm flex-1">
       <h4 class="font-bold text-slate-800 text-xs mb-1 flex items-center gap-1">📝 Observaciones y Trabajo Realizado</h4>
-      <p class="bg-slate-50 p-2.5 rounded text-[11px] text-slate-700 whitespace-pre-wrap leading-relaxed border border-slate-200 ${isEquipoOtro ? 'min-h-[160px]' : 'min-h-[90px]'}">${getVal('Diagnóstico y Observaciones Finales')}</p>
+      <p class="bg-slate-50 p-2.5 rounded text-[11px] text-slate-700 whitespace-pre-wrap leading-relaxed border border-slate-200 ${isEquipoOtro ? 'min-h-[220px]' : 'min-h-[90px]'}">${getVal('Diagnóstico y Observaciones Finales')}</p>
     </div>
 
     <!-- Signatures Preview -->
